@@ -73,8 +73,10 @@ public class NewsParser {
                     news.setDescription(itemObject.getString("description"));
                 }
                 news.setLink(itemObject.getString("link"));
-                news.setPubDate(itemObject.getString("pubDate"));
 
+                if (itemObject.has("pubDate")) {
+                    news.setPubDate(itemObject.getString("pubDate"));
+                }
 
                 newsArrayList.add(news);
 

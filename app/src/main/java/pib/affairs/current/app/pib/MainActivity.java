@@ -7,6 +7,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -41,6 +46,7 @@ import org.json.JSONException;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 
 import utils.AppController;
 import utils.News;
@@ -58,6 +64,8 @@ public class MainActivity extends AppCompatActivity
 
     RecyclerView recyclerView;
     NewsAdapter newsAdapter;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
 
 
     @Override
@@ -85,12 +93,31 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        setupViewPager(viewPager);
+
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+
+
         recyclerView = (RecyclerView) findViewById(R.id.contentMain_recyclerView);
 
         openDynamicLink();
 
-        fetchNews();
+        //fetchNews();
 
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish.aspx",0), "RSS");
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx",0), "Featured");
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx",1), "Hand Picked");
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx",2), "Offline");
+
+        viewPager.setAdapter(adapter);
     }
 
 
@@ -108,7 +135,7 @@ public class MainActivity extends AppCompatActivity
 
                             openNewsDescription(deepLink);
 
-                            fetchNews();
+                            //fetchNews();
 
                             // downloadNewsArticle(newsArticleID);
 
@@ -117,7 +144,7 @@ public class MainActivity extends AppCompatActivity
 
                             //download story list
 
-                            fetchNews();
+                            //fetchNews();
 
                         }
 
@@ -134,7 +161,7 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onFailure(@NonNull Exception e) {
 
-                        fetchNews();
+                        //fetchNews();
                         Log.w("DeepLink", "getDynamicLink:onFailure", e);
                     }
                 });
@@ -333,6 +360,37 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
+
+        public ViewPagerAdapter(FragmentManager manager) {
+            super(manager);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return mFragmentList.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return mFragmentList.size();
+        }
+
+        public void addFragment(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitleList.get(position);
+        }
     }
 
 }

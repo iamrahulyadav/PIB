@@ -36,6 +36,7 @@ import utils.SqlDatabaseHelper;
 
 public class NewsDescriptionActivity extends AppCompatActivity {
     News news;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,9 +45,15 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
 
-        news = (News)getIntent().getSerializableExtra("news");
+        news = (News) getIntent().getSerializableExtra("news");
+        boolean isOffline = getIntent().getBooleanExtra("isOffline", false);
 
-        WebView webView =(WebView)findViewById(R.id.newsDesription_webView);
+        if (isOffline) {
+
+        } else {
+
+        }
+        WebView webView = (WebView) findViewById(R.id.newsDesription_webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setMinimumFontSize(50);
         webView.getSettings().setLoadWithOverviewMode(true);
@@ -57,13 +64,10 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         webView.getSettings().setAppCachePath(this.getCacheDir().getPath());
         webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
 
-       // webView.setBackgroundColor(Color.BLACK);
+        // webView.setBackgroundColor(Color.BLACK);
 
 
         webView.loadUrl(news.getLink());
-
-
-
 
 
     }
@@ -109,8 +113,10 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 pDialog.hide();
 
-                SqlDatabaseHelper sqlDatabaseHelper =new SqlDatabaseHelper(NewsDescriptionActivity.this);
-                sqlDatabaseHelper.addSavedNews(news ,response);
+                SqlDatabaseHelper sqlDatabaseHelper = new SqlDatabaseHelper(NewsDescriptionActivity.this);
+                sqlDatabaseHelper.addSavedNews(news, response);
+
+                RssFeedFragment.newNoteSaved = true;
 
 
             }
@@ -129,14 +135,12 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
 
 
-
-
     }
 
 
     public void onShareClick(View view) {
 
-        Task<ShortDynamicLink> shortLinkTask  = FirebaseDynamicLinks.getInstance().createDynamicLink()
+        Task<ShortDynamicLink> shortLinkTask = FirebaseDynamicLinks.getInstance().createDynamicLink()
                 .setLink(Uri.parse(news.getLink()))
                 .setDynamicLinkDomain("mbj78.app.goo.gl")
                 .setAndroidParameters(
@@ -157,18 +161,16 @@ public class NewsDescriptionActivity extends AppCompatActivity {
                 .addOnCompleteListener(new OnCompleteListener<ShortDynamicLink>() {
                     @Override
                     public void onComplete(@NonNull Task<ShortDynamicLink> task) {
-                        if (task.isSuccessful()){
+                        if (task.isSuccessful()) {
 
                             Uri uri = task.getResult().getShortLink();
                             openShareDialog(uri);
 
-                        }else{
+                        } else {
 
                         }
                     }
-                })
-                ;
-
+                });
 
 
     }
