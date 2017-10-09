@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -11,9 +12,12 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.TextView;
@@ -36,7 +40,7 @@ import utils.SqlDatabaseHelper;
 
 public class NewsDescriptionActivity extends AppCompatActivity {
     News news;
-
+    WebView webView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,25 +57,89 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         } else {
 
         }
-        WebView webView = (WebView) findViewById(R.id.newsDesription_webView);
+         webView = (WebView) findViewById(R.id.newsDesription_webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setMinimumFontSize(50);
+        //webView.getSettings().setTextZoom(250);
+        webView.getSettings().setDisplayZoomControls(true);
+
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setUseWideViewPort(true);
         webView.getSettings().setUserAgentString("Android");
+
+        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
         webView.getSettings().setAppCacheEnabled(true);
         webView.getSettings().setAppCachePath(this.getCacheDir().getPath());
         webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
 
-        // webView.setBackgroundColor(Color.BLACK);
+         //webView.setBackgroundColor(Color.parseColor("#5a666b"));
+        webView.setInitialScale(110);
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setDisplayZoomControls(false);
 
 
         webView.loadUrl(news.getLink());
 
+       /* if (Build.VERSION.SDK_INT > 19) {
+            webView.evaluateJavascript("(function(){return window.getSelection().toString()})()",
+                    new ValueCallback<String>() {
+                        @Override
+                        public void onReceiveValue(String value) {
+                            Log.v("Web view", "SELECTION:" + value);
+                        }
+                    });
+
+            webView.addJavascriptInterface(new JavaScriptInterface(), "javascriptinterface");
+            webView.loadUrl("javascript:javascriptinterface.callback(window.getSelection().toString())");
+
+        }
+*/
+        //temp();
 
     }
 
+    public void temp(){
+
+        String tag_string_req = "string_req";
+
+        final String url = news.getLink();
+
+        final ProgressDialog pDialog = new ProgressDialog(this);
+        pDialog.setMessage("Loading...");
+        pDialog.show();
+
+        StringRequest strReq = new StringRequest(Request.Method.GET,
+                url, new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+                pDialog.hide();
+
+                response= response.replaceFirst("width:60%","width:90%");
+
+
+                webView.loadDataWithBaseURL("", response, "text/html", "UTF-8", "");
+
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+
+                pDialog.hide();
+            }
+        });
+
+        strReq.setShouldCache(true);
+        // Adding request to request queue
+        AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+
+
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -188,5 +256,14 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(sharingIntent, "share link via"));
 
 
+    }
+
+    public class JavaScriptInterface
+    {
+        @JavascriptInterface
+        public void callback(String value)
+        {
+            Log.v("JS", "SELECTION:" + value);
+        }
     }
 }

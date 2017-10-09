@@ -2,8 +2,10 @@ package utils;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Build;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -103,7 +105,12 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
 
                 NewsViewHolder newsViewHolder = (NewsViewHolder) holder;
                 News news = (News) newsArrayList.get(position);
-                newsViewHolder.title.setText(news.getTitle());
+
+                if (Build.VERSION.SDK_INT > 24) {
+                    newsViewHolder.title.setText(Html.fromHtml(news.getTitle(),Html.FROM_HTML_MODE_COMPACT));
+                }else{
+                    newsViewHolder.title.setText(Html.fromHtml(news.getTitle()));
+                }
                 newsViewHolder.description.setText(news.getDescription());
                 newsViewHolder.pubDate.setText(news.getPubDate());
                 if (news.isRead()){

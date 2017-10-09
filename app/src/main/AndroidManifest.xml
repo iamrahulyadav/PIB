@@ -25,11 +25,22 @@
         <activity
             android:name=".NewsDescriptionActivity"
             android:label="@string/title_activity_news_description"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar">
 
+        </activity>
+        <activity
+            android:name=".Dictionary"
+            android:label="@string/title_activity_dictionary"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
 
+                <category android:name="android.intent.category.DEFAULT" />
 
+                <data android:mimeType="text/plain" />
+            </intent-filter>
 
+        </activity>
     </application>
 
 </manifest>
