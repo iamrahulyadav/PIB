@@ -2,6 +2,7 @@ package pib.affairs.current.app.pib;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +16,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+
+import utils.NightModeManager;
 
 
 public class Dictionary extends AppCompatActivity {
@@ -43,6 +46,10 @@ public class Dictionary extends AppCompatActivity {
         webView.getSettings().setAppCacheEnabled(true);
         webView.getSettings().setAppCachePath(this.getCacheDir().getPath());
         webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+
+        if (NightModeManager.getNightMode(this)) {
+            webView.setBackgroundColor(Color.parseColor("#5a666b"));
+        }
 
         initializeWebView();
 

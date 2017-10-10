@@ -20,6 +20,37 @@
             android:title="Tools" />
     </group>
 
+
+    <item android:title="Language">
+        <menu>
+            <item
+                android:id="@+id/nav_language_hindi"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Hindi" />
+            <item
+                android:id="@+id/nav_language_english"
+                android:icon="@drawable/ic_menu_send"
+                android:title="English" />
+        </menu>
+    </item>
+
+
+
+    <item android:title="Theme">
+        <menu>
+            <item
+                android:id="@+id/nav_theme_night"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Night" />
+            <item
+                android:id="@+id/nav_theme_day"
+                android:icon="@drawable/ic_menu_send"
+                android:title="Day" />
+        </menu>
+    </item>
+
+
+
     <item android:title="Communicate">
         <menu>
             <item

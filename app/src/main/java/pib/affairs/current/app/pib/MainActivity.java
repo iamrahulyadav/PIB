@@ -29,6 +29,7 @@ import android.view.MenuItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.android.volley.Cache;
 import com.android.volley.Request;
@@ -40,6 +41,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
+import com.pollfish.interfaces.PollfishSurveyCompletedListener;
+import com.pollfish.interfaces.PollfishSurveyNotAvailableListener;
+import com.pollfish.interfaces.PollfishSurveyReceivedListener;
+import com.pollfish.interfaces.PollfishUserNotEligibleListener;
+import com.pollfish.main.PollFish;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,9 +55,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import utils.AppController;
+import utils.LanguageManager;
 import utils.News;
 import utils.NewsAdapter;
 import utils.NewsParser;
+import utils.NightModeManager;
 import utils.RecyclerTouchListener;
 import utils.SqlDatabaseHelper;
 
@@ -71,6 +79,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (NightModeManager.getNightMode(this)){
+            setTheme(R.style.ActivityTheme_Primary_Base_Dark);
+        }
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -93,7 +106,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);
@@ -106,16 +118,73 @@ public class MainActivity extends AppCompatActivity
 
         openDynamicLink();
 
+
         //fetchNews();
 
     }
 
+    private void initializePollfish() {
+        PollFish.ParamsBuilder paramsBuilder = new PollFish.ParamsBuilder("517bf264-2677-44c0-bc28-9484037993f1")
+                .pollfishSurveyReceivedListener(new PollfishSurveyReceivedListener() {
+                    @Override
+                    public void onPollfishSurveyReceived(boolean b, int i) {
+                        Toast.makeText(MainActivity.this, "Survey received", Toast.LENGTH_SHORT).show();
+                        //PollFish.hide();
+                    }
+                })
+                .pollfishSurveyNotAvailableListener(new PollfishSurveyNotAvailableListener() {
+                    @Override
+                    public void onPollfishSurveyNotAvailable() {
+                        Toast.makeText(MainActivity.this, "Survey not available", Toast.LENGTH_SHORT).show();
+
+                    }
+                })
+                .pollfishUserNotEligibleListener(new PollfishUserNotEligibleListener() {
+                    @Override
+                    public void onUserNotEligible() {
+                        Toast.makeText(MainActivity.this, "Survey not eligible", Toast.LENGTH_SHORT).show();
+
+                    }
+                })
+                .pollfishSurveyCompletedListener(new PollfishSurveyCompletedListener() {
+                    @Override
+                    public void onPollfishSurveyCompleted(boolean b, int i) {
+                        Toast.makeText(MainActivity.this, "Survey completed", Toast.LENGTH_SHORT).show();
+
+                    }
+                })
+                .customMode(false)
+                .build();
+        PollFish.initWith(MainActivity.this, paramsBuilder);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        initializePollfish();
+    }
+
+
     private void setupViewPager(ViewPager viewPager) {
+
+        boolean isEnglish= LanguageManager.getLanguage(MainActivity.this);
+
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish.aspx",0), "RSS");
-        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx",0), "Featured");
+
+        if (isEnglish) {
+            adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish.aspx", 0), "RSS");
+            adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 0), "Featured");
+        }else{
+            adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rsshindi.aspx", 0), "RSS");
+            adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rsshindi_fea.aspx", 0), "Featured");
+
+        }
+
         adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx",1), "Hand Picked");
         adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx",2), "Offline");
+
+
 
         viewPager.setAdapter(adapter);
     }
@@ -343,18 +412,19 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        switch (id){
+            case R.id.nav_language_english:
+                onEnglishSelected();
+                break;
+            case R.id.nav_language_hindi:
+                onHindiSelected();
+                break;
+            case R.id.nav_theme_day:
+                onDayThemeSelected();
+                break;
+            case R.id.nav_theme_night:
+                onNightThemeSelected();
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -362,6 +432,32 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    private void onNightThemeSelected() {
+        NightModeManager.setNightMode(MainActivity.this,true);
+        recreate();
+    }
+
+    private void onDayThemeSelected() {
+        NightModeManager.setNightMode(MainActivity.this,false);
+        recreate();
+    }
+
+    private void onHindiSelected() {
+        LanguageManager.setLanguage(MainActivity.this,false);
+
+        Intent intent =new Intent(MainActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
+    }
+
+    private void onEnglishSelected() {
+        LanguageManager.setLanguage(MainActivity.this,true);
+        Intent intent =new Intent(MainActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
+    }
 
 
     class ViewPagerAdapter extends FragmentPagerAdapter {

@@ -1,5 +1,6 @@
 package pib.affairs.current.app.pib;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
@@ -18,9 +19,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -33,9 +37,13 @@ import com.google.firebase.dynamiclinks.DynamicLink;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.ShortDynamicLink;
 
+import java.util.ArrayList;
+
 import utils.AppController;
+import utils.FireBaseHandler;
 import utils.News;
 import utils.NewsParser;
+import utils.NightModeManager;
 import utils.SqlDatabaseHelper;
 
 public class NewsDescriptionActivity extends AppCompatActivity {
@@ -63,6 +71,8 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         //webView.getSettings().setTextZoom(250);
         webView.getSettings().setDisplayZoomControls(true);
 
+        //initializeWebView();
+
         webView.getSettings().setLoadWithOverviewMode(true);
         webView.getSettings().setUseWideViewPort(true);
         webView.getSettings().setUserAgentString("Android");
@@ -73,7 +83,9 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         webView.getSettings().setAppCachePath(this.getCacheDir().getPath());
         webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
 
-         //webView.setBackgroundColor(Color.parseColor("#5a666b"));
+        if (NightModeManager.getNightMode(this)) {
+            webView.setBackgroundColor(Color.parseColor("#5a666b"));
+        }
         webView.setInitialScale(110);
         webView.getSettings().setBuiltInZoomControls(true);
         webView.getSettings().setDisplayZoomControls(false);
@@ -141,6 +153,34 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
     }
 
+    public void initializeWebView(){
+
+
+        webView.setWebViewClient(new WebViewClient() {
+            @SuppressWarnings("deprecation")
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView webView, String url) {
+                return shouldOverrideUrlLoading(url);
+            }
+
+            @TargetApi(Build.VERSION_CODES.N)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                return shouldOverrideUrlLoading(uri.toString());
+            }
+
+            private boolean shouldOverrideUrlLoading(final String url) {
+                // Log.i(TAG, "shouldOverrideUrlLoading() URL : " + url);
+
+                // Here put your code
+                webView.loadUrl(url);
+
+                return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -160,8 +200,27 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             onSaveOfflineClick();
             return true;
         }
+        else if (id==R.id.action_post){
+            onPostClick();
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onPostClick() {
+        new FireBaseHandler().uploadNews(news, new FireBaseHandler.OnNewsListener() {
+            @Override
+            public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+
+            }
+
+            @Override
+            public void onNewsUpload(boolean isSuccessful) {
+
+                Toast.makeText(NewsDescriptionActivity.this, "News posted "+ isSuccessful, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void onSaveOfflineClick() {
@@ -266,4 +325,5 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             Log.v("JS", "SELECTION:" + value);
         }
     }
+
 }
