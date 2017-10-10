@@ -13,6 +13,7 @@
     <attr name ="primaryTextColor" format="color"/>
     <attr name ="secondaryTextColor" format="color"/>
     <attr name ="editorialTextColor" format="color"/>
+        <attr name="readMaskColor" format="color"/>
 
         <attr name ="primaryTextAccentColor" format="color"/>
         <attr name ="secondaryTextAccentColor" format="color"/>

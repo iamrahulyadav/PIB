@@ -60,16 +60,19 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         news = (News) getIntent().getSerializableExtra("news");
         boolean isOffline = getIntent().getBooleanExtra("isOffline", false);
 
+        String htmlTextString="";
+
         if (isOffline) {
 
-        } else {
+            htmlTextString= new SqlDatabaseHelper(this)
+                    .getFullNews(news.getLink());
 
         }
+
          webView = (WebView) findViewById(R.id.newsDesription_webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setMinimumFontSize(50);
         //webView.getSettings().setTextZoom(250);
-        webView.getSettings().setDisplayZoomControls(true);
 
         //initializeWebView();
 
@@ -91,7 +94,17 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         webView.getSettings().setDisplayZoomControls(false);
 
 
-        webView.loadUrl(news.getLink());
+        if (isOffline){
+            if(!htmlTextString.isEmpty()) {
+                webView.loadDataWithBaseURL("", htmlTextString, "text/html", "UTF-8", "");
+            }else{
+                webView.loadUrl(news.getLink());
+            }
+        }else {
+
+            webView.loadUrl(news.getLink());
+        }
+
 
        /* if (Build.VERSION.SDK_INT > 19) {
             webView.evaluateJavascript("(function(){return window.getSelection().toString()})()",

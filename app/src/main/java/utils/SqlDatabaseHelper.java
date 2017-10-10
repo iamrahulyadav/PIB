@@ -48,8 +48,8 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         String CREATEREAD_FEED = "CREATE TABLE " + TABLE_READ_FEEDS + "("
                 + KEY_RELID + " INTEGER PRIMARY KEY,"
                 + KEY_LINK + " TEXT,"
-                + KEY_HEADING + " TEXT"+
-        ")";
+                + KEY_HEADING + " TEXT" +
+                ")";
 
 
         String CREATESAVED_FEED = "CREATE TABLE " + TABLE_SAVED_FEED + "("
@@ -58,11 +58,8 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
                 + KEY_HEADING + " TEXT,"
                 + KEY_SUB_HEADING + " TEXT,"
                 + KEY_DATE + " TEXT,"
-                + KEY_HTML_STRING + " TEXT"+
+                + KEY_HTML_STRING + " TEXT" +
                 ")";
-
-
-
 
 
         db.execSQL(CREATEREAD_FEED);
@@ -80,16 +77,16 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Adding new Feed
-    public void addReadNews(News news ) {
+    public void addReadNews(News news) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KEY_LINK, news.getLink());
         values.put(KEY_HEADING, news.getTitle());
 
-        Uri uri =Uri.parse(news.getLink());
-        String relID= uri.getQueryParameter("relid");
-        values.put(KEY_RELID,relID);
+        Uri uri = Uri.parse(news.getLink());
+        String relID = uri.getQueryParameter("relid");
+        values.put(KEY_RELID, relID);
 
 
         // Inserting Row
@@ -98,25 +95,25 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public boolean getNewsReadStatus(String link){
+    public boolean getNewsReadStatus(String link) {
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Uri uri =Uri.parse(link);
-        String relID= uri.getQueryParameter("relid");
+        Uri uri = Uri.parse(link);
+        String relID = uri.getQueryParameter("relid");
 
-        Cursor cursor = db.query(TABLE_READ_FEEDS, new String[] { KEY_RELID,
-                        KEY_LINK }, KEY_RELID + "=?",
-                new String[] {relID }, null, null, null, null);
+        Cursor cursor = db.query(TABLE_READ_FEEDS, new String[]{KEY_RELID,
+                        KEY_LINK}, KEY_RELID + "=?",
+                new String[]{relID}, null, null, null, null);
 
-        if (cursor == null){
+        if (cursor == null) {
 
             return false;
-        }else{
+        } else {
 
-            if (cursor.moveToFirst()){
+            if (cursor.moveToFirst()) {
                 cursor.close();
                 return true;
-            }else{
+            } else {
                 cursor.close();
                 return false;
             }
@@ -125,16 +122,16 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void addSavedNews(News news ,String response ) {
+    public void addSavedNews(News news, String response) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KEY_LINK, news.getLink());
         values.put(KEY_HEADING, news.getTitle());
 
-        Uri uri =Uri.parse(news.getLink());
-        String relID= uri.getQueryParameter("relid");
-        values.put(KEY_RELID,relID);
+        Uri uri = Uri.parse(news.getLink());
+        String relID = uri.getQueryParameter("relid");
+        values.put(KEY_RELID, relID);
 
         values.put(KEY_SUB_HEADING, news.getDescription());
         values.put(KEY_DATE, news.getPubDate());
@@ -176,5 +173,31 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         return newsArrayList;
     }
 
+
+    public String getFullNews(String link) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Uri uri = Uri.parse(link);
+        String relID = uri.getQueryParameter("relid");
+
+        String htmlText = "";
+
+        try {
+            Cursor cursor = db.query(TABLE_SAVED_FEED, new String[]{KEY_RELID,
+                            KEY_HTML_STRING}, KEY_RELID + "=?",
+                    new String[]{relID}, null, null, null, null);
+            if (cursor.moveToFirst()) {
+                do {
+
+                    htmlText = cursor.getString(1);
+
+                } while (cursor.moveToNext());
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return htmlText;
+    }
 
 }

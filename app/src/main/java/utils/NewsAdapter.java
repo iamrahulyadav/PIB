@@ -9,6 +9,7 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -33,6 +34,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
     public class NewsViewHolder extends RecyclerView.ViewHolder {
         public TextView title,description ,pubDate;
         CardView baseCardView;
+        ImageView isReadMask;
 
         public NewsViewHolder(View view) {
             super(view);
@@ -41,6 +43,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
             description =(TextView)view.findViewById(R.id.newsAdapter_description_textView);
             pubDate =(TextView)view.findViewById(R.id.newsAdapter_pubDate_textView);
             baseCardView =(CardView)view.findViewById(R.id.newsAdapter_base_cardView);
+            isReadMask = (ImageView)view.findViewById(R.id.newsAdapter_isReadMask_imageView);
 
         }
     }
@@ -115,8 +118,10 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                 newsViewHolder.pubDate.setText(news.getPubDate());
                 if (news.isRead()){
                     newsViewHolder.baseCardView.setCardElevation(0);
+                    newsViewHolder.isReadMask.setVisibility(View.VISIBLE);
                 }else{
                     newsViewHolder.baseCardView.setCardElevation(10);
+                    newsViewHolder.isReadMask.setVisibility(View.GONE);
                 }
 
 

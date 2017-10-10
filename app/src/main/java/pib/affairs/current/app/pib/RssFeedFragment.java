@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -52,8 +53,8 @@ public class RssFeedFragment extends Fragment {
 
     public static boolean newNoteSaved = false;
 
-    private final int SOURCETYPE_OFFLINE =2;
-    private final int SOURCETYPE_FIREBASE =1;
+    private final int SOURCETYPE_OFFLINE = 2;
+    private final int SOURCETYPE_FIREBASE = 1;
 
     // TODO: Rename and change types of parameters
     private String urlToOpen;
@@ -65,6 +66,9 @@ public class RssFeedFragment extends Fragment {
     private NewsAdapter newsAdapter;
     SqlDatabaseHelper sqlDatabaseHelper;
 
+    SwipeRefreshLayout swipeRefreshLayout;
+
+    public static ProgressDialog pDialog;
 
     public RssFeedFragment() {
         // Required empty public constructor
@@ -95,6 +99,13 @@ public class RssFeedFragment extends Fragment {
         }
         sqlDatabaseHelper = new SqlDatabaseHelper(getContext());
         newsAdapter = new NewsAdapter(newsArrayList, getContext());
+
+
+        if (pDialog == null) {
+            pDialog = new ProgressDialog(getContext());
+            pDialog.setMessage("Loading...");
+        }
+
 
         if (sourceType == SOURCETYPE_FIREBASE) {
             fetchNewsFromFireBase();
@@ -129,6 +140,7 @@ public class RssFeedFragment extends Fragment {
                         news.setRead(sqlDatabaseHelper.getNewsReadStatus(news.getLink()));
 
                         RssFeedFragment.this.newsArrayList.add(news);
+                        initializeFragment();
                     }
                 }
             }
@@ -149,8 +161,7 @@ public class RssFeedFragment extends Fragment {
 
         final String url = urlToOpen;
 
-        final ProgressDialog pDialog = new ProgressDialog(getContext());
-        pDialog.setMessage("Loading...");
+
         pDialog.show();
 
         StringRequest strReq = new StringRequest(Request.Method.GET,
@@ -224,6 +235,10 @@ public class RssFeedFragment extends Fragment {
     private void initializeFragment() {
 
         newsAdapter.notifyDataSetChanged();
+
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setRefreshing(false);
+        }
     }
 
 
@@ -255,7 +270,7 @@ public class RssFeedFragment extends Fragment {
 
                 intent.putExtra("news", news);
 
-                if (sourceType == SOURCETYPE_OFFLINE){
+                if (sourceType == SOURCETYPE_OFFLINE) {
                     intent.putExtra("isOffline", true);
                 }
 
@@ -285,6 +300,9 @@ public class RssFeedFragment extends Fragment {
             }
         }));
 
+        initializeSwipeRefresh(view);
+
+
         if (newNoteSaved && sourceType == 2) {
             newsArrayList.clear();
             fetchNewsFromDatabse();
@@ -294,6 +312,33 @@ public class RssFeedFragment extends Fragment {
 
 
         return view;
+    }
+
+    private void initializeSwipeRefresh(View view) {
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.fragment_rss_swipeRefresh);
+
+        if (newsArrayList.size() < 1) {
+            swipeRefreshLayout.setRefreshing(true);
+
+        }
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+
+                newsArrayList.clear();
+                newsAdapter.notifyDataSetChanged();
+
+                if (sourceType == SOURCETYPE_FIREBASE) {
+                    fetchNewsFromFireBase();
+                } else if (sourceType == SOURCETYPE_OFFLINE) {
+                    fetchNewsFromDatabse();
+                } else {
+                    fetchNews();
+                }
+
+            }
+        });
     }
 
     // TODO: Rename method, update argument and hook method into UI event
