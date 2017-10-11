@@ -70,7 +70,7 @@ public class RssFeedFragment extends Fragment {
 
     SwipeRefreshLayout swipeRefreshLayout;
 
-    public static ProgressDialog pDialog;
+    public  ProgressDialog pDialog;
 
     public static int newsCount;
 
@@ -144,7 +144,7 @@ public class RssFeedFragment extends Fragment {
     private void fetchNewsFromFireBase() {
 
         FireBaseHandler fireBaseHandler = new FireBaseHandler();
-        fireBaseHandler.downloadNewsList(10, new FireBaseHandler.OnNewsListener() {
+        fireBaseHandler.downloadNewsList(20, new FireBaseHandler.OnNewsListener() {
             @Override
             public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
                 if (isSuccessful) {
@@ -168,7 +168,7 @@ public class RssFeedFragment extends Fragment {
     }
 
     public void checkShowSurvey() {
-        if (newsCount == 2 || newsCount == 5) {
+        if (newsCount == 3 || newsCount == 5) {
             MainActivity.initializePollfish(getActivity());
         }
     }

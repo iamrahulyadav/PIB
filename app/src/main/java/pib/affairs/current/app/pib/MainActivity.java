@@ -209,6 +209,7 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
                 })
+                .releaseMode(true)
                 .indicatorPosition(Position.BOTTOM_LEFT)
                 .customMode(false)
                 .build();

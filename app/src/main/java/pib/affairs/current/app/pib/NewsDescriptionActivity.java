@@ -228,10 +228,8 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         if (id == R.id.action_save_offline) {
             onSaveOfflineClick();
             return true;
-        } else if (id == R.id.action_post) {
-            //onPostClick();
-            return true;
-        } else if (id == R.id.action_open_browser) {
+        }
+        else if (id == R.id.action_open_browser) {
             onOpenInBrowser();
             return true;
         } else if (id == R.id.action_share) {
@@ -356,7 +354,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         //sharingIntent.putExtra(Intent.EXTRA_STREAM, newsMetaInfo.getNewsImageLocalPath());
 
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shortUrl
-                + "\n\nRead Press Information Bureau update");
+                + "\n\nRead Press Information Bureau update from PIB News");
         startActivity(Intent.createChooser(sharingIntent, "share link via"));
 
 
