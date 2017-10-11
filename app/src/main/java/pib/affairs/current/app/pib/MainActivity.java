@@ -1,6 +1,8 @@
 package pib.affairs.current.app.pib;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -37,10 +39,12 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.pollfish.interfaces.PollfishSurveyCompletedListener;
 import com.pollfish.interfaces.PollfishSurveyNotAvailableListener;
 import com.pollfish.interfaces.PollfishSurveyReceivedListener;
@@ -106,6 +110,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        MobileAds.initialize(this, "ca-app-pub-8455191357100024~5774774045");
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);
@@ -119,50 +124,49 @@ public class MainActivity extends AppCompatActivity
         openDynamicLink();
 
 
+        FirebaseMessaging.getInstance().subscribeToTopic("subscribed");
+
         //fetchNews();
 
     }
 
-    private void initializePollfish() {
+    public static void initializePollfish(Activity activity) {
         PollFish.ParamsBuilder paramsBuilder = new PollFish.ParamsBuilder("517bf264-2677-44c0-bc28-9484037993f1")
                 .pollfishSurveyReceivedListener(new PollfishSurveyReceivedListener() {
                     @Override
                     public void onPollfishSurveyReceived(boolean b, int i) {
-                        Toast.makeText(MainActivity.this, "Survey received", Toast.LENGTH_SHORT).show();
-                        //PollFish.hide();
+                        Log.d(TAG, "onPollfishSurveyReceived: ");
                     }
                 })
                 .pollfishSurveyNotAvailableListener(new PollfishSurveyNotAvailableListener() {
                     @Override
                     public void onPollfishSurveyNotAvailable() {
-                        Toast.makeText(MainActivity.this, "Survey not available", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onPollfishSurveyNotAvailable: ");
 
                     }
                 })
                 .pollfishUserNotEligibleListener(new PollfishUserNotEligibleListener() {
                     @Override
                     public void onUserNotEligible() {
-                        Toast.makeText(MainActivity.this, "Survey not eligible", Toast.LENGTH_SHORT).show();
-
+                        Log.d(TAG, "onUserNotEligible: ");
                     }
                 })
                 .pollfishSurveyCompletedListener(new PollfishSurveyCompletedListener() {
                     @Override
                     public void onPollfishSurveyCompleted(boolean b, int i) {
-                        Toast.makeText(MainActivity.this, "Survey completed", Toast.LENGTH_SHORT).show();
-
+                        Log.d(TAG, "onPollfishSurveyCompleted: ");
                     }
                 })
                 .customMode(false)
                 .build();
-        PollFish.initWith(MainActivity.this, paramsBuilder);
+        PollFish.initWith(activity, paramsBuilder);
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        initializePollfish();
+
     }
 
 
@@ -399,9 +403,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+
 
         return super.onOptionsItemSelected(item);
     }
@@ -425,11 +427,52 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_theme_night:
                 onNightThemeSelected();
                 break;
+            case R.id.nav_share:
+                onShareClick();
+                break;
+            case R.id.nav_rate_us:
+                onRateUsClick();
+                break;
+            case R.id.nav_suggestion:
+                onSuggestionClick();
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void onSuggestionClick() {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"acraftystudio@gmail.com"});
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Suggestion for PIB app");
+        intent.putExtra(Intent.EXTRA_TEXT, "Your suggestion here \n");
+
+        intent.setType("message/rfc822");
+
+        startActivity(Intent.createChooser(intent, "Select Email via"));
+
+    }
+
+    private void onRateUsClick() {
+        try {
+            String link = "https://play.google.com/store/apps/details?id=" + this.getPackageName();
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
+        } catch (Exception e) {
+
+        }
+    }
+
+    private void onShareClick() {
+        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        String link = "https://play.google.com/store/apps/details?id=" + this.getPackageName();
+        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Download PIB app");
+        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, link);
+        startActivity(Intent.createChooser(sharingIntent, "Share via"));
+
     }
 
     private void onNightThemeSelected() {

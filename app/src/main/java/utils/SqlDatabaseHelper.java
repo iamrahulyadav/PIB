@@ -122,8 +122,42 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    public boolean getNewsBookMarkStatus(String link){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Uri uri = Uri.parse(link);
+        String relID = uri.getQueryParameter("relid");
+
+        Cursor cursor = db.query(TABLE_SAVED_FEED, new String[]{KEY_RELID,
+                        KEY_LINK}, KEY_RELID + "=?",
+                new String[]{relID}, null, null, null, null);
+
+        if (cursor == null) {
+
+            return false;
+        } else {
+
+            if (cursor.moveToFirst()) {
+                cursor.close();
+                return true;
+            } else {
+                cursor.close();
+                return false;
+            }
+
+        }
+    }
+
     public void addSavedNews(News news, String response) {
+
+        if (getNewsBookMarkStatus(news.getLink())){
+
+            deleteSavedNote(news);
+            return;
+        }
+
         SQLiteDatabase db = this.getWritableDatabase();
+
+
 
         ContentValues values = new ContentValues();
         values.put(KEY_LINK, news.getLink());
@@ -142,6 +176,18 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         // Inserting Row
         db.insert(TABLE_SAVED_FEED, null, values);
         db.close(); // Closing database connection
+    }
+
+    public void deleteSavedNote(News news){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Uri uri = Uri.parse(news.getLink());
+        String relID = uri.getQueryParameter("relid");
+
+        db.delete(TABLE_SAVED_FEED,KEY_RELID+" =?",new String[]{relID
+        });
+        db.close();
+
+
     }
 
     public ArrayList<News> getAllSavedNotes() {

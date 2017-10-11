@@ -14,7 +14,15 @@
 
     <LinearLayout
         android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="match_parent">
+
+
+
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:layout_margin="8dp"
         android:orientation="vertical">
 
@@ -24,7 +32,6 @@
             android:layout_height="wrap_content"
             android:fontFamily="serif-monospace"
             android:text="Heading Title"
-            android:textAlignment="center"
             android:textColor="?attr/primaryTextColor"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -36,6 +43,7 @@
             android:layout_margin="4dp"
             android:fontFamily="serif"
             android:text="Description text"
+            android:visibility="gone"
             android:textColor="?attr/secondaryTextColor"
             android:textSize="12sp" />
 
@@ -50,6 +58,15 @@
             android:textColor="?attr/primaryTextColor"
             android:textSize="12sp" />
 
+
+    </LinearLayout>
+
+        <ImageView
+            android:layout_width="32dp"
+            android:src="@mipmap/ic_launcher"
+            android:layout_margin="4dp"
+            android:id="@+id/newsAdapter_bookMark_imageView"
+            android:layout_height="32dp" />
 
     </LinearLayout>
 

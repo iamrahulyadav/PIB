@@ -30,6 +30,8 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -49,6 +51,7 @@ import utils.SqlDatabaseHelper;
 public class NewsDescriptionActivity extends AppCompatActivity {
     News news;
     WebView webView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,16 +63,16 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         news = (News) getIntent().getSerializableExtra("news");
         boolean isOffline = getIntent().getBooleanExtra("isOffline", false);
 
-        String htmlTextString="";
+        String htmlTextString = "";
 
-        if (isOffline) {
+        if (news.isBookMark()) {
 
-            htmlTextString= new SqlDatabaseHelper(this)
+            htmlTextString = new SqlDatabaseHelper(this)
                     .getFullNews(news.getLink());
 
         }
 
-         webView = (WebView) findViewById(R.id.newsDesription_webView);
+        webView = (WebView) findViewById(R.id.newsDesription_webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setMinimumFontSize(50);
         //webView.getSettings().setTextZoom(250);
@@ -94,17 +97,19 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         webView.getSettings().setDisplayZoomControls(false);
 
 
-        if (isOffline){
-            if(!htmlTextString.isEmpty()) {
+        if (news.isBookMark()) {
+            if (!htmlTextString.isEmpty()) {
                 webView.loadDataWithBaseURL("", htmlTextString, "text/html", "UTF-8", "");
-            }else{
+            } else {
                 webView.loadUrl(news.getLink());
             }
-        }else {
+        } else {
 
             webView.loadUrl(news.getLink());
         }
 
+
+        //initializeAds();
 
        /* if (Build.VERSION.SDK_INT > 19) {
             webView.evaluateJavascript("(function(){return window.getSelection().toString()})()",
@@ -124,7 +129,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
     }
 
-    public void temp(){
+    public void temp() {
 
         String tag_string_req = "string_req";
 
@@ -141,7 +146,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 pDialog.hide();
 
-                response= response.replaceFirst("width:60%","width:90%");
+                response = response.replaceFirst("width:60%", "width:90%");
 
 
                 webView.loadDataWithBaseURL("", response, "text/html", "UTF-8", "");
@@ -163,10 +168,9 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
 
 
-
     }
 
-    public void initializeWebView(){
+    public void initializeWebView() {
 
 
         webView.setWebViewClient(new WebViewClient() {
@@ -212,13 +216,23 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         if (id == R.id.action_save_offline) {
             onSaveOfflineClick();
             return true;
-        }
-        else if (id==R.id.action_post){
-            onPostClick();
+        } else if (id == R.id.action_post) {
+            //onPostClick();
+            return true;
+        } else if (id == R.id.action_open_browser) {
+            onOpenInBrowser();
+            return true;
+        } else if (id == R.id.action_share) {
+            onShareClick(webView);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onOpenInBrowser() {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(news.getLink()));
+        startActivity(browserIntent);
     }
 
     private void onPostClick() {
@@ -231,7 +245,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             @Override
             public void onNewsUpload(boolean isSuccessful) {
 
-                Toast.makeText(NewsDescriptionActivity.this, "News posted "+ isSuccessful, Toast.LENGTH_SHORT).show();
+                Toast.makeText(NewsDescriptionActivity.this, "News posted " + isSuccessful, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -330,11 +344,9 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
     }
 
-    public class JavaScriptInterface
-    {
+    public class JavaScriptInterface {
         @JavascriptInterface
-        public void callback(String value)
-        {
+        public void callback(String value) {
             Log.v("JS", "SELECTION:" + value);
         }
     }

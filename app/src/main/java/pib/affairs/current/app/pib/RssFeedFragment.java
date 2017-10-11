@@ -25,7 +25,9 @@ import com.android.volley.toolbox.StringRequest;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import utils.AppController;
 import utils.FireBaseHandler;
@@ -69,6 +71,8 @@ public class RssFeedFragment extends Fragment {
     SwipeRefreshLayout swipeRefreshLayout;
 
     public static ProgressDialog pDialog;
+
+    public static int newsCount;
 
     public RssFeedFragment() {
         // Required empty public constructor
@@ -121,11 +125,19 @@ public class RssFeedFragment extends Fragment {
 
         for (News news : sqlDatabaseHelper.getAllSavedNotes()) {
             news.setRead(sqlDatabaseHelper.getNewsReadStatus(news.getLink()));
+            news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news.getLink()));
+
             newsArrayList.add(news);
         }
 
+        Collections.reverse(newsArrayList);
+
         newNoteSaved = false;
         initializeFragment();
+
+    }
+
+    public void updateNewsStatus() {
 
     }
 
@@ -138,6 +150,8 @@ public class RssFeedFragment extends Fragment {
                 if (isSuccessful) {
                     for (News news : newsArrayList) {
                         news.setRead(sqlDatabaseHelper.getNewsReadStatus(news.getLink()));
+                        news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news.getLink()));
+
 
                         RssFeedFragment.this.newsArrayList.add(news);
                         initializeFragment();
@@ -151,6 +165,12 @@ public class RssFeedFragment extends Fragment {
             }
         });
 
+    }
+
+    public void checkShowSurvey() {
+        if (newsCount == 3 || newsCount == 6) {
+            MainActivity.initializePollfish(getActivity());
+        }
     }
 
     private void fetchNews() {
@@ -177,6 +197,7 @@ public class RssFeedFragment extends Fragment {
                 for (News object : new NewsParser(response).parseJson()) {
 
                     object.setRead(sqlDatabaseHelper.getNewsReadStatus(object.getLink()));
+                    object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object.getLink()));
 
                     newsArrayList.add(object);
                 }
@@ -243,8 +264,7 @@ public class RssFeedFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
         View view = inflater.inflate(R.layout.fragment_rss_feed, container, false);
@@ -258,29 +278,25 @@ public class RssFeedFragment extends Fragment {
 
         recyclerView.setAdapter(newsAdapter);
 
-        recyclerView.addOnItemTouchListener(new RecyclerTouchListener(getContext(), recyclerView, new RecyclerTouchListener.OnItemClickListener() {
+        newsAdapter.setClickListener(new NewsAdapter.ClickListener() {
+            @Override
+            public void onBookMarkClick(View view, int position) {
+
+                onBookMark(position);
+            }
+
+            @Override
+            public void onTitleClick(View view, int position) {
+
+                onItemClick(position);
+            }
+        });
+
+       /* recyclerView.addOnItemTouchListener(new RecyclerTouchListener(getContext(), recyclerView, new RecyclerTouchListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
 
 
-                Intent intent = new Intent(getContext(), NewsDescriptionActivity.class);
-
-
-                News news = (News) newsArrayList.get(position);
-
-                intent.putExtra("news", news);
-
-                if (sourceType == SOURCETYPE_OFFLINE) {
-                    intent.putExtra("isOffline", true);
-                }
-
-                startActivity(intent);
-
-                sqlDatabaseHelper = new SqlDatabaseHelper(getContext());
-                sqlDatabaseHelper.addReadNews(news);
-
-                news.setRead(true);
-                newsAdapter.notifyDataSetChanged();
 
             }
 
@@ -289,17 +305,17 @@ public class RssFeedFragment extends Fragment {
 
 
 
-               /* WebView webView = (WebView) view.findViewById(R.id.contentMain_cache_webView);
+               *//* WebView webView = (WebView) view.findViewById(R.id.contentMain_cache_webView);
                 webView.getSettings().setAppCacheEnabled(true);
                 webView.getSettings().setAppCachePath(getContext().getCacheDir().getPath());
                 webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
 
                 webView.loadUrl(((News) newsArrayList.get(position)).getLink());
-*/
+*//*
 
             }
         }));
-
+*/
         initializeSwipeRefresh(view);
 
 
@@ -312,6 +328,83 @@ public class RssFeedFragment extends Fragment {
 
 
         return view;
+    }
+
+
+    public void onItemClick(int position) {
+        Intent intent = new Intent(getContext(), NewsDescriptionActivity.class);
+
+
+        News news = (News) newsArrayList.get(position);
+
+        intent.putExtra("news", news);
+
+        if (sourceType == SOURCETYPE_OFFLINE) {
+            intent.putExtra("isOffline", true);
+        }
+
+        startActivity(intent);
+
+        sqlDatabaseHelper = new SqlDatabaseHelper(getContext());
+        sqlDatabaseHelper.addReadNews(news);
+
+        news.setRead(true);
+        newsAdapter.notifyDataSetChanged();
+
+        newsCount++;
+        checkShowSurvey();
+
+    }
+
+    public void onBookMark(int position) {
+
+
+        String tag_string_req = "string_req";
+
+        final News news = (News) newsArrayList.get(position);
+
+        final String url = news.getLink();
+
+
+        pDialog.show();
+
+        StringRequest strReq = new StringRequest(Request.Method.GET,
+                url, new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+                pDialog.hide();
+
+                SqlDatabaseHelper sqlDatabaseHelper = new SqlDatabaseHelper(getContext());
+
+
+                sqlDatabaseHelper.addSavedNews(news, response);
+                RssFeedFragment.newNoteSaved = true;
+                for (Object object : newsArrayList) {
+                    News newsObject = (News) object;
+                    newsObject.setRead(sqlDatabaseHelper.getNewsReadStatus(newsObject.getLink()));
+                    newsObject.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(newsObject.getLink()));
+                }
+
+                newsAdapter.notifyDataSetChanged();
+
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+
+                pDialog.hide();
+            }
+        });
+
+        strReq.setShouldCache(true);
+        // Adding request to request queue
+        AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+
+
     }
 
     private void initializeSwipeRefresh(View view) {

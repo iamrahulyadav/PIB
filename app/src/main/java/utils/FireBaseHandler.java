@@ -37,6 +37,8 @@ public class FireBaseHandler {
 
         news.setNewsID(mDatabaseRef.push().getKey());
 
+        news.setPushNotification(true);
+
         DatabaseReference mDatabaseRef1 = mFirebaseDatabase.getReference().child("news/" + news.getNewsID());
 
 

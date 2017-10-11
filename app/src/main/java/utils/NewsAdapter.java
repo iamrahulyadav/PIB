@@ -22,7 +22,7 @@ import pib.affairs.current.app.pib.R;
  * Created by bunny on 30/09/17.
  */
 
-public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
+public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     Context context;
     private List<Object> newsArrayList;
@@ -30,20 +30,44 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
     private static final int NEWS_VIEW_TYPE = 1;
     private static final int AD_VIEW_TYPE = 2;
 
+    ClickListener clickListener;
+
 
     public class NewsViewHolder extends RecyclerView.ViewHolder {
-        public TextView title,description ,pubDate;
+        public TextView title, description, pubDate;
         CardView baseCardView;
-        ImageView isReadMask;
+        ImageView isReadMask, bookMarkImageView;
 
-        public NewsViewHolder(View view) {
+        public NewsViewHolder(final View view) {
             super(view);
 
-            title =(TextView)view.findViewById(R.id.newsAdapter_title_textView);
-            description =(TextView)view.findViewById(R.id.newsAdapter_description_textView);
-            pubDate =(TextView)view.findViewById(R.id.newsAdapter_pubDate_textView);
-            baseCardView =(CardView)view.findViewById(R.id.newsAdapter_base_cardView);
-            isReadMask = (ImageView)view.findViewById(R.id.newsAdapter_isReadMask_imageView);
+            title = (TextView) view.findViewById(R.id.newsAdapter_title_textView);
+            description = (TextView) view.findViewById(R.id.newsAdapter_description_textView);
+            pubDate = (TextView) view.findViewById(R.id.newsAdapter_pubDate_textView);
+            baseCardView = (CardView) view.findViewById(R.id.newsAdapter_base_cardView);
+            isReadMask = (ImageView) view.findViewById(R.id.newsAdapter_isReadMask_imageView);
+            bookMarkImageView = (ImageView) view.findViewById(R.id.newsAdapter_bookMark_imageView);
+
+
+            bookMarkImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if (clickListener!=null){
+                        clickListener.onBookMarkClick(v,getAdapterPosition());
+                    }
+
+                }
+            });
+
+            title.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (clickListener!=null){
+                        clickListener.onTitleClick(v,getAdapterPosition());
+                    }
+                }
+            });
 
         }
     }
@@ -80,7 +104,6 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
     }
 
 
-
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
@@ -110,23 +133,34 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
                 News news = (News) newsArrayList.get(position);
 
                 if (Build.VERSION.SDK_INT > 24) {
-                    newsViewHolder.title.setText(Html.fromHtml(news.getTitle(),Html.FROM_HTML_MODE_COMPACT));
-                }else{
+                    newsViewHolder.title.setText(Html.fromHtml(news.getTitle(), Html.FROM_HTML_MODE_COMPACT));
+                } else {
                     newsViewHolder.title.setText(Html.fromHtml(news.getTitle()));
                 }
                 newsViewHolder.description.setText(news.getDescription());
                 newsViewHolder.pubDate.setText(news.getPubDate());
-                if (news.isRead()){
+                if (news.isRead()) {
                     newsViewHolder.baseCardView.setCardElevation(0);
                     newsViewHolder.isReadMask.setVisibility(View.VISIBLE);
-                }else{
+                } else {
                     newsViewHolder.baseCardView.setCardElevation(10);
                     newsViewHolder.isReadMask.setVisibility(View.GONE);
                 }
 
+                if (news.isBookMark()){
+                    newsViewHolder.bookMarkImageView.setImageResource(R.drawable.book_marked);
+                }else{
+                    newsViewHolder.bookMarkImageView.setImageResource(R.drawable.not_bookmark);
 
-                 }
+                }
 
+
+        }
+
+    }
+
+    public void setClickListener(ClickListener clickListener) {
+        this.clickListener = clickListener;
     }
 
     @Override
@@ -141,6 +175,13 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  
         //return (position % 8 == 0) ? AD_VIEW_TYPE : EDITORIAL_VIEW_TYPE;
         return NEWS_VIEW_TYPE;
 
+    }
+
+
+    public interface ClickListener {
+        public void onBookMarkClick(View view, int position);
+
+        public void onTitleClick(View view, int position);
     }
 
 }

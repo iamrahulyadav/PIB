@@ -9,7 +9,7 @@ import java.io.Serializable;
 public class News implements Serializable {
 
     private String title, description, link, pubDate, newsID ;
-    boolean read;
+    private boolean read, pushNotification,bookMark;
 
 
 
@@ -59,5 +59,21 @@ public class News implements Serializable {
 
     public void setNewsID(String newsID) {
         this.newsID = newsID;
+    }
+
+    public boolean isPushNotification() {
+        return pushNotification;
+    }
+
+    public void setPushNotification(boolean pushNotification) {
+        this.pushNotification = pushNotification;
+    }
+
+    public boolean isBookMark() {
+        return bookMark;
+    }
+
+    public void setBookMark(boolean bookMark) {
+        this.bookMark = bookMark;
     }
 }

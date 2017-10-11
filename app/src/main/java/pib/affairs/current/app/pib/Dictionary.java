@@ -17,6 +17,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
 import utils.NightModeManager;
 
 
@@ -55,6 +58,14 @@ public class Dictionary extends AppCompatActivity {
 
         webView.loadUrl("http://www.dictionary.com/browse/" + text);
 
+        initializeAds();
+
+    }
+
+    private void initializeAds() {
+        AdView mAdView = (AdView) findViewById(R.id.dictionary_adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     public void initializeWebView(){
