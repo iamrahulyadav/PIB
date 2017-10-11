@@ -8,6 +8,7 @@
     tools:context="pib.affairs.current.app.pib.MainActivity"
     tools:showIn="@layout/app_bar_main"
     android:orientation="vertical"
+    android:background="?attr/backgroundColor"
     >
 
     <android.support.v7.widget.RecyclerView

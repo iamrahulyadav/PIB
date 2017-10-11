@@ -30,8 +30,8 @@
             android:id="@+id/newsAdapter_title_textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="serif-monospace"
             android:text="Heading Title"
+            android:fontFamily="serif-monospace"
             android:textColor="?attr/primaryTextColor"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -63,7 +63,7 @@
 
         <ImageView
             android:layout_width="32dp"
-            android:src="@mipmap/ic_launcher"
+            android:src="@drawable/not_bookmark"
             android:layout_margin="4dp"
             android:id="@+id/newsAdapter_bookMark_imageView"
             android:layout_height="32dp" />

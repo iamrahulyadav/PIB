@@ -26,11 +26,11 @@
         <item name="secondaryTextColor">#bb262626</item>
         <item name="backgroundCardColor">#FFFF</item>
         <item name="dividerColor">#F2F2F3</item>
-        <item name="backgroundColor">#F4F4F6</item>
+        <item name="backgroundColor">#e5e5e7</item>
 
         <item name="primaryTextAccentColor">#fdfafafa</item>
         <item name="secondaryTextAccentColor">#e7e7e7</item>
-        <item name="readMaskColor">#8cffffff</item>
+        <item name="readMaskColor">#5effffff</item>
 
     </style>
 
@@ -45,7 +45,7 @@
 
         <item name="primaryTextAccentColor">#F4F4F6</item>
         <item name="secondaryTextAccentColor">#96F4F4F6</item>
-        <item name="readMaskColor">#8c000000</item>
+        <item name="readMaskColor">#5e000000</item>
     </style>
 
 

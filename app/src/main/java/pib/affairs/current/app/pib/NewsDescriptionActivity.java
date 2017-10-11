@@ -42,6 +42,7 @@ import com.google.firebase.dynamiclinks.ShortDynamicLink;
 import java.util.ArrayList;
 
 import utils.AppController;
+import utils.AppRater;
 import utils.FireBaseHandler;
 import utils.News;
 import utils.NewsParser;
@@ -108,6 +109,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             webView.loadUrl(news.getLink());
         }
 
+        AppRater.app_launched(this);
 
         //initializeAds();
 
@@ -338,7 +340,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         //sharingIntent.putExtra(Intent.EXTRA_STREAM, newsMetaInfo.getNewsImageLocalPath());
 
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shortUrl
-                + "\n\nFrom PIB app");
+                + "\n\nRead Press Information Bureau update");
         startActivity(Intent.createChooser(sharingIntent, "share link via"));
 
 
