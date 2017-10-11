@@ -39,17 +39,25 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
+import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.pollfish.constants.Position;
+import com.pollfish.interfaces.PollfishClosedListener;
+import com.pollfish.interfaces.PollfishOpenedListener;
 import com.pollfish.interfaces.PollfishSurveyCompletedListener;
 import com.pollfish.interfaces.PollfishSurveyNotAvailableListener;
 import com.pollfish.interfaces.PollfishSurveyReceivedListener;
 import com.pollfish.interfaces.PollfishUserNotEligibleListener;
 import com.pollfish.main.PollFish;
+
+import io.fabric.sdk.android.Fabric;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -83,8 +91,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
 
-        if (NightModeManager.getNightMode(this)){
+        if (NightModeManager.getNightMode(this)) {
             setTheme(R.style.ActivityTheme_Primary_Base_Dark);
         }
 
@@ -136,27 +145,71 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onPollfishSurveyReceived(boolean b, int i) {
                         Log.d(TAG, "onPollfishSurveyReceived: ");
+                        try {
+                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "Survey recieved"));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 })
                 .pollfishSurveyNotAvailableListener(new PollfishSurveyNotAvailableListener() {
                     @Override
                     public void onPollfishSurveyNotAvailable() {
                         Log.d(TAG, "onPollfishSurveyNotAvailable: ");
-
+                        try {
+                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "Survey not available"));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 })
                 .pollfishUserNotEligibleListener(new PollfishUserNotEligibleListener() {
                     @Override
                     public void onUserNotEligible() {
                         Log.d(TAG, "onUserNotEligible: ");
+
+                        try {
+                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "user not eligible"));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
                     }
                 })
                 .pollfishSurveyCompletedListener(new PollfishSurveyCompletedListener() {
                     @Override
                     public void onPollfishSurveyCompleted(boolean b, int i) {
                         Log.d(TAG, "onPollfishSurveyCompleted: ");
+                        try {
+                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "survey completed"));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 })
+                .pollfishOpenedListener(new PollfishOpenedListener() {
+                    @Override
+                    public void onPollfishOpened() {
+                        Log.d(TAG, "onPollfishSurveyCompleted: ");
+                        try {
+                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "Survey opened"));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+                .pollfishClosedListener(new PollfishClosedListener() {
+                    @Override
+                    public void onPollfishClosed() {
+                        Log.d(TAG, "onPollfishSurveyCompleted: ");
+                        try {
+                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "survey closed"));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+                .indicatorPosition(Position.BOTTOM_LEFT)
                 .customMode(false)
                 .build();
         PollFish.initWith(activity, paramsBuilder);
@@ -169,30 +222,27 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-
     private void setupViewPager(ViewPager viewPager) {
 
-        boolean isEnglish= LanguageManager.getLanguage(MainActivity.this);
+        boolean isEnglish = LanguageManager.getLanguage(MainActivity.this);
 
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
 
         if (isEnglish) {
-            adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish.aspx", 0), "RSS");
+            adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish.aspx", 0), "Updates");
             adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 0), "Featured");
-        }else{
+        } else {
             adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rsshindi.aspx", 0), "RSS");
             adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rsshindi_fea.aspx", 0), "Featured");
 
         }
 
-        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx",1), "Hand Picked");
-        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx",2), "Offline");
-
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 1), "Important");
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 2), "Offline");
 
 
         viewPager.setAdapter(adapter);
     }
-
 
     private void openDynamicLink() {
         FirebaseDynamicLinks.getInstance()
@@ -207,6 +257,12 @@ public class MainActivity extends AppCompatActivity
                             Log.d("DeepLink", "onSuccess: " + deepLink);
 
                             openNewsDescription(deepLink);
+
+                            try {
+                                Answers.getInstance().logCustom(new CustomEvent("User via dynamic link").putCustomAttribute("share link", deepLink.toString()));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
 
                             //fetchNews();
 
@@ -242,15 +298,14 @@ public class MainActivity extends AppCompatActivity
 
     private void openNewsDescription(Uri deepLink) {
 
-        News news =new News();
+        News news = new News();
         news.setLink(deepLink.toString());
 
-        Intent intent= new Intent(MainActivity.this, NewsDescriptionActivity.class);
-        intent.putExtra("news",news);
+        Intent intent = new Intent(MainActivity.this, NewsDescriptionActivity.class);
+        intent.putExtra("news", news);
         startActivity(intent);
 
     }
-
 
     private void fetchNews() {
 
@@ -414,7 +469,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        switch (id){
+        switch (id) {
             case R.id.nav_language_english:
                 onEnglishSelected();
                 break;
@@ -473,38 +528,43 @@ public class MainActivity extends AppCompatActivity
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, link);
         startActivity(Intent.createChooser(sharingIntent, "Share via"));
 
+
+        try {
+            Answers.getInstance().logCustom(new CustomEvent("Shared").putCustomAttribute("from ", "main activity"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void onNightThemeSelected() {
-        NightModeManager.setNightMode(MainActivity.this,true);
+        NightModeManager.setNightMode(MainActivity.this, true);
         recreate();
     }
 
     private void onDayThemeSelected() {
-        NightModeManager.setNightMode(MainActivity.this,false);
+        NightModeManager.setNightMode(MainActivity.this, false);
         recreate();
     }
 
     private void onHindiSelected() {
-        LanguageManager.setLanguage(MainActivity.this,false);
+        LanguageManager.setLanguage(MainActivity.this, false);
 
-        Intent intent =new Intent(MainActivity.this, MainActivity.class);
+        Intent intent = new Intent(MainActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }
 
     private void onEnglishSelected() {
-        LanguageManager.setLanguage(MainActivity.this,true);
-        Intent intent =new Intent(MainActivity.this, MainActivity.class);
+        LanguageManager.setLanguage(MainActivity.this, true);
+        Intent intent = new Intent(MainActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }
 
-
-
-    class ViewPagerAdapter extends FragmentPagerAdapter {
+    private class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
 

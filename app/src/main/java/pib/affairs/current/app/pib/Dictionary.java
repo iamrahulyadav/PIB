@@ -17,6 +17,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+import com.crashlytics.android.answers.CustomEvent;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 
@@ -26,6 +29,7 @@ import utils.NightModeManager;
 public class Dictionary extends AppCompatActivity {
 
     WebView webView;
+    CharSequence text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +46,7 @@ public class Dictionary extends AppCompatActivity {
             }
         });
 
-        CharSequence text = getIntent().getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
+         text = getIntent().getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
 
         webView = (WebView) findViewById(R.id.dictionary_webView);
 
@@ -59,6 +63,12 @@ public class Dictionary extends AppCompatActivity {
         webView.loadUrl("http://www.dictionary.com/browse/" + text);
 
         initializeAds();
+
+        try{
+            Answers.getInstance().logCustom(new CustomEvent("Word Meaning").putCustomAttribute("word",text.toString()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 

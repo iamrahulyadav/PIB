@@ -30,6 +30,9 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+import com.crashlytics.android.answers.CustomEvent;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -110,6 +113,13 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         }
 
         AppRater.app_launched(this);
+
+
+        try{
+            Answers.getInstance().logContentView(new ContentViewEvent().putContentId(news.getLink()).putContentName(news.getTitle()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         //initializeAds();
 
@@ -291,6 +301,12 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
 
 
+        try{
+            Answers.getInstance().logCustom(new CustomEvent("Save offline").putCustomAttribute("offline article",news.getTitle()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -343,6 +359,12 @@ public class NewsDescriptionActivity extends AppCompatActivity {
                 + "\n\nRead Press Information Bureau update");
         startActivity(Intent.createChooser(sharingIntent, "share link via"));
 
+
+        try{
+            Answers.getInstance().logCustom(new CustomEvent("Share Link Created").putCustomAttribute("share link",news.getTitle()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 

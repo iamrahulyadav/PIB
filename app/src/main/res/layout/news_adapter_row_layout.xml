@@ -55,7 +55,7 @@
             android:fontFamily="monospace"
             android:text="date"
             android:textAlignment="textEnd"
-            android:textColor="?attr/primaryTextColor"
+            android:textColor="?attr/secondaryTextColor"
             android:textSize="12sp" />
 
 

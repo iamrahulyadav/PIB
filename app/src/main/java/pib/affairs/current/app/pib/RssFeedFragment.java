@@ -168,7 +168,7 @@ public class RssFeedFragment extends Fragment {
     }
 
     public void checkShowSurvey() {
-        if (newsCount == 3 || newsCount == 6) {
+        if (newsCount == 2 || newsCount == 5) {
             MainActivity.initializePollfish(getActivity());
         }
     }
