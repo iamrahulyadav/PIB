@@ -55,6 +55,7 @@ import utils.SqlDatabaseHelper;
 public class NewsDescriptionActivity extends AppCompatActivity {
     News news;
     WebView webView;
+    boolean pushNotification;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,9 +64,16 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        try {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         news = (News) getIntent().getSerializableExtra("news");
         boolean isOffline = getIntent().getBooleanExtra("isOffline", false);
+        pushNotification= getIntent().getBooleanExtra("pushNotification",false);
+
 
         String htmlTextString = "";
 
@@ -208,6 +216,16 @@ public class NewsDescriptionActivity extends AppCompatActivity {
                 return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (pushNotification){
+            Intent intent =new Intent(NewsDescriptionActivity.this ,MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
     }
 
     @Override

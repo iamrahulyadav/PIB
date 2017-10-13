@@ -45,6 +45,7 @@ public class FireBasePushNotificationService extends FirebaseMessagingService {
             news.setLink(remoteMessage.getData().get("newsLink"));
 
             intent.putExtra("news", news);
+            intent.putExtra("pushNotification",true);
 
             showNotification(remoteMessage.getData().get("notificationT"), remoteMessage.getData().get("notificationB"));
 
