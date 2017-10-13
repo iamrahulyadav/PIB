@@ -229,6 +229,10 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             onSaveOfflineClick();
             return true;
         }
+        else if(id == R.id.action_post){
+            onPostClick();
+            return true;
+        }
         else if (id == R.id.action_open_browser) {
             onOpenInBrowser();
             return true;

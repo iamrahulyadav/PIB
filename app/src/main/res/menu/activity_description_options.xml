@@ -8,12 +8,12 @@
         android:title="Save offline"
         app:showAsAction="never" />
 
-   <!-- <item
+    <item
         android:id="@+id/action_post"
         android:orderInCategory="100"
         android:title="Post PIB"
         app:showAsAction="never" />
--->
+
     <item
         android:id="@+id/action_open_browser"
         android:orderInCategory="100"
