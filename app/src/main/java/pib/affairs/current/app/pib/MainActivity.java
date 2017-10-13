@@ -503,7 +503,7 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(Intent.ACTION_SEND);
 
         intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"acraftystudio@gmail.com"});
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Suggestion for PIB app");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Suggestion for PIB News app");
         intent.putExtra(Intent.EXTRA_TEXT, "Your suggestion here \n");
 
         intent.setType("message/rfc822");
@@ -525,7 +525,7 @@ public class MainActivity extends AppCompatActivity
         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
         sharingIntent.setType("text/plain");
         String link = "https://play.google.com/store/apps/details?id=" + this.getPackageName();
-        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Download PIB app");
+        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Download PIB News app");
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, link);
         startActivity(Intent.createChooser(sharingIntent, "Share via"));
 
