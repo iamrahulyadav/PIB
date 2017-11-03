@@ -354,6 +354,9 @@ public class RssFeedFragment extends Fragment {
         newsCount++;
         checkShowSurvey();
 
+
+
+
     }
 
     public void onBookMark(int position) {

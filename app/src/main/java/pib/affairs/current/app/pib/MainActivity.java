@@ -420,12 +420,13 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onLongItemClick(View view, int position) {
 
-                WebView webView = (WebView) findViewById(R.id.contentMain_cache_webView);
+               /* WebView webView = (WebView) findViewById(R.id.contentMain_cache_webView);
                 webView.getSettings().setAppCacheEnabled(true);
                 webView.getSettings().setAppCachePath(MainActivity.this.getCacheDir().getPath());
                 webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
 
                 webView.loadUrl(((News) newsArrayList.get(position)).getLink());
+*/
 
 
             }
@@ -492,12 +493,26 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_suggestion:
                 onSuggestionClick();
                 break;
+
+            case R.id.nav_aptitude:
+                onInstallAptitudeClick();
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    public void onInstallAptitudeClick() {
+        try {
+            String link = "https://play.google.com/store/apps/details?id=app.aptitude.quiz.craftystudio.aptitudequiz";
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
+        } catch (Exception e) {
+
+        }
+    }
+
 
     private void onSuggestionClick() {
         Intent intent = new Intent(Intent.ACTION_SEND);

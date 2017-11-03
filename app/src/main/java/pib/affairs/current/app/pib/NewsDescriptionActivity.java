@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -23,6 +24,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +35,11 @@ import com.android.volley.toolbox.StringRequest;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
 import com.crashlytics.android.answers.CustomEvent;
+import com.facebook.ads.Ad;
+import com.facebook.ads.AdError;
+import com.facebook.ads.AdListener;
+import com.facebook.ads.NativeAd;
+import com.facebook.ads.NativeAdView;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -56,6 +63,8 @@ public class NewsDescriptionActivity extends AppCompatActivity {
     News news;
     WebView webView;
     boolean pushNotification;
+
+    private NativeAd nativeAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +118,8 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         webView.getSettings().setDisplayZoomControls(false);
 
 
+
+
         if (news.isBookMark()) {
             if (!htmlTextString.isEmpty()) {
                 webView.loadDataWithBaseURL("", htmlTextString, "text/html", "UTF-8", "");
@@ -128,6 +139,9 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
+
+
+        initializeBottomNativeAds(2000l);
 
         //initializeAds();
 
@@ -384,11 +398,48 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
     }
 
-    public class JavaScriptInterface {
-        @JavascriptInterface
-        public void callback(String value) {
-            Log.v("JS", "SELECTION:" + value);
-        }
+    public void initializeBottomNativeAds(long timeDelay){
+        new Handler().postDelayed(new Runnable(){
+            @Override
+            public void run() {
+
+                initializeBottomNativeAds();
+            }
+        }, timeDelay);
     }
+
+    public void initializeBottomNativeAds(){
+        nativeAd = new NativeAd(this, "1963281763960722_1972656879689877");
+        nativeAd.setAdListener(new AdListener() {
+            @Override
+            public void onError(Ad ad, AdError adError) {
+
+            }
+
+            @Override
+            public void onAdLoaded(Ad ad) {
+                View adView = NativeAdView.render(NewsDescriptionActivity.this, nativeAd, NativeAdView.Type.HEIGHT_300);
+                LinearLayout nativeAdContainer = (LinearLayout) findViewById(R.id.newsDesription_adContainer_linearLayout);
+                // Add the Native Ad View to your ad container
+                nativeAdContainer.addView(adView);
+            }
+
+            @Override
+            public void onAdClicked(Ad ad) {
+
+            }
+
+            @Override
+            public void onLoggingImpression(Ad ad) {
+
+            }
+        });
+
+        // Initiate a request to load an ad.
+        nativeAd.loadAd();
+
+    }
+
+
 
 }

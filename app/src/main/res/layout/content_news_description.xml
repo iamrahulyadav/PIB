@@ -9,7 +9,14 @@
     tools:context="pib.affairs.current.app.pib.NewsDescriptionActivity"
     tools:showIn="@layout/activity_news_description">
 
+<android.support.v4.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="match_parent">
 
             <WebView
                 android:id="@+id/newsDesription_webView"
@@ -20,6 +27,23 @@
 
             </WebView>
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:id="@+id/newsDesription_adContainer_linearLayout"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="60dp"
+            >
+
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</android.support.v4.widget.NestedScrollView>
 
 
 

@@ -35,6 +35,11 @@
 
     <item android:title="Communicate">
         <menu>
+
+            <item
+                android:id="@+id/nav_aptitude"
+                android:title="New Aptitude app" />
+
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"

@@ -60,14 +60,18 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 }
             });
 
-            title.setOnClickListener(new View.OnClickListener() {
+
+            View.OnClickListener onClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (clickListener!=null){
                         clickListener.onTitleClick(v,getAdapterPosition());
                     }
                 }
-            });
+            };
+
+            title.setOnClickListener(onClickListener);
+            pubDate.setOnClickListener(onClickListener);
 
         }
     }
