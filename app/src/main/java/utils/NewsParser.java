@@ -67,10 +67,10 @@ public class NewsParser {
 */
                 try {
                     news.setTitle(URLDecoder.decode(URLEncoder.encode(itemObject.getString("title"), "iso8859-1"), "UTF-8"));
-                    news.setDescription(URLDecoder.decode(URLEncoder.encode(itemObject.getString("description"), "iso8859-1"), "UTF-8"));
+                    //news.setDescription(URLDecoder.decode(URLEncoder.encode(itemObject.getString("description"), "iso8859-1"), "UTF-8"));
                 }catch (Exception e){
                     news.setTitle(itemObject.getString("title"));
-                    news.setDescription(itemObject.getString("description"));
+                    //news.setDescription(itemObject.getString("description"));
                 }
                 news.setLink(itemObject.getString("link"));
 

@@ -85,7 +85,14 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_HEADING, news.getTitle());
 
         Uri uri = Uri.parse(news.getLink());
-        String relID = uri.getQueryParameter("relid");
+        String relID = uri.getQueryParameter("PRID");
+
+        if (relID == null) {
+            relID = uri.getQueryParameter("NoteId");
+        } else if (relID.isEmpty()) {
+            relID = uri.getQueryParameter("NoteId");
+        }
+
         values.put(KEY_RELID, relID);
 
 
@@ -99,57 +106,84 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getReadableDatabase();
         Uri uri = Uri.parse(link);
-        String relID = uri.getQueryParameter("relid");
+        String relID = uri.getQueryParameter("PRID");
 
-        Cursor cursor = db.query(TABLE_READ_FEEDS, new String[]{KEY_RELID,
-                        KEY_LINK}, KEY_RELID + "=?",
-                new String[]{relID}, null, null, null, null);
+        if (relID == null) {
+            relID = uri.getQueryParameter("NoteId");
+        } else if (relID.isEmpty()) {
+            relID = uri.getQueryParameter("NoteId");
+        }
 
-        if (cursor == null) {
+        try {
+            Cursor cursor = db.query(TABLE_READ_FEEDS, new String[]{KEY_RELID,
+                            KEY_LINK}, KEY_RELID + "=?",
+                    new String[]{relID}, null, null, null, null);
 
-            return false;
-        } else {
+            if (cursor == null) {
 
-            if (cursor.moveToFirst()) {
-                cursor.close();
-                return true;
-            } else {
-                cursor.close();
                 return false;
+            } else {
+
+                if (cursor.moveToFirst()) {
+                    cursor.close();
+                    return true;
+                } else {
+                    cursor.close();
+                    return false;
+                }
+
             }
 
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
 
     }
 
-    public boolean getNewsBookMarkStatus(String link){
+    public boolean getNewsBookMarkStatus(String link) {
         SQLiteDatabase db = this.getReadableDatabase();
         Uri uri = Uri.parse(link);
-        String relID = uri.getQueryParameter("relid");
+        String relID = uri.getQueryParameter("PRID");
 
-        Cursor cursor = db.query(TABLE_SAVED_FEED, new String[]{KEY_RELID,
-                        KEY_LINK}, KEY_RELID + "=?",
-                new String[]{relID}, null, null, null, null);
+        if (relID == null) {
+            relID = uri.getQueryParameter("NoteId");
+        } else if (relID.isEmpty()) {
+            relID = uri.getQueryParameter("NoteId");
+        }
 
-        if (cursor == null) {
+        try {
+            Cursor cursor = db.query(TABLE_SAVED_FEED, new String[]{KEY_RELID,
+                            KEY_LINK}, KEY_RELID + "=?",
+                    new String[]{relID}, null, null, null, null);
 
-            return false;
-        } else {
+            if (cursor == null) {
 
-            if (cursor.moveToFirst()) {
-                cursor.close();
-                return true;
-            } else {
-                cursor.close();
                 return false;
+            } else {
+
+                if (cursor.moveToFirst()) {
+                    cursor.close();
+                    return true;
+                } else {
+                    cursor.close();
+                    return false;
+                }
+
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
+
+
     }
 
     public void addSavedNews(News news, String response) {
 
-        if (getNewsBookMarkStatus(news.getLink())){
+        if (getNewsBookMarkStatus(news.getLink())) {
 
             deleteSavedNote(news);
             return;
@@ -158,13 +192,20 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
 
-
         ContentValues values = new ContentValues();
         values.put(KEY_LINK, news.getLink());
         values.put(KEY_HEADING, news.getTitle());
 
         Uri uri = Uri.parse(news.getLink());
-        String relID = uri.getQueryParameter("relid");
+        String relID = uri.getQueryParameter("PRID");
+
+        if (relID == null) {
+            relID = uri.getQueryParameter("NoteId");
+        } else if (relID.isEmpty()) {
+            relID = uri.getQueryParameter("NoteId");
+        }
+
+
         values.put(KEY_RELID, relID);
 
         values.put(KEY_SUB_HEADING, news.getDescription());
@@ -178,12 +219,17 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         db.close(); // Closing database connection
     }
 
-    public void deleteSavedNote(News news){
+    public void deleteSavedNote(News news) {
         SQLiteDatabase db = this.getWritableDatabase();
         Uri uri = Uri.parse(news.getLink());
-        String relID = uri.getQueryParameter("relid");
+        String relID = uri.getQueryParameter("PRID");
 
-        db.delete(TABLE_SAVED_FEED,KEY_RELID+" =?",new String[]{relID
+        if (relID == null) {
+            relID = uri.getQueryParameter("NoteId");
+        } else if (relID.isEmpty()) {
+            relID = uri.getQueryParameter("NoteId");
+        }
+        db.delete(TABLE_SAVED_FEED, KEY_RELID + " =?", new String[]{relID
         });
         db.close();
 
@@ -223,8 +269,13 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
     public String getFullNews(String link) {
         SQLiteDatabase db = this.getReadableDatabase();
         Uri uri = Uri.parse(link);
-        String relID = uri.getQueryParameter("relid");
+        String relID = uri.getQueryParameter("PRID");
 
+        if (relID == null) {
+            relID = uri.getQueryParameter("NoteId");
+        } else if (relID.isEmpty()) {
+            relID = uri.getQueryParameter("NoteId");
+        }
         String htmlText = "";
 
         try {
@@ -239,7 +290,7 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
                 } while (cursor.moveToNext());
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

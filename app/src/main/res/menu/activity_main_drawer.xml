@@ -3,7 +3,7 @@
 
 
 
-    <item android:title="Language">
+   <!-- <item android:title="Language">
         <menu>
             <item
                 android:id="@+id/nav_language_hindi"
@@ -15,7 +15,7 @@
                 android:title="English" />
         </menu>
     </item>
-
+-->
 
 
     <item android:title="Theme">

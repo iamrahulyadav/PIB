@@ -48,10 +48,10 @@ public class AppRater {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("Rate Us");
 
-        builder.setMessage("Love this app. Rate us on Play store")
+        builder.setMessage("Love this app? Please Rate us on Play store")
                 .setPositiveButton("Rate Now", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        mContext.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=app.craftystudio.vocabulary.dailyeditorial")));
+                        mContext.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=app.crafty.studio.current.affairs.pib")));
                         if (editor != null) {
                             editor.putBoolean("dontshowagain", true);
                             editor.commit();

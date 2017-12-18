@@ -49,8 +49,15 @@ import com.google.firebase.dynamiclinks.DynamicLink;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.ShortDynamicLink;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
 import java.util.ArrayList;
 
+import fr.arnaudguyon.xmltojsonlib.XmlToJson;
 import utils.AppController;
 import utils.AppRater;
 import utils.FireBaseHandler;
@@ -94,7 +101,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         }
 
         webView = (WebView) findViewById(R.id.newsDesription_webView);
-        webView.getSettings().setJavaScriptEnabled(true);
+       /* webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setMinimumFontSize(50);
         //webView.getSettings().setTextZoom(250);
 
@@ -117,6 +124,10 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         webView.getSettings().setBuiltInZoomControls(true);
         webView.getSettings().setDisplayZoomControls(false);
 
+*/
+
+        webView.loadUrl("http://pib.nic.in/index.aspx");
+
 
 
 
@@ -124,7 +135,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             if (!htmlTextString.isEmpty()) {
                 webView.loadDataWithBaseURL("", htmlTextString, "text/html", "UTF-8", "");
             } else {
-                webView.loadUrl(news.getLink());
+                webView.loadUrl("http://pib.nic.in/index.aspx");
             }
         } else {
 
@@ -161,6 +172,8 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 */
         //temp();
 
+        //getWebsite(news.getLink());
+
     }
 
     public void temp() {
@@ -182,8 +195,11 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
                 response = response.replaceFirst("width:60%", "width:90%");
 
+                XmlToJson xmlToJson = new XmlToJson.Builder(response).build();
 
-                webView.loadDataWithBaseURL("", response, "text/html", "UTF-8", "");
+                Log.d("NEWS", "onResponse: "+xmlToJson.toString());
+
+                //webView.loadDataWithBaseURL("", response, "text/html", "UTF-8", "");
 
 
             }
@@ -440,6 +456,35 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
     }
 
+    private void getWebsite(final String url) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final StringBuilder builder = new StringBuilder();
+
+                try {
+                    Document doc = Jsoup.connect(url).get();
+                    String title = doc.title();
+                    Elements links = doc.select("#condiv");
+
+
+                    builder.append(links.toString());
+
+
+                } catch (IOException e) {
+                    builder.append("Error : ").append(e.getMessage()).append("\n");
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("NEWS", "run: "+builder.toString());
+                        webView.loadDataWithBaseURL("", builder.toString(), "text/html", "UTF-8", "");
+                    }
+                });
+            }
+        }).start();
+    }
 
 
 }

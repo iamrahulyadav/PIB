@@ -26,7 +26,9 @@ import com.android.volley.toolbox.StringRequest;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import utils.AppController;
@@ -217,7 +219,18 @@ public class RssFeedFragment extends Fragment {
 
                 pDialog.hide();
             }
-        });
+        }
+
+        )
+        {
+            public Map<String, String> getHeaders() {
+                Map<String, String>  params = new HashMap<String, String>();
+                params.put("Cookie", "_ga=GA1.3.1620683946.1513436013; _gid=GA1.3.1244811755.1513436013; style=null; __atuvc=9%7C50%2C7%7C51; ASP.NET_SessionId=ehpck5jocxft0f34gnhfykoq; fontSize=90; PIB_Accessibility=Lang=1&Region=3");
+
+                return params;
+            }
+        };
+
 
         strReq.setShouldCache(true);
         // Adding request to request queue
@@ -240,6 +253,8 @@ public class RssFeedFragment extends Fragment {
 
                 for (News object : new NewsParser(response).parseJson()) {
                     object.setRead(sqlDatabaseHelper.getNewsReadStatus(object.getLink()));
+                    object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object.getLink()));
+
                     newsArrayList.add(object);
                 }
 
@@ -330,9 +345,39 @@ public class RssFeedFragment extends Fragment {
         return view;
     }
 
+/*
 
     public void onItemClick(int position) {
         Intent intent = new Intent(getContext(), NewsDescriptionActivity.class);
+
+
+        News news = (News) newsArrayList.get(position);
+
+        intent.putExtra("news", news);
+
+        if (sourceType == SOURCETYPE_OFFLINE) {
+            intent.putExtra("isOffline", true);
+        }
+
+        startActivity(intent);
+
+        sqlDatabaseHelper = new SqlDatabaseHelper(getContext());
+        sqlDatabaseHelper.addReadNews(news);
+
+        news.setRead(true);
+        newsAdapter.notifyDataSetChanged();
+
+        newsCount++;
+        checkShowSurvey();
+
+
+
+
+    }
+*/
+
+    public void onItemClick(int position) {
+        Intent intent = new Intent(getContext(), NewsFeedActivity.class);
 
 
         News news = (News) newsArrayList.get(position);
@@ -382,6 +427,8 @@ public class RssFeedFragment extends Fragment {
 
 
                 sqlDatabaseHelper.addSavedNews(news, response);
+
+
                 RssFeedFragment.newNoteSaved = true;
                 for (Object object : newsArrayList) {
                     News newsObject = (News) object;

@@ -230,8 +230,8 @@ public class MainActivity extends AppCompatActivity
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
 
         if (isEnglish) {
-            adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish.aspx", 0), "Updates");
-            adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 0), "Featured");
+            adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 0), "Updates");
+            adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=18", 0), "Featured");
         } else {
             adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rsshindi.aspx", 0), "RSS");
             adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rsshindi_fea.aspx", 0), "Featured");
@@ -472,12 +472,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.nav_language_english:
-                onEnglishSelected();
-                break;
-            case R.id.nav_language_hindi:
-                onHindiSelected();
-                break;
+
             case R.id.nav_theme_day:
                 onDayThemeSelected();
                 break;

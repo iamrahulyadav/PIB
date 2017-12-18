@@ -14,8 +14,7 @@
         android:theme="@style/ActivityThemeLight">
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
-            >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,9 +24,7 @@
         <activity
             android:name=".NewsDescriptionActivity"
             android:label="@string/title_activity_news_description"
-            android:theme="@style/AppTheme.NoActionBar">
-
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".Dictionary"
             android:label="@string/title_activity_dictionary"
@@ -39,7 +36,6 @@
 
                 <data android:mimeType="text/plain" />
             </intent-filter>
-
         </activity>
 
         <service android:name="utils.FireBasePushNotificationService">
@@ -51,6 +47,11 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="acc1b0b9ec29985ac9dbef0f05837dac47e0b387" />
+
+        <activity
+            android:name=".NewsFeedActivity"
+            android:label="@string/title_activity_news_feed"
+            android:theme="@style/ActivityThemeLight"></activity>
     </application>
 
 </manifest>

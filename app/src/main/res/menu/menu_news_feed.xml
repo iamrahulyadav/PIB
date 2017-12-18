@@ -1,0 +1,44 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="pib.affairs.current.app.pib.NewsFeedActivity">
+
+
+    <item
+        android:id="@+id/action_save_offline"
+        android:icon="@mipmap/ic_action_bookmark"
+        android:orderInCategory="100"
+        android:title="Save offline"
+        app:showAsAction="ifRoom" />
+
+
+
+
+    <item
+        android:id="@+id/action_textSize"
+        android:orderInCategory="100"
+        android:title="Text Size"
+        app:showAsAction="never" />
+
+
+    <!-- <item
+         android:id="@+id/action_post"
+         android:orderInCategory="100"
+         android:title="Post PIB"
+         app:showAsAction="never" />
+ -->
+    <item
+        android:id="@+id/action_open_browser"
+        android:orderInCategory="100"
+        android:title="Open in Browser"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_share"
+        android:icon="@mipmap/ic_action_share"
+        android:orderInCategory="100"
+        android:title="Share"
+        app:showAsAction="ifRoom" />
+
+
+</menu>
