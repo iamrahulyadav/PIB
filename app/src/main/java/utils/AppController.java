@@ -1,5 +1,6 @@
 package utils;
 
+import android.app.Activity;
 import android.app.Application;
 import android.text.TextUtils;
 
@@ -23,6 +24,7 @@ public class AppController extends Application {
 
     private static AppController mInstance;
 
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -32,8 +34,12 @@ public class AppController extends Application {
 
     }
 
+
+
     public static synchronized AppController getInstance() {
         return mInstance;
+
+
     }
 
     public RequestQueue getRequestQueue() {
