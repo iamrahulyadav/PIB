@@ -8,6 +8,8 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
+import java.util.Map;
+
 /**
  * Created by bunny on 29/09/17.
  */
@@ -64,4 +66,7 @@ public class AppController extends Application {
             mRequestQueue.cancelAll(tag);
         }
     }
+
+
+
 }

@@ -40,7 +40,7 @@
             android:layout_marginRight="16dp"
             android:layout_marginTop="4dp"
             android:lineSpacingMultiplier="1.2"
-            android:text="HEading"
+            android:text="Title"
             android:textColor="?attr/primaryTextColor"
             android:textSize="22sp"
             android:textStyle="bold"

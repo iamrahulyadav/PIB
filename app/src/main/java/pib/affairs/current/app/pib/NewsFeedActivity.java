@@ -32,6 +32,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
 import com.crashlytics.android.answers.CustomEvent;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
@@ -50,7 +51,9 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import fr.arnaudguyon.xmltojsonlib.XmlToJson;
 import utils.AppController;
@@ -73,10 +76,12 @@ public class NewsFeedActivity extends AppCompatActivity  {
     String newsMinistry, newsTextString;
 
     WebView webView;
+    String tableDataString;
 
     ProgressDialog pDialog;
 
     private NativeAd nativeAd;
+    private boolean pushNotification;
 
 
     @Override
@@ -93,7 +98,7 @@ public class NewsFeedActivity extends AppCompatActivity  {
         pDialog = new ProgressDialog(this);
 
         news = (News) getIntent().getSerializableExtra("news");
-
+        pushNotification= getIntent().getBooleanExtra("pushNotification",false);
 
         newsTextView = (TextView) findViewById(R.id.newsFeed_text_textView);
         newsHeadingTextView = (TextView) findViewById(R.id.newsFeed_newsHeading_textView);
@@ -128,10 +133,21 @@ public class NewsFeedActivity extends AppCompatActivity  {
         });
 
 
-        initializeNewsText();
+        //initializeNewsText();
 
         AppRater.app_launched(this);
 
+
+
+
+            try{
+                AppRater.app_launched(this);
+
+
+                Answers.getInstance().logContentView(new ContentViewEvent().putContentId(news.getLink()).putContentName(news.getTitle()));
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         initializeBottomNativeAds(1000l);
     }
 
@@ -168,7 +184,15 @@ public class NewsFeedActivity extends AppCompatActivity  {
         return super.onOptionsItemSelected(item);
     }
 
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (pushNotification){
+            Intent intent =new Intent(NewsFeedActivity.this ,MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+    }
 
     private void onSaveOfflineClick() {
 
@@ -368,6 +392,7 @@ public class NewsFeedActivity extends AppCompatActivity  {
             }
         });
 
+
         strReq.setShouldCache(true);
         // Adding request to request queue
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
@@ -416,11 +441,22 @@ public class NewsFeedActivity extends AppCompatActivity  {
 
                     newsMinistry = doc.select(".MinistryNameSubhead").text();
 
+                    if (news.getTitle()==null){
+                        news.setTitle(doc.select("h2").text());
+
+                    }
+
+                    tableDataString = doc.select("table").toString();
+                    doc.select("table").remove();
+
                     Elements links = doc.select("p");
                     links.select("style").remove();
 
 
+
+
                     builder.append(links.toString());
+                    Log.d(TAG, "run: "+links.toString()+tableDataString);
 
                 } catch (Exception e) {
                     builder.append("Error : ").append(e.getMessage()).append("\n");
@@ -439,7 +475,9 @@ public class NewsFeedActivity extends AppCompatActivity  {
                         newsTextString = builder.toString();
 
                         newsMinistryTextView.setText(newsMinistry);
-                    }
+                        newsHeadingTextView.setText(news.getTitle());
+
+                        webView.loadDataWithBaseURL("", tableDataString, "text/html", "UTF-8", "");                    }
                 });
             }
         }).start();

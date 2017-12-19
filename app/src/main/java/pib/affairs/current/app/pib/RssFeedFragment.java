@@ -225,7 +225,9 @@ public class RssFeedFragment extends Fragment {
         {
             public Map<String, String> getHeaders() {
                 Map<String, String>  params = new HashMap<String, String>();
-                params.put("Cookie", "_ga=GA1.3.1620683946.1513436013; _gid=GA1.3.1244811755.1513436013; style=null; __atuvc=9%7C50%2C7%7C51; ASP.NET_SessionId=ehpck5jocxft0f34gnhfykoq; fontSize=90; PIB_Accessibility=Lang=1&Region=3");
+                params.put("Cookie", "_ga=GA1.3.1620683946.1513436013; _gid=GA1.3.1244811755.1513436013; style=null; __atuvc=9%7C50%2C7%7C51; ASP.NET_SessionId=ehpck5jocxft0f34gnhfykoq ; fontSize=90; PIB_Accessibility=Lang=1&Region=3");
+                params.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36");
+                params.put("DNT", "1");
 
                 return params;
             }
@@ -479,6 +481,8 @@ public class RssFeedFragment extends Fragment {
                 } else {
                     fetchNews();
                 }
+
+
 
             }
         });

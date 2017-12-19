@@ -1,10 +1,12 @@
 package pib.affairs.current.app.pib;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -28,8 +30,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -67,6 +71,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import utils.AppController;
+import utils.AppRater;
 import utils.LanguageManager;
 import utils.News;
 import utils.NewsAdapter;
@@ -137,6 +142,45 @@ public class MainActivity extends AppCompatActivity
 
         //fetchNews();
 
+
+        initializeWebview();
+
+
+    }
+
+    private void initializeWebview() {
+
+        final WebView webView = (WebView) findViewById(R.id.contentMain_cache_webView);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setLoadWithOverviewMode(true);
+
+        if(AppRater.getLaunchCount(MainActivity.this)<3 ) {
+            webView.loadUrl("http://pib.nic.in/index.aspx");
+
+            webView.setWebViewClient(new WebViewClient() {
+                @SuppressWarnings("deprecation")
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView webView, String url) {
+                    return shouldOverrideUrlLoading(url);
+                }
+
+                @TargetApi(Build.VERSION_CODES.N)
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
+                    Uri uri = request.getUrl();
+                    return shouldOverrideUrlLoading(uri.toString());
+                }
+
+                private boolean shouldOverrideUrlLoading(final String url) {
+                    // Log.i(TAG, "shouldOverrideUrlLoading() URL : " + url);
+
+                    // Here put your code
+                    webView.loadUrl(url);
+
+                    return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
+                }
+            });
+        }
     }
 
     public static void initializePollfish(Activity activity) {
@@ -302,7 +346,7 @@ public class MainActivity extends AppCompatActivity
         News news = new News();
         news.setLink(deepLink.toString());
 
-        Intent intent = new Intent(MainActivity.this, NewsDescriptionActivity.class);
+        Intent intent = new Intent(MainActivity.this, NewsFeedActivity.class);
         intent.putExtra("news", news);
         startActivity(intent);
 

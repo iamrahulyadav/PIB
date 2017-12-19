@@ -89,5 +89,10 @@ public class AppRater {
 
     }
 
+    public static long getLaunchCount(Context mContext){
+        SharedPreferences prefs = mContext.getSharedPreferences("apprater", 0);
+        return prefs.getLong("launch_count", 0);
+
+    }
 
 }

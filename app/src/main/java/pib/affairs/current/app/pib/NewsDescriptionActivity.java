@@ -130,6 +130,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
 
 
+/*
 
         if (news.isBookMark()) {
             if (!htmlTextString.isEmpty()) {
@@ -153,6 +154,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
 
         initializeBottomNativeAds(2000l);
+*/
 
         //initializeAds();
 

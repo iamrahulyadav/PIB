@@ -95,10 +95,15 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
 
         values.put(KEY_RELID, relID);
 
+        try {
+            // Inserting Row
+            db.insert(TABLE_READ_FEEDS, null, values);
+            db.close(); // Closing database connection
 
-        // Inserting Row
-        db.insert(TABLE_READ_FEEDS, null, values);
-        db.close(); // Closing database connection
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
     }
 
 
@@ -206,6 +211,7 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         }
 
 
+        try{
         values.put(KEY_RELID, relID);
 
         values.put(KEY_SUB_HEADING, news.getDescription());
@@ -217,6 +223,11 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         // Inserting Row
         db.insert(TABLE_SAVED_FEED, null, values);
         db.close(); // Closing database connection
+
+    } catch (Exception e) {
+        e.printStackTrace();
+
+    }
     }
 
     public void deleteSavedNote(News news) {
@@ -259,9 +270,8 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
 
 
-            // return contact list
-
         }
+
         return newsArrayList;
     }
 

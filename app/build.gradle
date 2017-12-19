@@ -23,8 +23,8 @@ android {
         applicationId "app.crafty.studio.current.affairs.pib"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 3
-        versionName "1.2"
+        versionCode 5
+        versionName "1.5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
