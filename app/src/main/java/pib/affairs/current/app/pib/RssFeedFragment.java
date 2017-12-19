@@ -14,8 +14,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
 
 import com.android.volley.Cache;
 import com.android.volley.Request;
@@ -27,16 +25,13 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import utils.AppController;
 import utils.FireBaseHandler;
 import utils.News;
 import utils.NewsAdapter;
 import utils.NewsParser;
-import utils.RecyclerTouchListener;
 import utils.SqlDatabaseHelper;
 
 import static com.android.volley.VolleyLog.TAG;
@@ -179,7 +174,7 @@ public class RssFeedFragment extends Fragment {
 
 
 // Tag used to cancel the request
-        String tag_string_req = "string_req";
+        String tag_string_req = "news_request";
 
         final String url = urlToOpen;
 
@@ -225,9 +220,13 @@ public class RssFeedFragment extends Fragment {
         {
             public Map<String, String> getHeaders() {
                 Map<String, String>  params = new HashMap<String, String>();
-                params.put("Cookie", "_ga=GA1.3.1620683946.1513436013; _gid=GA1.3.1244811755.1513436013; style=null; __atuvc=9%7C50%2C7%7C51; ASP.NET_SessionId=ehpck5jocxft0f34gnhfykoq ; fontSize=90; PIB_Accessibility=Lang=1&Region=3");
+                params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; style=null; _ga=GA1.3.1895171585.1513447950; PIB_Accessibility=Lang=1&Region=3; __atuvc=7%7C50%2C2%7C51; _gid=GA1.3.220297058.1513617359; ASP.NET_SessionId=5yfd1d1zsbg20xe2d2yg52rj; _gat_gtag_UA_110683570_1=1");
                 params.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36");
                 params.put("DNT", "1");
+                params.put("Upgrade-Insecure-Requests", "1");
+                params.put("Host", "pib.nic.in");
+                params.put("Connection", "keep-alive");
+                params.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
 
                 return params;
             }

@@ -16,6 +16,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -31,6 +32,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
 import com.crashlytics.android.answers.CustomEvent;
@@ -395,7 +397,11 @@ public class NewsFeedActivity extends AppCompatActivity  {
 
         strReq.setShouldCache(true);
         // Adding request to request queue
-        AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+        //AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+
+        strReq.setTag(TextUtils.isEmpty(tag_string_req) ? TAG : tag_string_req);
+        Volley.newRequestQueue(getApplicationContext()).add(strReq);
+
 
     }
 

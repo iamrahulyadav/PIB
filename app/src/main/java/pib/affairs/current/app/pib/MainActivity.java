@@ -3,7 +3,6 @@ package pib.affairs.current.app.pib;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -19,7 +18,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -31,17 +29,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebResourceRequest;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ListView;
-import android.widget.Toast;
 
 import com.android.volley.Cache;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
@@ -62,9 +56,6 @@ import com.pollfish.interfaces.PollfishUserNotEligibleListener;
 import com.pollfish.main.PollFish;
 
 import io.fabric.sdk.android.Fabric;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -144,6 +135,7 @@ public class MainActivity extends AppCompatActivity
 
 
         initializeWebview();
+
 
 
     }
