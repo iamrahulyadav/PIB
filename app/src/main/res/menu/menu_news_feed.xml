@@ -40,5 +40,12 @@
         android:title="Share"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_refresh"
+        android:orderInCategory="100"
+        android:title="Refresh"
+        android:icon="@drawable/ic_action_refresh"
+         />
+
 
 </menu>

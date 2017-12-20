@@ -12,6 +12,7 @@ import android.speech.tts.UtteranceProgressListener;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -68,7 +69,7 @@ import utils.SqlDatabaseHelper;
 
 import static com.android.volley.VolleyLog.TAG;
 
-public class NewsFeedActivity extends AppCompatActivity  {
+public class NewsFeedActivity extends AppCompatActivity {
 
 
     TextView newsTextView, newsHeadingTextView, newsDateTextView, newsMinistryTextView;
@@ -85,6 +86,8 @@ public class NewsFeedActivity extends AppCompatActivity  {
     private NativeAd nativeAd;
     private boolean pushNotification;
 
+    SwipeRefreshLayout swipeRefreshLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,12 +103,20 @@ public class NewsFeedActivity extends AppCompatActivity  {
         pDialog = new ProgressDialog(this);
 
         news = (News) getIntent().getSerializableExtra("news");
-        pushNotification= getIntent().getBooleanExtra("pushNotification",false);
+        pushNotification = getIntent().getBooleanExtra("pushNotification", false);
 
         newsTextView = (TextView) findViewById(R.id.newsFeed_text_textView);
         newsHeadingTextView = (TextView) findViewById(R.id.newsFeed_newsHeading_textView);
         newsDateTextView = (TextView) findViewById(R.id.newsFeed_newsDate_textView);
         newsMinistryTextView = (TextView) findViewById(R.id.newsFeed_newsministry_textView);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.newsFeed_refresh_swipeRefresh);
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getWebsite(news.getLink());
+            }
+        });
 
         webView = (WebView) findViewById(R.id.newsFeed_webView);
 
@@ -122,9 +133,10 @@ public class NewsFeedActivity extends AppCompatActivity  {
 
         }
 
+        showLoadingDialog("Loading...");
+
         getWebsite(news.getLink());
 
-        showLoadingDialog("Loading...");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -137,22 +149,25 @@ public class NewsFeedActivity extends AppCompatActivity  {
 
         //initializeNewsText();
 
-        AppRater.app_launched(this);
 
+        try {
+            AppRater.app_launched(this);
 
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
-            try{
-                AppRater.app_launched(this);
-
-
-                Answers.getInstance().logContentView(new ContentViewEvent().putContentId(news.getLink()).putContentName(news.getTitle()));
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+            Answers.getInstance().logContentView(new ContentViewEvent().putContentId(news.getLink()).putContentName(news.getTitle()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         initializeBottomNativeAds(1000l);
     }
 
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -181,6 +196,9 @@ public class NewsFeedActivity extends AppCompatActivity  {
         } else if (id == R.id.action_textSize) {
             onTextSizeClick();
             return true;
+        } else if (id == R.id.action_refresh) {
+            recreate();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -189,8 +207,8 @@ public class NewsFeedActivity extends AppCompatActivity  {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if (pushNotification){
-            Intent intent =new Intent(NewsFeedActivity.this ,MainActivity.class);
+        if (pushNotification) {
+            Intent intent = new Intent(NewsFeedActivity.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }
@@ -372,6 +390,7 @@ public class NewsFeedActivity extends AppCompatActivity  {
 
 
         String tag_string_req = "string_req";
+        loadCache(url);
 
         StringRequest strReq = new StringRequest(Request.Method.GET,
                 url, new Response.Listener<String>() {
@@ -389,7 +408,21 @@ public class NewsFeedActivity extends AppCompatActivity  {
             @Override
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
-                loadCache(url);
+                try {
+                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "News feed activity").putCustomAttribute("reason", error.getMessage()));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                if (newsTextString==null) {
+                    Toast.makeText(NewsFeedActivity.this, "Unable to load data. Please try again later", Toast.LENGTH_SHORT).show();
+                }else if (newsTextString.isEmpty()){
+                    Toast.makeText(NewsFeedActivity.this, "Unable to load data. Please try again later", Toast.LENGTH_SHORT).show();
+
+                }
+
+                hideLoadingDialog();
 
             }
         });
@@ -447,7 +480,7 @@ public class NewsFeedActivity extends AppCompatActivity  {
 
                     newsMinistry = doc.select(".MinistryNameSubhead").text();
 
-                    if (news.getTitle()==null){
+                    if (news.getTitle() == null) {
                         news.setTitle(doc.select("h2").text());
 
                     }
@@ -459,10 +492,8 @@ public class NewsFeedActivity extends AppCompatActivity  {
                     links.select("style").remove();
 
 
-
-
                     builder.append(links.toString());
-                    Log.d(TAG, "run: "+links.toString()+tableDataString);
+                    Log.d(TAG, "run: " + links.toString() + tableDataString);
 
                 } catch (Exception e) {
                     builder.append("Error : ").append(e.getMessage()).append("\n");
@@ -483,8 +514,15 @@ public class NewsFeedActivity extends AppCompatActivity  {
                         newsMinistryTextView.setText(newsMinistry);
                         newsHeadingTextView.setText(news.getTitle());
 
-                        webView.loadDataWithBaseURL("", tableDataString, "text/html", "UTF-8", "");                    }
+                        webView.loadDataWithBaseURL("", tableDataString, "text/html", "UTF-8", "");
+
+                        hideLoadingDialog();
+                        swipeRefreshLayout.setRefreshing(false);
+
+                    }
                 });
+
+
             }
         }).start();
 
@@ -515,8 +553,8 @@ public class NewsFeedActivity extends AppCompatActivity  {
     }
 
 
-    public void initializeBottomNativeAds(long timeDelay){
-        new Handler().postDelayed(new Runnable(){
+    public void initializeBottomNativeAds(long timeDelay) {
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
 
@@ -525,12 +563,19 @@ public class NewsFeedActivity extends AppCompatActivity  {
         }, timeDelay);
     }
 
-    public void initializeBottomNativeAds(){
+    public void initializeBottomNativeAds() {
         nativeAd = new NativeAd(this, "1963281763960722_1972656879689877");
         nativeAd.setAdListener(new AdListener() {
             @Override
             public void onError(Ad ad, AdError adError) {
-                Log.d(TAG, "onError: "+adError);
+                Log.d(TAG, "onError: " + adError);
+
+                try {
+                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("error", adError.getErrorMessage()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             }
 
             @Override

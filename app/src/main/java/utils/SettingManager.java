@@ -33,4 +33,26 @@ public class SettingManager {
 
     }
 
+    public static void setLastUpdatedTime(Context mContext, long timeInMillis){
+        SharedPreferences prefs = mContext.getSharedPreferences("settings", 0);
+
+
+        SharedPreferences.Editor editor = prefs.edit();
+
+        // Increment launch counter
+
+        editor.putLong("lastUpdated", timeInMillis);
+
+
+
+        editor.apply();
+    }
+
+    public static long getLastUpdatedTime(Context mContext){
+        SharedPreferences prefs = mContext.getSharedPreferences("settings", 0);
+
+        return prefs.getLong("lastUpdated", System.currentTimeMillis());
+
+    }
+
 }

@@ -2,8 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
 
+    <item
+        android:id="@+id/nav_airNews"
+        android:title="All India Radio"
+        android:icon="@drawable/ic_air_radio"
+        />
 
-   <!-- <item android:title="Language">
+
+
+    <item android:title="Language">
         <menu>
             <item
                 android:id="@+id/nav_language_hindi"
@@ -15,7 +22,7 @@
                 android:title="English" />
         </menu>
     </item>
--->
+
 
 
     <item android:title="Theme">

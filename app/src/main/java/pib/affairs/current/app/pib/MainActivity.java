@@ -58,7 +58,9 @@ import com.pollfish.main.PollFish;
 import io.fabric.sdk.android.Fabric;
 
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import utils.AppController;
@@ -69,6 +71,7 @@ import utils.NewsAdapter;
 import utils.NewsParser;
 import utils.NightModeManager;
 import utils.RecyclerTouchListener;
+import utils.SettingManager;
 import utils.SqlDatabaseHelper;
 
 public class MainActivity extends AppCompatActivity
@@ -83,6 +86,8 @@ public class MainActivity extends AppCompatActivity
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
+    public static Toolbar toolbar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +99,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -136,7 +141,7 @@ public class MainActivity extends AppCompatActivity
 
         initializeWebview();
 
-
+        setLastUpdated();
 
     }
 
@@ -146,7 +151,7 @@ public class MainActivity extends AppCompatActivity
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setLoadWithOverviewMode(true);
 
-        if(AppRater.getLaunchCount(MainActivity.this)<3 ) {
+        if (AppRater.getLaunchCount(MainActivity.this) < 5) {
             webView.loadUrl("http://pib.nic.in/index.aspx");
 
             webView.setWebViewClient(new WebViewClient() {
@@ -269,10 +274,18 @@ public class MainActivity extends AppCompatActivity
             adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 0), "Updates");
             adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=18", 0), "Featured");
         } else {
-            adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rsshindi.aspx", 0), "RSS");
-            adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rsshindi_fea.aspx", 0), "Featured");
+            adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 3), "RSS");
+            adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=18", 3), "Featured");
+
+            try {
+                Answers.getInstance().logCustom(new CustomEvent("Hindi language"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         }
+
+        //adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 3), "PIB Hindi");
 
         adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 1), "Important");
         adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 2), "Offline");
@@ -494,6 +507,9 @@ public class MainActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        if (id == R.id.nav_airNews) {
+            onAirNewsClick();
+        }
 
         //noinspection SimplifiableIfStatement
 
@@ -508,7 +524,15 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id) {
-
+            case R.id.nav_language_english:
+                onEnglishSelected();
+                break;
+            case R.id.nav_language_hindi:
+                onHindiSelected();
+                break;
+            case R.id.nav_airNews:
+                onAirNewsClick();
+                break;
             case R.id.nav_theme_day:
                 onDayThemeSelected();
                 break;
@@ -535,15 +559,36 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    private void onAirNewsClick() {
+        Intent intent = new Intent(MainActivity.this, AIRNewsActivity.class);
+        startActivity(intent);
+    }
+
     public void onInstallAptitudeClick() {
         try {
             String link = "https://play.google.com/store/apps/details?id=app.aptitude.quiz.craftystudio.aptitudequiz";
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
+
+
+            Answers.getInstance().logCustom(new CustomEvent("Aptitude app click"));
+
+
         } catch (Exception e) {
 
         }
     }
 
+    public void setLastUpdated() {
+        try {
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm EEE dd MMM");
+            String myDate = dateFormat.format(new Date(SettingManager.getLastUpdatedTime(MainActivity.this)));
+            MainActivity.toolbar.setSubtitle("Last updated - " + myDate);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private void onSuggestionClick() {
         Intent intent = new Intent(Intent.ACTION_SEND);
@@ -600,6 +645,8 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(MainActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+
+
         finish();
     }
 
@@ -611,7 +658,7 @@ public class MainActivity extends AppCompatActivity
         finish();
     }
 
-    private class ViewPagerAdapter extends FragmentPagerAdapter {
+    public class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
 

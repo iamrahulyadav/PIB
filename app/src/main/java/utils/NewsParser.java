@@ -27,8 +27,6 @@ public class NewsParser {
     String response;
 
 
-
-
     XmlPullParser parser;
 
     public NewsParser(String response) {
@@ -37,13 +35,13 @@ public class NewsParser {
 
     }
 
-    public ArrayList<News> parseJson(){
+    public ArrayList<News> parseJson() {
 
         XmlToJson xmlToJson = new XmlToJson.Builder(response).build();
 
-        Log.d(TAG, "NewsParser: "+xmlToJson.toFormattedString());
+        Log.d(TAG, "NewsParser: " + xmlToJson.toFormattedString());
 
-        JSONObject jsonObject =xmlToJson.toJson();
+        JSONObject jsonObject = xmlToJson.toJson();
 
 
         ArrayList<News> newsArrayList = new ArrayList<>();
@@ -52,11 +50,11 @@ public class NewsParser {
 
             JSONArray jsonArrayItem = jsonObjectChannel.getJSONArray("item");
 
-            Log.d(TAG, "parseJson: "+jsonArrayItem);
+            Log.d(TAG, "parseJson: " + jsonArrayItem);
 
-            for (int i=0 ; i<jsonArrayItem.length(); i++){
+            for (int i = 0; i < jsonArrayItem.length(); i++) {
 
-                JSONObject itemObject= jsonArrayItem.getJSONObject(i);
+                JSONObject itemObject = jsonArrayItem.getJSONObject(i);
 
                 News news = new News();
 
@@ -68,7 +66,7 @@ public class NewsParser {
                 try {
                     news.setTitle(URLDecoder.decode(URLEncoder.encode(itemObject.getString("title"), "iso8859-1"), "UTF-8"));
                     //news.setDescription(URLDecoder.decode(URLEncoder.encode(itemObject.getString("description"), "iso8859-1"), "UTF-8"));
-                }catch (Exception e){
+                } catch (Exception e) {
                     news.setTitle(itemObject.getString("title"));
                     //news.setDescription(itemObject.getString("description"));
                 }
@@ -83,11 +81,64 @@ public class NewsParser {
 
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         return newsArrayList;
+    }
+
+    public ArrayList<AIRNews> parseAIRNews() {
+
+        XmlToJson xmlToJson = new XmlToJson.Builder(response).build();
+
+        Log.d(TAG, "NewsParser: " + xmlToJson.toFormattedString());
+        JSONObject jsonObject = xmlToJson.toJson();
+        ArrayList<AIRNews> airNewsArrayList = new ArrayList<>();
+
+
+        try {
+            JSONObject jsonObjectChannel = jsonObject.getJSONObject("rss").getJSONObject("channel");
+
+            JSONArray jsonArrayItem = jsonObjectChannel.getJSONArray("item");
+
+            Log.d(TAG, "parseJson: " + jsonArrayItem);
+
+            for (int i = 0; i < jsonArrayItem.length(); i++) {
+
+                JSONObject itemObject = jsonArrayItem.getJSONObject(i);
+
+                AIRNews airNews = new AIRNews();
+
+                /*news.setTitle(itemObject.getString("title"));
+                news.setDescription(itemObject.getString("description"));
+                news.setLink(itemObject.getString("link"));
+                news.setPubDate(itemObject.getString("pubDate"));
+*/
+                try {
+                    airNews.setNewsTitle(URLDecoder.decode(URLEncoder.encode(itemObject.getString("title"), "iso8859-1"), "UTF-8"));
+                    //news.setDescription(URLDecoder.decode(URLEncoder.encode(itemObject.getString("description"), "iso8859-1"), "UTF-8"));
+                } catch (Exception e) {
+                    airNews.setNewsTitle(itemObject.getString("title"));
+                    //news.setDescription(itemObject.getString("description"));
+                }
+                airNews.setNewsLink(itemObject.getString("link"));
+
+                if (itemObject.has("pubDate")) {
+                    airNews.setNewsDate(itemObject.getString("pubDate"));
+                }
+
+                airNewsArrayList.add(airNews);
+
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        return airNewsArrayList;
     }
 
 }

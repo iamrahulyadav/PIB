@@ -14,24 +14,32 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.android.volley.Cache;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.fabric.sdk.android.Fabric;
 import utils.AppController;
 import utils.FireBaseHandler;
 import utils.News;
 import utils.NewsAdapter;
 import utils.NewsParser;
+import utils.SettingManager;
 import utils.SqlDatabaseHelper;
 
 import static com.android.volley.VolleyLog.TAG;
@@ -54,6 +62,8 @@ public class RssFeedFragment extends Fragment {
 
     private final int SOURCETYPE_OFFLINE = 2;
     private final int SOURCETYPE_FIREBASE = 1;
+    private final int SOURCETYPE_HINDI = 3;
+
 
     // TODO: Rename and change types of parameters
     private String urlToOpen;
@@ -67,7 +77,7 @@ public class RssFeedFragment extends Fragment {
 
     SwipeRefreshLayout swipeRefreshLayout;
 
-    public  ProgressDialog pDialog;
+    public ProgressDialog pDialog;
 
     public static int newsCount;
 
@@ -180,7 +190,7 @@ public class RssFeedFragment extends Fragment {
 
 
         pDialog.show();
-
+        loadCache(url);
         StringRequest strReq = new StringRequest(Request.Method.GET,
                 url, new Response.Listener<String>() {
 
@@ -190,7 +200,7 @@ public class RssFeedFragment extends Fragment {
 
                 response = response.substring(response.indexOf("<"));
 
-
+                newsArrayList.clear();
                 for (News object : new NewsParser(response).parseJson()) {
 
                     object.setRead(sqlDatabaseHelper.getNewsReadStatus(object.getLink()));
@@ -202,6 +212,7 @@ public class RssFeedFragment extends Fragment {
 
                 initializeFragment();
 
+                setLastUpdated();
 
             }
         }, new Response.ErrorListener() {
@@ -210,17 +221,32 @@ public class RssFeedFragment extends Fragment {
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
 
-                loadCache(url);
+                //Toast.makeText(getContext(), "Unable to load data. Please try again later", Toast.LENGTH_SHORT).show();
 
-                pDialog.hide();
+                initializeFragment();
+
+                try {
+                    pDialog.hide();
+                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "Main activity").putCustomAttribute("reason", error.getMessage()));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
             }
         }
 
-        )
-        {
+        ) {
             public Map<String, String> getHeaders() {
-                Map<String, String>  params = new HashMap<String, String>();
-                params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; style=null; _ga=GA1.3.1895171585.1513447950; PIB_Accessibility=Lang=1&Region=3; __atuvc=7%7C50%2C2%7C51; _gid=GA1.3.220297058.1513617359; ASP.NET_SessionId=5yfd1d1zsbg20xe2d2yg52rj; _gat_gtag_UA_110683570_1=1");
+                Map<String, String> params = new HashMap<String, String>();
+                if (sourceType == SOURCETYPE_HINDI) {
+                    params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; style=null; _ga=GA1.3.1895171585.1513447950; PIB_Accessibility=Lang=2&Region=3; __atuvc=7%7C50%2C2%7C51; _gid=GA1.3.220297058.1513617359; ASP.NET_SessionId=5yfd1d1zsbg20xe2d2yg52rj; _gat_gtag_UA_110683570_1=1");
+
+                } else {
+                    params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; style=null; _ga=GA1.3.1895171585.1513447950; PIB_Accessibility=Lang=1&Region=3; __atuvc=7%7C50%2C2%7C51; _gid=GA1.3.220297058.1513617359; ASP.NET_SessionId=5yfd1d1zsbg20xe2d2yg52rj; _gat_gtag_UA_110683570_1=1");
+
+                }
                 params.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36");
                 params.put("DNT", "1");
                 params.put("Upgrade-Insecure-Requests", "1");
@@ -233,13 +259,20 @@ public class RssFeedFragment extends Fragment {
         };
 
 
-        strReq.setShouldCache(true);
+        if (sourceType == 3) {
+            strReq.setShouldCache(false);
+            AppController.getInstance().getRequestQueue().getCache().remove(url);
+        } else {
+            strReq.setShouldCache(true);
+        }
+
         // Adding request to request queue
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
     }
 
 
     private void loadCache(String url) {
+
 
         Cache cache = AppController.getInstance().getRequestQueue().getCache();
 
@@ -252,6 +285,7 @@ public class RssFeedFragment extends Fragment {
 
                 response = response.substring(response.indexOf("<"));
 
+                newsArrayList.clear();
                 for (News object : new NewsParser(response).parseJson()) {
                     object.setRead(sqlDatabaseHelper.getNewsReadStatus(object.getLink()));
                     object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object.getLink()));
@@ -259,7 +293,9 @@ public class RssFeedFragment extends Fragment {
                     newsArrayList.add(object);
                 }
 
-                initializeFragment();
+                newsAdapter.notifyDataSetChanged();
+                pDialog.hide();
+                //initializeFragment();
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -401,8 +437,6 @@ public class RssFeedFragment extends Fragment {
         checkShowSurvey();
 
 
-
-
     }
 
     public void onBookMark(int position) {
@@ -482,9 +516,22 @@ public class RssFeedFragment extends Fragment {
                 }
 
 
-
             }
         });
+    }
+
+    public void setLastUpdated() {
+        try {
+
+            SettingManager.setLastUpdatedTime(getContext(), System.currentTimeMillis());
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm EEE dd MMM");
+
+            String myDate = dateFormat.format(new Date(System.currentTimeMillis()));
+            MainActivity.toolbar.setSubtitle("Last updated - " + myDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // TODO: Rename method, update argument and hook method into UI event

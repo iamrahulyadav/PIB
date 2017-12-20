@@ -1,124 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/newsFeed_refresh_swipeRefresh"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="pib.affairs.current.app.pib.NewsFeedActivity"
     tools:showIn="@layout/activity_news_feed">
 
+
+
+
+<android.support.v4.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-
-        <TextView
-            android:id="@+id/newsFeed_newsministry_textView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-
-            android:layout_marginBottom="4dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="4dp"
-            android:layout_weight="1"
-            android:text="Ministry"
-            android:textAlignment="center"
-            android:textColor="?attr/colorAccent"
-            android:textSize="14sp"
-            android:typeface="monospace"
-            android:textStyle="normal" />
-
-        <TextView
-            android:id="@+id/newsFeed_newsHeading_textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="4dp"
-            android:lineSpacingMultiplier="1.2"
-            android:text="Title"
-            android:textColor="?attr/primaryTextColor"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:typeface="serif"
-
-            />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
 
+            <TextView
+                android:id="@+id/newsFeed_newsministry_textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
 
-        <TextView
-            android:id="@+id/newsFeed_newsDate_textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="4dp"
+                android:layout_weight="1"
+                android:text="Ministry"
+                android:textAlignment="center"
+                android:textColor="?attr/colorAccent"
+                android:textSize="14sp"
+                android:textStyle="normal"
+                android:typeface="monospace" />
 
-            android:layout_marginBottom="4dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="4dp"
-            android:text="Date"
-            android:textAlignment="center"
-            android:textSize="14sp"
-            android:textStyle="normal" />
+            <TextView
+                android:id="@+id/newsFeed_newsHeading_textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="4dp"
+                android:lineSpacingMultiplier="1.2"
+                android:text="Title"
+                android:textColor="?attr/primaryTextColor"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:typeface="serif"
 
-
-
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginBottom="4dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="4dp"
-            android:background="?attr/secondaryTextColor">
-
-        </ImageView>
-
-        <TextView
-            android:id="@+id/newsFeed_text_textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/text_margin"
-            android:autoLink="web"
-            android:fontFamily="serif"
-            android:lineSpacingMultiplier="1.2"
-            android:text="Loading...."
-            android:textColor="?attr/primaryTextColor"
-            android:textSize="16sp"
-
-            android:textIsSelectable="true"
-            android:textStyle="normal" />
+                />
 
 
-        <WebView
-            android:id="@+id/newsFeed_webView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/newsFeed_newsDate_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
 
-        </WebView>
+                android:layout_marginBottom="4dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="4dp"
+                android:text="Date"
+                android:textAlignment="center"
+                android:textSize="14sp"
+                android:textStyle="normal" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:id="@+id/newsFeed_adContainer_LinearLayout"
-            android:layout_height="wrap_content">
 
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="4dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="4dp"
+                android:background="?attr/secondaryTextColor">
+
+            </ImageView>
+
+            <TextView
+                android:id="@+id/newsFeed_text_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/text_margin"
+                android:autoLink="web"
+                android:fontFamily="serif"
+                android:lineSpacingMultiplier="1.2"
+                android:text="Loading...."
+                android:textColor="?attr/primaryTextColor"
+                android:textIsSelectable="true"
+
+                android:textSize="16sp"
+                android:textStyle="normal" />
+
+
+            <WebView
+                android:id="@+id/newsFeed_webView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            </WebView>
+
+            <LinearLayout
+                android:id="@+id/newsFeed_adContainer_LinearLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="4dp"
+                android:background="?attr/secondaryTextColor">
+
+            </ImageView>
         </LinearLayout>
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="4dp"
-            android:background="?attr/secondaryTextColor">
-
-        </ImageView>
-    </LinearLayout>
 
 </android.support.v4.widget.NestedScrollView>
+
+
+
+</android.support.v4.widget.SwipeRefreshLayout>

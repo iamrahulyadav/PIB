@@ -11,5 +11,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_dictionary">Dictionary</string>
     <string name="title_activity_news_feed">PIB</string>
+    <string name="title_activity_airnews">AIRNewsActivity</string>
 
 </resources>

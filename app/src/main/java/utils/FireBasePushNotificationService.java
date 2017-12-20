@@ -13,6 +13,7 @@ import com.google.firebase.messaging.RemoteMessage;
 
 
 import pib.affairs.current.app.pib.NewsDescriptionActivity;
+import pib.affairs.current.app.pib.NewsFeedActivity;
 import pib.affairs.current.app.pib.R;
 
 
@@ -36,7 +37,7 @@ public class FireBasePushNotificationService extends FirebaseMessagingService {
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
 
-            intent = new Intent(this, NewsDescriptionActivity.class);
+            intent = new Intent(this, NewsFeedActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             News news = new News();

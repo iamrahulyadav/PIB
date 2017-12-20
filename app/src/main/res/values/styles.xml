@@ -22,7 +22,7 @@
 
 
         <item name="colorAccent">#ff1b7dce</item>
-        <item name="primaryTextColor">#1e1e21</item>
+        <item name="primaryTextColor">#2e2e2e</item>
         <item name="secondaryTextColor">#bb262626</item>
         <item name="backgroundCardColor">#FFFF</item>
         <item name="dividerColor">#F2F2F3</item>
