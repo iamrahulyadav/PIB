@@ -121,6 +121,9 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        viewPager.setCurrentItem(1);
+
     }
 
 
@@ -291,7 +294,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
 
         try {
-            Answers.getInstance().logCustom(new CustomEvent("AIR Radio opened").putCustomAttribute("News title", mediaMetaData.getMediaTitle()));
+            Answers.getInstance().logCustom(new CustomEvent("AIR Radio played").putCustomAttribute("News title", mediaMetaData.getMediaTitle()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -315,6 +318,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
         AIRNewsActivity.ViewPagerAdapter adapter = new AIRNewsActivity.ViewPagerAdapter(getSupportFragmentManager());
 
+        adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 1), "AIR Offline");
 
         adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Eng.asp", 0), "AIR English");
         adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Daily.asp", 0), "DAILY SPECIAL");
@@ -322,6 +326,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Weekly.asp", 0), "Weekly");
 
         adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0), "AIR Hindi");
+
 
 
         viewPager.setAdapter(adapter);

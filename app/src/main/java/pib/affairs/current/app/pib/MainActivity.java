@@ -46,14 +46,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.pollfish.constants.Position;
-import com.pollfish.interfaces.PollfishClosedListener;
-import com.pollfish.interfaces.PollfishOpenedListener;
-import com.pollfish.interfaces.PollfishSurveyCompletedListener;
-import com.pollfish.interfaces.PollfishSurveyNotAvailableListener;
-import com.pollfish.interfaces.PollfishSurveyReceivedListener;
-import com.pollfish.interfaces.PollfishUserNotEligibleListener;
-import com.pollfish.main.PollFish;
+
 
 import io.fabric.sdk.android.Fabric;
 
@@ -143,6 +136,8 @@ public class MainActivity extends AppCompatActivity
 
         setLastUpdated();
 
+        viewPager.setCurrentItem(1);
+
     }
 
     private void initializeWebview() {
@@ -151,110 +146,35 @@ public class MainActivity extends AppCompatActivity
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setLoadWithOverviewMode(true);
 
-        if (AppRater.getLaunchCount(MainActivity.this) < 5) {
-            webView.loadUrl("http://pib.nic.in/index.aspx");
+       /* if (AppRater.getLaunchCount(MainActivity.this) < 5) {
 
-            webView.setWebViewClient(new WebViewClient() {
-                @SuppressWarnings("deprecation")
-                @Override
-                public boolean shouldOverrideUrlLoading(WebView webView, String url) {
-                    return shouldOverrideUrlLoading(url);
-                }
+        }*/
+        webView.loadUrl("http://pib.nic.in/index.aspx");
 
-                @TargetApi(Build.VERSION_CODES.N)
-                @Override
-                public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
-                    Uri uri = request.getUrl();
-                    return shouldOverrideUrlLoading(uri.toString());
-                }
+        webView.setWebViewClient(new WebViewClient() {
+            @SuppressWarnings("deprecation")
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView webView, String url) {
+                return shouldOverrideUrlLoading(url);
+            }
 
-                private boolean shouldOverrideUrlLoading(final String url) {
-                    // Log.i(TAG, "shouldOverrideUrlLoading() URL : " + url);
+            @TargetApi(Build.VERSION_CODES.N)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                return shouldOverrideUrlLoading(uri.toString());
+            }
 
-                    // Here put your code
-                    webView.loadUrl(url);
+            private boolean shouldOverrideUrlLoading(final String url) {
+                // Log.i(TAG, "shouldOverrideUrlLoading() URL : " + url);
 
-                    return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
-                }
-            });
-        }
-    }
+                // Here put your code
+                webView.loadUrl(url);
 
-    public static void initializePollfish(Activity activity) {
-        PollFish.ParamsBuilder paramsBuilder = new PollFish.ParamsBuilder("517bf264-2677-44c0-bc28-9484037993f1")
-                .pollfishSurveyReceivedListener(new PollfishSurveyReceivedListener() {
-                    @Override
-                    public void onPollfishSurveyReceived(boolean b, int i) {
-                        Log.d(TAG, "onPollfishSurveyReceived: ");
-                        try {
-                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "Survey recieved"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                })
-                .pollfishSurveyNotAvailableListener(new PollfishSurveyNotAvailableListener() {
-                    @Override
-                    public void onPollfishSurveyNotAvailable() {
-                        Log.d(TAG, "onPollfishSurveyNotAvailable: ");
-                        try {
-                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "Survey not available"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                })
-                .pollfishUserNotEligibleListener(new PollfishUserNotEligibleListener() {
-                    @Override
-                    public void onUserNotEligible() {
-                        Log.d(TAG, "onUserNotEligible: ");
+                return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
+            }
+        });
 
-                        try {
-                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "user not eligible"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                })
-                .pollfishSurveyCompletedListener(new PollfishSurveyCompletedListener() {
-                    @Override
-                    public void onPollfishSurveyCompleted(boolean b, int i) {
-                        Log.d(TAG, "onPollfishSurveyCompleted: ");
-                        try {
-                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "survey completed"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                })
-                .pollfishOpenedListener(new PollfishOpenedListener() {
-                    @Override
-                    public void onPollfishOpened() {
-                        Log.d(TAG, "onPollfishSurveyCompleted: ");
-                        try {
-                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "Survey opened"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                })
-                .pollfishClosedListener(new PollfishClosedListener() {
-                    @Override
-                    public void onPollfishClosed() {
-                        Log.d(TAG, "onPollfishSurveyCompleted: ");
-                        try {
-                            Answers.getInstance().logCustom(new CustomEvent("Pollfish").putCustomAttribute("status", "survey closed"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                })
-                .releaseMode(true)
-                .indicatorPosition(Position.BOTTOM_LEFT)
-                .customMode(false)
-                .build();
-        PollFish.initWith(activity, paramsBuilder);
     }
 
     @Override
@@ -270,8 +190,11 @@ public class MainActivity extends AppCompatActivity
 
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
 
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 2), "Offline");
+
+
         if (isEnglish) {
-            adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 0), "Updates");
+            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=6", 0), "Updates");
             adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=18", 0), "Featured");
         } else {
             adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 3), "RSS");
@@ -285,10 +208,12 @@ public class MainActivity extends AppCompatActivity
 
         }
 
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 4), "Initiative");
+
+
         //adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 3), "PIB Hindi");
 
-        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 1), "Important");
-        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 2), "Offline");
+        //adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 1), "Important");
 
 
         viewPager.setAdapter(adapter);
@@ -509,6 +434,8 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == R.id.nav_airNews) {
             onAirNewsClick();
+        } else if (id == R.id.nav_ddNews) {
+            onDDNewsClick();
         }
 
         //noinspection SimplifiableIfStatement
@@ -552,11 +479,75 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_aptitude:
                 onInstallAptitudeClick();
                 break;
+
+            case R.id.nav_logical_reasoning:
+                onInstallLogicalClick();
+                break;
+
+            case R.id.nav_daily_editorial:
+                onInstallEditorialClick();
+                break;
+
+            case R.id.nav_ddNews:
+                onDDNewsClick();
+                break;
+
+            case R.id.nav_personality_development:
+                onPersonalityDevelopmentClick();
+                break;
+
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void onPersonalityDevelopmentClick() {
+        try {
+            String link = "https://play.google.com/store/apps/details?id=app.story.craftystudio.shortstory";
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
+            Answers.getInstance().logCustom(new CustomEvent("personality app click"));
+        } catch (Exception e) {
+
+        }
+
+        /*
+       Intent intent = new Intent(MainActivity.this, NewsDescriptionActivity.class);
+       startActivity(intent);
+       */
+
+    }
+
+    private void onDDNewsClick() {
+        Intent intent = new Intent(MainActivity.this, DDNewsListActivity.class);
+        startActivity(intent);
+    }
+
+    private void onNewsDescriptionClick() {
+        Intent intent = new Intent(MainActivity.this, NewsDescriptionActivity.class);
+        startActivity(intent);
+    }
+
+    private void onInstallEditorialClick() {
+        try {
+            String link = "https://play.google.com/store/apps/details?id=app.craftystudio.vocabulary.dailyeditorial";
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
+            Answers.getInstance().logCustom(new CustomEvent("Editorial app click"));
+        } catch (Exception e) {
+
+        }
+    }
+
+    private void onInstallLogicalClick() {
+        try {
+            String link = "https://play.google.com/store/apps/details?id=app.reasoning.logical.quiz.craftystudio.logicalreasoning";
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
+            Answers.getInstance().logCustom(new CustomEvent("Logical app click"));
+
+        } catch (Exception e) {
+
+        }
     }
 
     private void onAirNewsClick() {

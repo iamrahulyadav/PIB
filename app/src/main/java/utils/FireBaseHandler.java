@@ -98,6 +98,73 @@ public class FireBaseHandler {
 
     }
 
+    public void uploadInitiatives(final News news, final OnNewsListener onNewsListener) {
+
+
+        DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("Initiatives/");
+
+        news.setNewsID(mDatabaseRef.push().getKey());
+
+        news.setPushNotification(false);
+
+        DatabaseReference mDatabaseRef1 = mFirebaseDatabase.getReference().child("Initiatives/" + news.getNewsID());
+
+        news.setNewsID("Initiatives");
+
+        mDatabaseRef1.setValue(news).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if (task.isSuccessful()){
+                    onNewsListener.onNewsUpload(true);
+                }else{
+                    onNewsListener.onNewsUpload(false);
+                }
+
+            }
+        });
+
+
+    }
+
+    public void downloadInitiativesList(int limit, final OnNewsListener onNewsListener) {
+
+
+        DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("Initiatives/");
+
+        Query myref2 = mDatabaseRef.limitToLast(limit);
+
+        myref2.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ArrayList<News> newsArrayList = new ArrayList<News>();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    News news = snapshot.getValue(News.class);
+
+                    newsArrayList.add(news);
+                }
+
+                Collections.reverse(newsArrayList);
+
+                onNewsListener.onNewsListDownload(newsArrayList, true);
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                onNewsListener.onNewsListDownload(null, false);
+
+            }
+        });
+
+
+    }
+
+
+
     public void downloadStoryList(int limit, String lastShortStoryID, final OnNewsListener onNewsListener) {
 
 

@@ -8,6 +8,12 @@
         android:icon="@drawable/ic_air_radio"
         />
 
+    <item
+        android:id="@+id/nav_ddNews"
+        android:title="DD News"
+        android:icon="@drawable/ic_action_dd_news"
+        />
+
 
 
     <item android:title="Language">
@@ -38,14 +44,31 @@
         </menu>
     </item>
 
+    <item android:title="More app from us">
+        <menu>
+            <item
+                android:id="@+id/nav_aptitude"
+                android:title="Aptitude Master app" />
 
+            <item
+                android:id="@+id/nav_logical_reasoning"
+                android:title="Logical Reasoning Master" />
+
+            <item
+                android:id="@+id/nav_daily_editorial"
+                android:title="Daily Editorial" />
+
+            <item
+                android:id="@+id/nav_personality_development"
+                android:title="Personality Development" />
+
+
+        </menu>
+    </item>
 
     <item android:title="Communicate">
         <menu>
 
-            <item
-                android:id="@+id/nav_aptitude"
-                android:title="New Aptitude app" />
 
             <item
                 android:id="@+id/nav_share"

@@ -63,6 +63,7 @@ public class RssFeedFragment extends Fragment {
     private final int SOURCETYPE_OFFLINE = 2;
     private final int SOURCETYPE_FIREBASE = 1;
     private final int SOURCETYPE_HINDI = 3;
+    private final int SOURCETYPE_INITIATIVES = 4;
 
 
     // TODO: Rename and change types of parameters
@@ -122,9 +123,34 @@ public class RssFeedFragment extends Fragment {
             fetchNewsFromFireBase();
         } else if (sourceType == SOURCETYPE_OFFLINE) {
             fetchNewsFromDatabse();
+        } else if (sourceType == SOURCETYPE_INITIATIVES) {
+            fetchInitiative();
         } else {
             fetchNews();
         }
+
+    }
+
+    private void fetchInitiative() {
+
+        FireBaseHandler fireBaseHandler = new FireBaseHandler();
+        fireBaseHandler.downloadInitiativesList(30, new FireBaseHandler.OnNewsListener() {
+            @Override
+            public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+                if (isSuccessful) {
+                    for (News news : newsArrayList) {
+
+                        RssFeedFragment.this.newsArrayList.add(news);
+                        initializeFragment();
+                    }
+                }
+            }
+
+            @Override
+            public void onNewsUpload(boolean isSuccessful) {
+
+            }
+        });
 
     }
 
@@ -134,6 +160,7 @@ public class RssFeedFragment extends Fragment {
             news.setRead(sqlDatabaseHelper.getNewsReadStatus(news.getLink()));
             news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news.getLink()));
 
+            news.rectifyNewsLink();
             newsArrayList.add(news);
         }
 
@@ -159,7 +186,7 @@ public class RssFeedFragment extends Fragment {
                         news.setRead(sqlDatabaseHelper.getNewsReadStatus(news.getLink()));
                         news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news.getLink()));
 
-
+                        news.rectifyNewsLink();
                         RssFeedFragment.this.newsArrayList.add(news);
                         initializeFragment();
                     }
@@ -176,7 +203,7 @@ public class RssFeedFragment extends Fragment {
 
     public void checkShowSurvey() {
         if (newsCount == 3 || newsCount == 5) {
-            MainActivity.initializePollfish(getActivity());
+
         }
     }
 
@@ -205,6 +232,7 @@ public class RssFeedFragment extends Fragment {
 
                     object.setRead(sqlDatabaseHelper.getNewsReadStatus(object.getLink()));
                     object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object.getLink()));
+                    object.rectifyNewsLink();
 
                     newsArrayList.add(object);
                 }
@@ -244,14 +272,17 @@ public class RssFeedFragment extends Fragment {
                     params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; style=null; _ga=GA1.3.1895171585.1513447950; PIB_Accessibility=Lang=2&Region=3; __atuvc=7%7C50%2C2%7C51; _gid=GA1.3.220297058.1513617359; ASP.NET_SessionId=5yfd1d1zsbg20xe2d2yg52rj; _gat_gtag_UA_110683570_1=1");
 
                 } else {
-                    params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; style=null; _ga=GA1.3.1895171585.1513447950; PIB_Accessibility=Lang=1&Region=3; __atuvc=7%7C50%2C2%7C51; _gid=GA1.3.220297058.1513617359; ASP.NET_SessionId=5yfd1d1zsbg20xe2d2yg52rj; _gat_gtag_UA_110683570_1=1");
+                    params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; _ga=GA1.3.2027251216.1513617291; style=null; PIB_Accessibility=Lang=1&Region=3; __atuvc=12%7C51; ASP.NET_SessionId=lapxd40g1yzxjlpktzotxf3a; _gid=GA1.3.1984463729.1514055749; _gat_gtag_UA_110683570_1=1");
 
                 }
                 params.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36");
-                params.put("DNT", "1");
-                params.put("Upgrade-Insecure-Requests", "1");
-                params.put("Host", "pib.nic.in");
+                //params.put("DNT", "1");
+                //params.put("Upgrade-Insecure-Requests", "1");
+                //params.put("Host", "pib.nic.in");
                 params.put("Connection", "keep-alive");
+                //params.put("Accept-Encoding", "gzip, deflate");
+                //params.put("Accept-Language", "en-GB,en;q=0.9");
+                //params.put("Cache-Control", "max-age=0");
                 params.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
 
                 return params;
@@ -289,7 +320,7 @@ public class RssFeedFragment extends Fragment {
                 for (News object : new NewsParser(response).parseJson()) {
                     object.setRead(sqlDatabaseHelper.getNewsReadStatus(object.getLink()));
                     object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object.getLink()));
-
+                    object.rectifyNewsLink();
                     newsArrayList.add(object);
                 }
 
@@ -309,9 +340,11 @@ public class RssFeedFragment extends Fragment {
 
         newsAdapter.notifyDataSetChanged();
 
-        if (swipeRefreshLayout != null) {
-            swipeRefreshLayout.setRefreshing(false);
-        }
+
+            if (swipeRefreshLayout != null) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+
     }
 
 
@@ -377,6 +410,12 @@ public class RssFeedFragment extends Fragment {
         }
 
         initializeFragment();
+
+        if (sourceType == SOURCETYPE_INITIATIVES){
+            if (newsArrayList.size()<1&& swipeRefreshLayout!=null){
+                swipeRefreshLayout.setRefreshing(true);
+            }
+        }
 
 
         return view;
@@ -511,6 +550,8 @@ public class RssFeedFragment extends Fragment {
                     fetchNewsFromFireBase();
                 } else if (sourceType == SOURCETYPE_OFFLINE) {
                     fetchNewsFromDatabse();
+                } else if (sourceType == 4) {
+                    fetchInitiative();
                 } else {
                     fetchNews();
                 }

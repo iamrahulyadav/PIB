@@ -1,10 +1,15 @@
 package pib.affairs.current.app.pib;
 
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.android.volley.Cache;
@@ -22,7 +28,13 @@ import com.android.volley.toolbox.StringRequest;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,6 +47,7 @@ import utils.NewsAdapter;
 import utils.NewsParser;
 import utils.SettingManager;
 
+import static android.content.Context.DOWNLOAD_SERVICE;
 import static com.android.volley.VolleyLog.TAG;
 
 
@@ -66,6 +79,7 @@ public class AIRRssFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private NewsAdapter newsAdapter;
+    private DownloadManager downloadManager;
 
     public AIRRssFragment() {
         // Required empty public constructor
@@ -104,8 +118,12 @@ public class AIRRssFragment extends Fragment {
 
         newsAdapter = new NewsAdapter(newsArrayList, getContext());
 
+        if (sourceType == 1) {
+            readAIRNewsFromStorage();
+        } else {
+            fetchNews();
+        }
 
-        fetchNews();
 
     }
 
@@ -148,10 +166,10 @@ public class AIRRssFragment extends Fragment {
                 error.printStackTrace();
 
                 AIRNewsActivity.pDialog.hide();
-                try{
-                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity","AIR Rss activity").putCustomAttribute("reason",error.getMessage()));
+                try {
+                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "AIR Rss activity").putCustomAttribute("reason", error.getMessage()));
 
-                }catch(Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -214,8 +232,21 @@ public class AIRRssFragment extends Fragment {
             @Override
             public void onBookMarkClick(View view, int position) {
 
-                Toast.makeText(getContext(), "Support for offline AIR News will be available in next update", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Downloading News", Toast.LENGTH_SHORT).show();
 
+                News news = (News) newsArrayList.get(position);
+
+                if (sourceType == 1) {
+
+                    onRemoveBookMark(news);
+                    news.setBookMark(false);
+                } else {
+                    onBookMark(news);
+                    news.setBookMark(true);
+
+                }
+
+                newsAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -225,8 +256,128 @@ public class AIRRssFragment extends Fragment {
             }
         });
 
+        SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.fragment_rss_swipeRefresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+
+                if (sourceType == 1) {
+                    readAIRNewsFromStorage();
+                } else {
+                    fetchNews();
+                }
+
+            }
+        });
+
         return view;
     }
+
+    private void onRemoveBookMark(News news) {
+        try {
+            File fdelete = new File(news.getLink());
+            if (fdelete.exists()) {
+                if (fdelete.delete()) {
+                    System.out.println("file Deleted :");
+                } else {
+                    System.out.println("file not Deleted :");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void onBookMark(News news) {
+        try {
+            long downloadReference;
+
+            // Create request for android download manager
+            downloadManager = (DownloadManager) getContext().getSystemService(DOWNLOAD_SERVICE);
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(news.getLink()));
+
+            //Setting title of request
+            request.setTitle(news.getTitle());
+
+            //Setting description of request
+            request.setDescription(news.getTitle());
+
+            String title;
+            if (news.getTitle().indexOf(" ") > 0) {
+                title = news.getTitle().substring(0, news.getTitle().indexOf(" "));
+            } else {
+                title = news.getTitle();
+            }
+
+            title = news.getTitle().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+
+            request.setDestinationInExternalFilesDir(getContext(),
+                    Environment.DIRECTORY_DOWNLOADS, title + ".mp3");
+
+            //Set the local destination for the downloaded file to a path
+            //within the application's external files directory
+
+            //Enqueue download and save into referenceId
+            downloadReference = downloadManager.enqueue(request);
+
+
+
+                Answers.getInstance().logCustom(new CustomEvent("AIR Radio bookmarked").putCustomAttribute("News",news.getTitle()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void readAIRNewsFromStorage() {
+
+        try {
+            String path = "storage/emulated/0/Android/data/app.crafty.studio.current.affairs.pib/files/Download";
+            Log.d("Files", "Path: " + path);
+            File directory = new File(path);
+            File[] files = directory.listFiles();
+            if (files == null) {
+                return;
+            }
+
+            newsArrayList.clear();
+            for (int i = 0; i < files.length; i++) {
+                Log.d("Files", "FileName:" + files[i].getName());
+
+                News news = new News();
+                news.setTitle(files[i].getName());
+                news.setLink(Uri.fromFile(files[i]).getPath());
+                news.setPubDate(getDateFromMillis(files[i].lastModified()));
+                news.setBookMark(true);
+
+
+                newsArrayList.add(news);
+            }
+
+            newsAdapter.notifyDataSetChanged();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public String getDateFromMillis(long millis) {
+
+        try {
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("EEE dd MMM");
+            String myDate = dateFormat.format(new Date(millis));
+            return myDate;
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+
+    }
+
 
     private void onItemClick(int position) {
         News news = (News) newsArrayList.get(position);
@@ -247,7 +398,7 @@ public class AIRRssFragment extends Fragment {
 
     }
 
-    public void setLastUpdated(){
+    public void setLastUpdated() {
         try {
 
 
@@ -255,7 +406,7 @@ public class AIRRssFragment extends Fragment {
 
             String myDate = dateFormat.format(new Date(System.currentTimeMillis()));
             AIRNewsActivity.toolbar.setSubtitle("Last updated - " + myDate);
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

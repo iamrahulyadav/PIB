@@ -14,6 +14,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,6 +33,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
 import com.crashlytics.android.answers.CustomEvent;
@@ -64,7 +66,10 @@ import utils.FireBaseHandler;
 import utils.News;
 import utils.NewsParser;
 import utils.NightModeManager;
+import utils.SettingManager;
 import utils.SqlDatabaseHelper;
+
+import static com.android.volley.VolleyLog.TAG;
 
 public class NewsDescriptionActivity extends AppCompatActivity {
     News news;
@@ -72,6 +77,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
     boolean pushNotification;
 
     private NativeAd nativeAd;
+    private String tableDataString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +92,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        news = (News) getIntent().getSerializableExtra("news");
+      /*  news = (News) getIntent().getSerializableExtra("news");
         boolean isOffline = getIntent().getBooleanExtra("isOffline", false);
         pushNotification= getIntent().getBooleanExtra("pushNotification",false);
 
@@ -98,11 +104,20 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             htmlTextString = new SqlDatabaseHelper(this)
                     .getFullNews(news.getLink());
 
-        }
+        }*/
 
         webView = (WebView) findViewById(R.id.newsDesription_webView);
-       /* webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setMinimumFontSize(50);
+        webView.getSettings().setJavaScriptEnabled(true);
+
+        initializeWebView();
+
+        webView.getSettings().setLoadWithOverviewMode(true);
+
+        webView.loadUrl("http://www.pib.gov.in/AllRelease.aspx?MenuId=3");
+
+        //getWebsite("http://www.pib.gov.in/AllRelease.aspx?MenuId=3");
+
+       /* webView.getSettings().setMinimumFontSize(50);
         //webView.getSettings().setTextZoom(250);
 
         //initializeWebView();
@@ -126,7 +141,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
 */
 
-        webView.loadUrl("http://pib.nic.in/index.aspx");
+       // webView.loadUrl("http://pib.nic.in/index.aspx");
 
 
 
@@ -174,7 +189,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 */
         //temp();
 
-        //getWebsite(news.getLink());
+
 
     }
 
@@ -245,6 +260,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
                 // Here put your code
                 webView.loadUrl(url);
 
+
                 return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
             }
         });
@@ -258,6 +274,96 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }
+    }
+
+    private void getWebsite(final String url) {
+
+
+        String tag_string_req = "string_req";
+
+
+
+        StringRequest strReq = new StringRequest(Request.Method.GET,
+                url, new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+
+                initializeActivityData(response);
+                //webView.loadDataWithBaseURL("", response, "text/html", "UTF-8", "");
+
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+                try {
+                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "News feed activity").putCustomAttribute("reason", error.getMessage()));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+
+
+
+            }
+        });
+
+
+        strReq.setShouldCache(true);
+        // Adding request to request queue
+        //AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+
+        strReq.setTag(TextUtils.isEmpty(tag_string_req) ? TAG : tag_string_req);
+        Volley.newRequestQueue(getApplicationContext()).add(strReq);
+
+
+    }
+
+    public void initializeActivityData(final String data) {
+
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final StringBuilder builder = new StringBuilder();
+
+                try {
+
+                    Document doc = Jsoup.parse(data);
+                    //Document doc = Jsoup.connect(url).get();
+                    String title = doc.title();
+
+
+
+                    tableDataString = doc.select(".pb40").toString();
+
+
+
+
+                } catch (Exception e) {
+                    builder.append("Error : ").append(e.getMessage()).append("\n");
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        webView.loadDataWithBaseURL("", tableDataString, "text/html", "UTF-8", "");
+
+
+                    }
+                });
+
+
+            }
+        }).start();
+
+        // hideLoadingDialog();
     }
 
     @Override
@@ -276,7 +382,8 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_save_offline) {
-            onSaveOfflineClick();
+            //onSaveOfflineClick();
+            onPostInitiative();
             return true;
         }
         else if (id == R.id.action_open_browser) {
@@ -288,6 +395,28 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onPostInitiative() {
+        News initiativeNews = new News();
+        initiativeNews.setLink("link");
+        initiativeNews.setTitle("title");
+        initiativeNews.setPubDate("date");
+        initiativeNews.setDescription("description");
+
+
+        new FireBaseHandler().uploadInitiatives(initiativeNews, new FireBaseHandler.OnNewsListener() {
+            @Override
+            public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+
+            }
+
+            @Override
+            public void onNewsUpload(boolean isSuccessful) {
+
+                Toast.makeText(NewsDescriptionActivity.this, "News posted " + isSuccessful, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void onOpenInBrowser() {
@@ -457,6 +586,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         nativeAd.loadAd();
 
     }
+/*
 
     private void getWebsite(final String url) {
         new Thread(new Runnable() {
@@ -488,5 +618,6 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         }).start();
     }
 
+*/
 
 }

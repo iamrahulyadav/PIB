@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="pib.affairs.current.app.pib.DDNewsFeedActivity"
+    tools:showIn="@layout/activity_ddnews_feed">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:id="@+id/newsFeed_newsministry_textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_weight="1"
+            android:text="DD News"
+            android:textAlignment="center"
+            android:textColor="?attr/colorAccent"
+            android:textSize="14sp"
+            android:textStyle="normal"
+            android:typeface="monospace" />
+
+        <TextView
+            android:id="@+id/ddnews_title_textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="4dp"
+            android:lineSpacingMultiplier="1.2"
+            android:text="Title"
+            android:textColor="?attr/primaryTextColor"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:typeface="serif"
+
+            />
+
+
+        <TextView
+            android:id="@+id/ddnews_newsDate_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="4dp"
+            android:text="Date"
+            android:textAlignment="center"
+            android:textSize="14sp"
+            android:textStyle="normal" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="4dp"
+            android:background="?attr/secondaryTextColor">
+
+        </ImageView>
+
+        <TextView
+            android:id="@+id/ddnews_description_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:autoLink="web"
+            android:fontFamily="serif"
+            android:lineSpacingMultiplier="1.1"
+            android:text="Loading...."
+            android:textColor="?attr/primaryTextColor"
+            android:textSize="16sp"
+            android:textStyle="normal" />
+
+
+        <LinearLayout
+            android:id="@+id/ddnews_adContainer_LinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="4dp"
+            android:background="?attr/secondaryTextColor">
+
+        </ImageView>
+    </LinearLayout>
+
+
+</android.support.v4.widget.NestedScrollView>

@@ -1,5 +1,7 @@
 package utils;
 
+import android.net.Uri;
+
 import java.io.Serializable;
 
 /**
@@ -75,5 +77,18 @@ public class News implements Serializable {
 
     public void setBookMark(boolean bookMark) {
         this.bookMark = bookMark;
+    }
+
+    public void rectifyNewsLink(){
+
+        Uri uri = Uri.parse(link);
+        String relID = uri.getQueryParameter("PRID");
+
+        if (relID!=null) {
+            if (!relID.isEmpty()) {
+                setLink("http://pib.nic.in/Pressreleaseshare.aspx?PRID=" + relID);
+            }
+        }
+
     }
 }

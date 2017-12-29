@@ -23,8 +23,8 @@ android {
         applicationId "app.crafty.studio.current.affairs.pib"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 6
-        versionName "1.6"
+        versionCode 10
+        versionName "1.10"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
@@ -59,7 +59,6 @@ dependencies {
     compile 'com.google.firebase:firebase-ads:11.6.2'
 
 
-    compile 'com.pollfish:pollfish:+:googleplayRelease@aar'
 
     compile 'com.facebook.android:audience-network-sdk:4.+'
     compile 'org.jsoup:jsoup:1.10.1'

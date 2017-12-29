@@ -11,6 +11,12 @@
         android:title="Save offline"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_refresh"
+        android:orderInCategory="100"
+        android:title="Refresh"
+        android:icon="@drawable/ic_action_refresh"
+        />
 
 
 
@@ -20,6 +26,12 @@
         android:title="Text Size"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_tts_reader"
+        android:orderInCategory="100"
+        android:title="tts Reader"
+        android:icon="@drawable/ic_action_refresh"
+        />
 
     <!-- <item
          android:id="@+id/action_post"
@@ -27,11 +39,6 @@
          android:title="Post PIB"
          app:showAsAction="never" />
  -->
-    <item
-        android:id="@+id/action_open_browser"
-        android:orderInCategory="100"
-        android:title="Open in Browser"
-        app:showAsAction="never" />
 
     <item
         android:id="@+id/action_share"
@@ -40,12 +47,15 @@
         android:title="Share"
         app:showAsAction="ifRoom" />
 
+
+
+
+
     <item
-        android:id="@+id/action_refresh"
+        android:id="@+id/action_open_browser"
         android:orderInCategory="100"
-        android:title="Refresh"
-        android:icon="@drawable/ic_action_refresh"
-         />
+        android:title="Open in Browser"
+        app:showAsAction="never" />
 
 
 </menu>

@@ -48,7 +48,6 @@
             android:name="io.fabric.ApiKey"
             android:value="acc1b0b9ec29985ac9dbef0f05837dac47e0b387" />
 
-
         <activity
             android:name=".NewsFeedActivity"
             android:label="@string/title_activity_news_feed"
@@ -56,15 +55,13 @@
         <activity
             android:name=".AIRNewsActivity"
             android:label="@string/title_activity_airnews"
-            android:theme="@style/ActivityThemeLight">
-
-        </activity>
-
+            android:theme="@style/ActivityThemeLight" />
 
         <service
             android:name="dm.audiostreamer.AudioStreamingService"
             android:enabled="true"
             android:exported="false" />
+
         <receiver android:name="dm.audiostreamer.AudioStreamingReceiver">
             <intent-filter>
                 <action android:name="dm.audiostreamer.close" />
@@ -77,6 +74,14 @@
             </intent-filter>
         </receiver>
 
+        <activity
+            android:name=".DDNewsListActivity"
+            android:label="@string/title_activity_ddnews_list"
+            android:theme="@style/ActivityThemeLight" />
+        <activity
+            android:name=".DDNewsFeedActivity"
+            android:label="@string/title_activity_ddnews_feed"
+            android:theme="@style/ActivityThemeLight"></activity>
     </application>
 
 </manifest>

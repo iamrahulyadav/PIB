@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
+import android.util.Log;
 
 import java.net.URI;
 import java.net.URL;
@@ -158,6 +159,10 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
             relID = uri.getQueryParameter("NoteId");
         }
 
+        if (relID == null){
+            relID= link;
+        }
+
         try {
             Cursor cursor = db.query(TABLE_SAVED_FEED, new String[]{KEY_RELID,
                             KEY_LINK}, KEY_RELID + "=?",
@@ -210,6 +215,9 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
             relID = uri.getQueryParameter("NoteId");
         }
 
+      if (relID == null){
+            relID = news.getDescription();
+      }
 
         try{
         values.put(KEY_RELID, relID);
@@ -221,8 +229,9 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
 
 
         // Inserting Row
-        db.insert(TABLE_SAVED_FEED, null, values);
-        db.close(); // Closing database connection
+       long i= db.insert(TABLE_SAVED_FEED, null, values);
+            Log.d("TAG", "addSavedNews: "+i);
+       db.close(); // Closing database connection
 
     } catch (Exception e) {
         e.printStackTrace();

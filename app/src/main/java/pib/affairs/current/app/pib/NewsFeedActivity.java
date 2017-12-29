@@ -1,8 +1,10 @@
 package pib.affairs.current.app.pib;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,10 +22,13 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -69,7 +74,8 @@ import utils.SqlDatabaseHelper;
 
 import static com.android.volley.VolleyLog.TAG;
 
-public class NewsFeedActivity extends AppCompatActivity {
+public class NewsFeedActivity extends AppCompatActivity implements
+        TextToSpeech.OnInitListener {
 
 
     TextView newsTextView, newsHeadingTextView, newsDateTextView, newsMinistryTextView;
@@ -87,6 +93,9 @@ public class NewsFeedActivity extends AppCompatActivity {
     private boolean pushNotification;
 
     SwipeRefreshLayout swipeRefreshLayout;
+
+    private TextToSpeech tts;
+    private int voiceReaderChunk;
 
 
     @Override
@@ -114,7 +123,29 @@ public class NewsFeedActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getWebsite(news.getLink());
+
+
+                if (news.getNewsID() !=null){
+                    try {
+                        if (news.getNewsID().equalsIgnoreCase("Initiatives")) {
+
+                            webView.loadUrl(news.getLink());
+                            swipeRefreshLayout.setRefreshing(false);
+                            hideLoadingDialog();
+
+                        } else {
+                            getWebsite(news.getLink());
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        getWebsite(news.getLink());
+                    }
+                }else{
+                    getWebsite(news.getLink());
+                }
+
+
             }
         });
 
@@ -135,7 +166,27 @@ public class NewsFeedActivity extends AppCompatActivity {
 
         showLoadingDialog("Loading...");
 
-        getWebsite(news.getLink());
+
+
+
+        if (news.getNewsID() !=null){
+            try {
+                if (news.getNewsID().equalsIgnoreCase("Initiatives")) {
+
+                    webView.loadUrl(news.getLink());
+                    hideLoadingDialog();
+
+                } else {
+                    getWebsite(news.getLink());
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                getWebsite(news.getLink());
+            }
+        }else{
+            getWebsite(news.getLink());
+        }
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -159,9 +210,69 @@ public class NewsFeedActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        initializeBottomNativeAds(1000l);
+
+        tts = new TextToSpeech(this, this);
+
+        initializeWebView();
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (tts != null) {
+            speakOutWord(".");
+            tts.stop();
+            tts.shutdown();
+        }
+    }
+
+    private void speakOutWord(String speakWord) {
+
+        try {
+
+            if (Build.VERSION.SDK_INT > 18) {
+            }
+
+            tts.speak(speakWord, TextToSpeech.QUEUE_FLUSH, null);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void initializeWebView() {
+
+        if (NightModeManager.getNightMode(this)) {
+            webView.setBackgroundColor(Color.parseColor("#5a666b"));
+        }
+
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setJavaScriptEnabled(true);
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView webView, String url) {
+                return shouldOverrideUrlLoading(url);
+            }
+
+            @TargetApi(Build.VERSION_CODES.N)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                return shouldOverrideUrlLoading(uri.toString());
+            }
+
+            private boolean shouldOverrideUrlLoading(final String url) {
+                // Log.i(TAG, "shouldOverrideUrlLoading() URL : " + url);
+
+                // Here put your code
+                webView.loadUrl(url);
+
+                return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
+            }
+        });
+    }
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -199,6 +310,9 @@ public class NewsFeedActivity extends AppCompatActivity {
         } else if (id == R.id.action_refresh) {
             recreate();
             return true;
+        } else if (id == R.id.action_tts_reader) {
+            onTtsReaderClick(item);
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -212,6 +326,58 @@ public class NewsFeedActivity extends AppCompatActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onInit(int status) {
+
+        if (status == TextToSpeech.SUCCESS) {
+
+            Locale locale = new Locale("en", "IN");
+            int availability = tts.isLanguageAvailable(locale);
+            int result = 0;
+            switch (availability) {
+                case TextToSpeech.LANG_COUNTRY_AVAILABLE:
+                case TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE: {
+                    result = tts.setLanguage(locale);
+                    break;
+                }
+                case TextToSpeech.LANG_NOT_SUPPORTED:
+                case TextToSpeech.LANG_MISSING_DATA:
+                case TextToSpeech.LANG_AVAILABLE: {
+                    result = tts.setLanguage(Locale.US);
+                    tts.setPitch(0.9f);
+                    tts.setSpeechRate(0.9f);
+                }
+            }
+
+
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "This Language is not supported");
+            } else {
+                // btnSpeak.setEnabled(true);
+                speakOutWord("");
+            }
+
+        } else {
+            Log.e("TTS", "Initilization Failed!");
+        }
+
+    }
+
+
+    private void onTtsReaderClick(MenuItem item) {
+
+        if (tts.isSpeaking()) {
+            speakOutWord("");
+            item.setTitle("Read Editorial (Voice)");
+
+        } else {
+            item.setTitle("Stop Reader");
+            ttsReaderClick();
+        }
+
     }
 
     private void onSaveOfflineClick() {
@@ -353,6 +519,8 @@ public class NewsFeedActivity extends AppCompatActivity {
 
                 SettingManager.setTextSize(NewsFeedActivity.this, size);
 
+                getWebsite(news.getLink());
+
 
             }
         });
@@ -390,6 +558,7 @@ public class NewsFeedActivity extends AppCompatActivity {
 
 
         String tag_string_req = "string_req";
+
         loadCache(url);
 
         StringRequest strReq = new StringRequest(Request.Method.GET,
@@ -415,9 +584,9 @@ public class NewsFeedActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                if (newsTextString==null) {
+                if (tableDataString == null) {
                     Toast.makeText(NewsFeedActivity.this, "Unable to load data. Please try again later", Toast.LENGTH_SHORT).show();
-                }else if (newsTextString.isEmpty()){
+                } else if (tableDataString.isEmpty()) {
                     Toast.makeText(NewsFeedActivity.this, "Unable to load data. Please try again later", Toast.LENGTH_SHORT).show();
 
                 }
@@ -475,25 +644,33 @@ public class NewsFeedActivity extends AppCompatActivity {
                     //Document doc = Jsoup.connect(url).get();
                     String title = doc.title();
 
-                    doc.select("noscript").remove();
-                    doc.select(".footer-nic").remove();
+                    //doc.select("noscript").remove();
+                    //doc.select(".footer-nic").remove();
 
-                    newsMinistry = doc.select(".MinistryNameSubhead").text();
+                    //newsMinistry = doc.select(".MinistryNameSubhead").text();
 
                     if (news.getTitle() == null) {
                         news.setTitle(doc.select("h2").text());
 
                     }
 
-                    tableDataString = doc.select("table").toString();
-                    doc.select("table").remove();
+                    tableDataString = doc.select(".content-area").toString();
+                    //tableDataString = doc.select(".innner-page-main-about-us-content-right-part").toString();
 
+                    doc = Jsoup.parse(tableDataString);
+                    doc.select(".ReleaseLang").remove();
+                    doc.select(".BackgroundRelease").remove();
+                    doc.select(".RelTag").remove();
+                    doc.select(".RelLink").remove();
+
+                    tableDataString = doc.toString();
+/*
                     Elements links = doc.select("p");
                     links.select("style").remove();
 
 
                     builder.append(links.toString());
-                    Log.d(TAG, "run: " + links.toString() + tableDataString);
+                    Log.d(TAG, "run: " + links.toString() + tableDataString);*/
 
                 } catch (Exception e) {
                     builder.append("Error : ").append(e.getMessage()).append("\n");
@@ -502,22 +679,24 @@ public class NewsFeedActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d("NEWS", "run: " + builder.toString());
+
+                       /* Log.d("NEWS", "run: " + builder.toString());
                         if (Build.VERSION.SDK_INT >= 24) {
                             newsTextView.setText(Html.fromHtml(builder.toString(), Html.FROM_HTML_MODE_COMPACT));
                         } else {
                             newsTextView.setText(Html.fromHtml(builder.toString()));
                         }
-
                         newsTextString = builder.toString();
-
                         newsMinistryTextView.setText(newsMinistry);
                         newsHeadingTextView.setText(news.getTitle());
+*/
+                        tableDataString = "<html ><style>span{line-height: 120%;font-size:" + SettingManager.getTextSize(NewsFeedActivity.this) + "px}</style>" + tableDataString + "</html>";
 
                         webView.loadDataWithBaseURL("", tableDataString, "text/html", "UTF-8", "");
-
                         hideLoadingDialog();
                         swipeRefreshLayout.setRefreshing(false);
+
+                        initializeBottomNativeAds();
 
                     }
                 });
@@ -526,7 +705,65 @@ public class NewsFeedActivity extends AppCompatActivity {
             }
         }).start();
 
-        hideLoadingDialog();
+
+        // hideLoadingDialog();
+    }
+
+    public void ttsReaderClick() {
+
+        Document doc = Jsoup.parse(tableDataString);
+        Elements textElement = doc.select("p");
+
+        String ttsString = textElement.text();
+        Log.d(TAG, "ttsReaderClick: " + ttsString);
+
+        if (ttsString.length() < 3999) {
+            speakOutWord(ttsString);
+        } else {
+            voiceReaderChunk = 0;
+            voiceReaderChunkManager(ttsString);
+        }
+
+    }
+
+    private void voiceReaderChunkManager(final String ttsString) {
+
+        if (ttsString.length() > (voiceReaderChunk)) {
+
+            String chunk = ttsString.substring(voiceReaderChunk, Math.min(voiceReaderChunk + 3999, ttsString.length()));
+
+            voiceReaderChunk = voiceReaderChunk + 3999;
+
+            tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                @Override
+                public void onStart(String utteranceId) {
+                    Log.d("TTS", "onDone: " + utteranceId);
+                }
+
+                @Override
+                public void onDone(String utteranceId) {
+
+                    Log.d("TTS", "onDone: " + utteranceId);
+                    voiceReaderChunkManager(ttsString);
+
+                }
+
+                @Override
+                public void onError(String utteranceId) {
+                    Log.d("TTS", "onDone: " + utteranceId);
+                }
+            });
+
+            try {
+                if (Build.VERSION.SDK_INT > 21) {
+                    tts.speak(chunk, TextToSpeech.QUEUE_FLUSH, null, "1");
+                }
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            }
+        }
+
     }
 
 
@@ -554,6 +791,7 @@ public class NewsFeedActivity extends AppCompatActivity {
 
 
     public void initializeBottomNativeAds(long timeDelay) {
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -561,44 +799,50 @@ public class NewsFeedActivity extends AppCompatActivity {
                 initializeBottomNativeAds();
             }
         }, timeDelay);
+
     }
 
     public void initializeBottomNativeAds() {
-        nativeAd = new NativeAd(this, "1963281763960722_1972656879689877");
-        nativeAd.setAdListener(new AdListener() {
-            @Override
-            public void onError(Ad ad, AdError adError) {
-                Log.d(TAG, "onError: " + adError);
 
-                try {
-                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("error", adError.getErrorMessage()));
-                } catch (Exception e) {
-                    e.printStackTrace();
+        if (nativeAd == null) {
+
+            nativeAd = new NativeAd(this, "1963281763960722_1972656879689877");
+            nativeAd.setAdListener(new AdListener() {
+                @Override
+                public void onError(Ad ad, AdError adError) {
+                    Log.d(TAG, "onError: " + adError);
+
+                    try {
+                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("error", adError.getErrorMessage()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
                 }
 
-            }
+                @Override
+                public void onAdLoaded(Ad ad) {
+                    View adView = NativeAdView.render(NewsFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400);
+                    LinearLayout nativeAdContainer = (LinearLayout) findViewById(R.id.newsFeed_adContainer_LinearLayout);
+                    // Add the Native Ad View to your ad container
+                    nativeAdContainer.addView(adView);
+                }
 
-            @Override
-            public void onAdLoaded(Ad ad) {
-                View adView = NativeAdView.render(NewsFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400);
-                LinearLayout nativeAdContainer = (LinearLayout) findViewById(R.id.newsFeed_adContainer_LinearLayout);
-                // Add the Native Ad View to your ad container
-                nativeAdContainer.addView(adView);
-            }
+                @Override
+                public void onAdClicked(Ad ad) {
 
-            @Override
-            public void onAdClicked(Ad ad) {
+                }
 
-            }
+                @Override
+                public void onLoggingImpression(Ad ad) {
 
-            @Override
-            public void onLoggingImpression(Ad ad) {
+                }
+            });
 
-            }
-        });
+            // Initiate a request to load an ad.
+            nativeAd.loadAd();
+        }
 
-        // Initiate a request to load an ad.
-        nativeAd.loadAd();
 
     }
 
