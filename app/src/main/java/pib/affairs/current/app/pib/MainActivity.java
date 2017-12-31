@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 4), "Initiative");
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 4), "Key Initiative");
 
 
         //adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 3), "PIB Hindi");
@@ -307,7 +307,7 @@ public class MainActivity extends AppCompatActivity
 
                 for (News object : new NewsParser(response).parseJson()) {
 
-                    object.setRead(sqlDatabaseHelper.getNewsReadStatus(object.getLink()));
+                    object.setRead(sqlDatabaseHelper.getNewsReadStatus(object));
 
                     newsArrayList.add(object);
                 }

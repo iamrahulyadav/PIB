@@ -140,6 +140,10 @@ public class RssFeedFragment extends Fragment {
                 if (isSuccessful) {
                     for (News news : newsArrayList) {
 
+                        news.setRead(sqlDatabaseHelper.getNewsReadStatus(news));
+                        news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news));
+
+
                         RssFeedFragment.this.newsArrayList.add(news);
                         initializeFragment();
                     }
@@ -157,8 +161,8 @@ public class RssFeedFragment extends Fragment {
     private void fetchNewsFromDatabse() {
 
         for (News news : sqlDatabaseHelper.getAllSavedNotes()) {
-            news.setRead(sqlDatabaseHelper.getNewsReadStatus(news.getLink()));
-            news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news.getLink()));
+            news.setRead(sqlDatabaseHelper.getNewsReadStatus(news));
+            news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news));
 
             news.rectifyNewsLink();
             newsArrayList.add(news);
@@ -183,8 +187,8 @@ public class RssFeedFragment extends Fragment {
             public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
                 if (isSuccessful) {
                     for (News news : newsArrayList) {
-                        news.setRead(sqlDatabaseHelper.getNewsReadStatus(news.getLink()));
-                        news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news.getLink()));
+                        news.setRead(sqlDatabaseHelper.getNewsReadStatus(news));
+                        news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news));
 
                         news.rectifyNewsLink();
                         RssFeedFragment.this.newsArrayList.add(news);
@@ -230,8 +234,8 @@ public class RssFeedFragment extends Fragment {
                 newsArrayList.clear();
                 for (News object : new NewsParser(response).parseJson()) {
 
-                    object.setRead(sqlDatabaseHelper.getNewsReadStatus(object.getLink()));
-                    object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object.getLink()));
+                    object.setRead(sqlDatabaseHelper.getNewsReadStatus(object));
+                    object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object));
                     object.rectifyNewsLink();
 
                     newsArrayList.add(object);
@@ -318,8 +322,8 @@ public class RssFeedFragment extends Fragment {
 
                 newsArrayList.clear();
                 for (News object : new NewsParser(response).parseJson()) {
-                    object.setRead(sqlDatabaseHelper.getNewsReadStatus(object.getLink()));
-                    object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object.getLink()));
+                    object.setRead(sqlDatabaseHelper.getNewsReadStatus(object));
+                    object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object));
                     object.rectifyNewsLink();
                     newsArrayList.add(object);
                 }
@@ -506,8 +510,8 @@ public class RssFeedFragment extends Fragment {
                 RssFeedFragment.newNoteSaved = true;
                 for (Object object : newsArrayList) {
                     News newsObject = (News) object;
-                    newsObject.setRead(sqlDatabaseHelper.getNewsReadStatus(newsObject.getLink()));
-                    newsObject.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(newsObject.getLink()));
+                    newsObject.setRead(sqlDatabaseHelper.getNewsReadStatus(newsObject));
+                    newsObject.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(newsObject));
                 }
 
                 newsAdapter.notifyDataSetChanged();

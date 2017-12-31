@@ -125,7 +125,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
             public void onRefresh() {
 
 
-                if (news.getNewsID() !=null){
+                if (news.getNewsID() != null) {
                     try {
                         if (news.getNewsID().equalsIgnoreCase("Initiatives")) {
 
@@ -141,7 +141,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
                         e.printStackTrace();
                         getWebsite(news.getLink());
                     }
-                }else{
+                } else {
                     getWebsite(news.getLink());
                 }
 
@@ -156,25 +156,49 @@ public class NewsFeedActivity extends AppCompatActivity implements
         newsDateTextView.setText(news.getPubDate());
         setTextSize(newsTextView);
 
+        showLoadingDialog("Loading...");
+
         if (news.isBookMark()) {
             String htmlTextString = new SqlDatabaseHelper(this)
-                    .getFullNews(news.getLink());
+                    .getFullNews(news);
 
-            initializeActivityData(htmlTextString);
+            if (news.getLink().length() > 40) {
+                news.setNewsID(news.getLink().substring(29, 40));
+            }
+            if (news.getNewsID() != null) {
+                try {
+                    if (news.getNewsID().equalsIgnoreCase("Initiatives")) {
+
+                        webView.loadDataWithBaseURL("", htmlTextString, "text/html", "UTF-8", "");
+
+                        hideLoadingDialog();
+
+                    } else {
+                        initializeActivityData(htmlTextString);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    initializeActivityData(htmlTextString);
+                }
+            } else {
+                initializeActivityData(htmlTextString);
+            }
+
 
         }
 
-        showLoadingDialog("Loading...");
 
 
 
-
-        if (news.getNewsID() !=null){
+        if (news.getNewsID() != null) {
             try {
                 if (news.getNewsID().equalsIgnoreCase("Initiatives")) {
+                    if (!news.isBookMark()) {
+                        webView.loadUrl(news.getLink());
+                        hideLoadingDialog();
 
-                    webView.loadUrl(news.getLink());
-                    hideLoadingDialog();
+                    }
 
                 } else {
                     getWebsite(news.getLink());
@@ -184,7 +208,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
                 e.printStackTrace();
                 getWebsite(news.getLink());
             }
-        }else{
+        } else {
             getWebsite(news.getLink());
         }
 
@@ -206,7 +230,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-            Answers.getInstance().logContentView(new ContentViewEvent().putContentId(news.getLink()).putContentName(news.getTitle()));
+            Answers.getInstance().logContentView(new ContentViewEvent().putContentId(news.getLink()).putContentName(news.getTitle()).putContentType(news.getNewsID()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -711,17 +735,19 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
     public void ttsReaderClick() {
 
-        Document doc = Jsoup.parse(tableDataString);
-        Elements textElement = doc.select("p");
+        if (tableDataString!= null) {
+            Document doc = Jsoup.parse(tableDataString);
+            Elements textElement = doc.select("p");
 
-        String ttsString = textElement.text();
-        Log.d(TAG, "ttsReaderClick: " + ttsString);
+            String ttsString = textElement.text();
+            Log.d(TAG, "ttsReaderClick: " + ttsString);
 
-        if (ttsString.length() < 3999) {
-            speakOutWord(ttsString);
-        } else {
-            voiceReaderChunk = 0;
-            voiceReaderChunkManager(ttsString);
+            if (ttsString.length() < 3999) {
+                speakOutWord(ttsString);
+            } else {
+                voiceReaderChunk = 0;
+                voiceReaderChunkManager(ttsString);
+            }
         }
 
     }

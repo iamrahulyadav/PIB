@@ -94,6 +94,10 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
             relID = uri.getQueryParameter("NoteId");
         }
 
+        if (relID == null) {
+            relID = news.getDescription();
+        }
+
         values.put(KEY_RELID, relID);
 
         try {
@@ -108,7 +112,9 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public boolean getNewsReadStatus(String link) {
+    public boolean getNewsReadStatus(News news) {
+
+        String link = news.getLink();
 
         SQLiteDatabase db = this.getReadableDatabase();
         Uri uri = Uri.parse(link);
@@ -118,6 +124,10 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
             relID = uri.getQueryParameter("NoteId");
         } else if (relID.isEmpty()) {
             relID = uri.getQueryParameter("NoteId");
+        }
+
+        if (relID == null) {
+            relID = news.getDescription();
         }
 
         try {
@@ -148,22 +158,24 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public boolean getNewsBookMarkStatus(String link) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Uri uri = Uri.parse(link);
-        String relID = uri.getQueryParameter("PRID");
-
-        if (relID == null) {
-            relID = uri.getQueryParameter("NoteId");
-        } else if (relID.isEmpty()) {
-            relID = uri.getQueryParameter("NoteId");
-        }
-
-        if (relID == null){
-            relID= link;
-        }
-
+    public boolean getNewsBookMarkStatus(News news) {
+        String link = news.getLink();
         try {
+            SQLiteDatabase db = this.getReadableDatabase();
+            Uri uri = Uri.parse(link);
+            String relID = uri.getQueryParameter("PRID");
+
+            if (relID == null) {
+                relID = uri.getQueryParameter("NoteId");
+            } else if (relID.isEmpty()) {
+                relID = uri.getQueryParameter("NoteId");
+            }
+
+            if (relID == null) {
+                relID = news.getDescription();
+            }
+
+
             Cursor cursor = db.query(TABLE_SAVED_FEED, new String[]{KEY_RELID,
                             KEY_LINK}, KEY_RELID + "=?",
                     new String[]{relID}, null, null, null, null);
@@ -193,7 +205,7 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
 
     public void addSavedNews(News news, String response) {
 
-        if (getNewsBookMarkStatus(news.getLink())) {
+        if (getNewsBookMarkStatus(news)) {
 
             deleteSavedNote(news);
             return;
@@ -215,28 +227,28 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
             relID = uri.getQueryParameter("NoteId");
         }
 
-      if (relID == null){
+        if (relID == null) {
             relID = news.getDescription();
-      }
+        }
 
-        try{
-        values.put(KEY_RELID, relID);
+        try {
+            values.put(KEY_RELID, relID);
 
-        values.put(KEY_SUB_HEADING, news.getDescription());
-        values.put(KEY_DATE, news.getPubDate());
+            values.put(KEY_SUB_HEADING, news.getDescription());
+            values.put(KEY_DATE, news.getPubDate());
 
-        values.put(KEY_HTML_STRING, response);
+            values.put(KEY_HTML_STRING, response);
 
 
-        // Inserting Row
-       long i= db.insert(TABLE_SAVED_FEED, null, values);
-            Log.d("TAG", "addSavedNews: "+i);
-       db.close(); // Closing database connection
+            // Inserting Row
+            long i = db.insert(TABLE_SAVED_FEED, null, values);
+            Log.d("TAG", "addSavedNews: " + i);
+            db.close(); // Closing database connection
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
 
-    }
+        }
     }
 
     public void deleteSavedNote(News news) {
@@ -249,6 +261,11 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         } else if (relID.isEmpty()) {
             relID = uri.getQueryParameter("NoteId");
         }
+
+        if (relID == null) {
+            relID = news.getDescription();
+        }
+
         db.delete(TABLE_SAVED_FEED, KEY_RELID + " =?", new String[]{relID
         });
         db.close();
@@ -285,7 +302,11 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public String getFullNews(String link) {
+    public String getFullNews(News news) {
+
+        String link = news.getLink();
+
+
         SQLiteDatabase db = this.getReadableDatabase();
         Uri uri = Uri.parse(link);
         String relID = uri.getQueryParameter("PRID");
@@ -295,6 +316,11 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         } else if (relID.isEmpty()) {
             relID = uri.getQueryParameter("NoteId");
         }
+
+        if (relID == null) {
+            relID = news.getDescription();
+        }
+
         String htmlText = "";
 
         try {
