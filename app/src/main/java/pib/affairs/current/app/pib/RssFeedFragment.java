@@ -269,39 +269,43 @@ public class RssFeedFragment extends Fragment {
             }
         }
 
-        ) {
+        );
+
+
+    /*    {
             public Map<String, String> getHeaders() {
-                Map<String, String> params = new HashMap<String, String>();
-                if (sourceType == SOURCETYPE_HINDI) {
-                    params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; style=null; _ga=GA1.3.1895171585.1513447950; PIB_Accessibility=Lang=2&Region=3; __atuvc=7%7C50%2C2%7C51; _gid=GA1.3.220297058.1513617359; ASP.NET_SessionId=5yfd1d1zsbg20xe2d2yg52rj; _gat_gtag_UA_110683570_1=1");
+            Map<String, String> params = new HashMap<String, String>();
+            if (sourceType == SOURCETYPE_HINDI) {
+                params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; style=null; _ga=GA1.3.1895171585.1513447950; PIB_Accessibility=Lang=2&Region=3; __atuvc=7%7C50%2C2%7C51; _gid=GA1.3.220297058.1513617359; ASP.NET_SessionId=5yfd1d1zsbg20xe2d2yg52rj; _gat_gtag_UA_110683570_1=1");
 
-                } else {
-                    params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; _ga=GA1.3.2027251216.1513617291; style=null; PIB_Accessibility=Lang=1&Region=3; __atuvc=12%7C51; ASP.NET_SessionId=lapxd40g1yzxjlpktzotxf3a; _gid=GA1.3.1984463729.1514055749; _gat_gtag_UA_110683570_1=1");
+            } else {
+                params.put("Cookie", "ext_name=jaehkpjddfdgiiefcnhahapilbejohhj; _ga=GA1.3.2027251216.1513617291; style=null; PIB_Accessibility=Lang=1&Region=3; __atuvc=12%7C51; ASP.NET_SessionId=lapxd40g1yzxjlpktzotxf3a; _gid=GA1.3.1984463729.1514055749; _gat_gtag_UA_110683570_1=1");
 
-                }
-                params.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36");
-                //params.put("DNT", "1");
-                //params.put("Upgrade-Insecure-Requests", "1");
-                //params.put("Host", "pib.nic.in");
-                params.put("Connection", "keep-alive");
-                //params.put("Accept-Encoding", "gzip, deflate");
-                //params.put("Accept-Language", "en-GB,en;q=0.9");
-                //params.put("Cache-Control", "max-age=0");
-                params.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
-
-                return params;
             }
-        };
+            params.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36");
+            //params.put("DNT", "1");
+            //params.put("Upgrade-Insecure-Requests", "1");
+            //params.put("Host", "pib.nic.in");
+            params.put("Connection", "keep-alive");
+            //params.put("Accept-Encoding", "gzip, deflate");
+            //params.put("Accept-Language", "en-GB,en;q=0.9");
+            //params.put("Cache-Control", "max-age=0");
+            params.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng;q=0.8");
+
+            return params;
+        }
+        };*/
 
 
-        if (sourceType == 3) {
+       /* if (sourceType == 3) {
             strReq.setShouldCache(false);
             AppController.getInstance().getRequestQueue().getCache().remove(url);
         } else {
             strReq.setShouldCache(true);
-        }
+        }*/
 
         // Adding request to request queue
+        strReq.setShouldCache(true);
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
     }
 
@@ -345,9 +349,9 @@ public class RssFeedFragment extends Fragment {
         newsAdapter.notifyDataSetChanged();
 
 
-            if (swipeRefreshLayout != null) {
-                swipeRefreshLayout.setRefreshing(false);
-            }
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setRefreshing(false);
+        }
 
     }
 
@@ -415,8 +419,8 @@ public class RssFeedFragment extends Fragment {
 
         initializeFragment();
 
-        if (sourceType == SOURCETYPE_INITIATIVES){
-            if (newsArrayList.size()<1&& swipeRefreshLayout!=null){
+        if (sourceType == SOURCETYPE_INITIATIVES) {
+            if (newsArrayList.size() < 1 && swipeRefreshLayout != null) {
                 swipeRefreshLayout.setRefreshing(true);
             }
         }

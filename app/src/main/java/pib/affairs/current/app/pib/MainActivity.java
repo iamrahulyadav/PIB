@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity
         //fetchNews();
 
 
-        initializeWebview();
+        //initializeWebview();
 
         setLastUpdated();
 
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity
        /* if (AppRater.getLaunchCount(MainActivity.this) < 5) {
 
         }*/
-        webView.loadUrl("http://pib.nic.in/index.aspx");
+        //webView.loadUrl("http://pib.nic.in/index.aspx");
 
         webView.setWebViewClient(new WebViewClient() {
             @SuppressWarnings("deprecation")
@@ -194,11 +194,11 @@ public class MainActivity extends AppCompatActivity
 
 
         if (isEnglish) {
-            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=6", 0), "Updates");
-            adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=18", 0), "Featured");
+            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3", 0), "Updates");
+            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=18&Lang=1&Regid=3", 0), "Featured");
         } else {
-            adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 3), "RSS");
-            adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=18", 3), "Featured");
+            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=2&Regid=3", 3), "RSS");
+            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=18&Lang=2&Regid=3", 3), "Featured");
 
             try {
                 Answers.getInstance().logCustom(new CustomEvent("Hindi language"));
