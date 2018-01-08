@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -40,48 +41,39 @@ import utils.NightModeManager;
 import static com.android.volley.VolleyLog.TAG;
 
 
-public class DDNewsFeedActivity extends AppCompatActivity {
+public class RajyaSabhaFeedActivity extends AppCompatActivity {
 
+    TextView titleText , dateTextView;
+    WebView webView;
 
-    TextView titleText, descriptionTextView , dateTextView;
     private News news;
     private NativeAd nativeAd;
 
 
     ProgressDialog pDialog;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (NightModeManager.getNightMode(this)) {
             setTheme(R.style.ActivityTheme_Primary_Base_Dark);
         }
-
-        setContentView(R.layout.activity_ddnews_feed);
+        setContentView(R.layout.activity_rajya_sabha_feed);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         news = (News) getIntent().getSerializableExtra("news");
 
         titleText = (TextView)findViewById(R.id.ddnews_title_textView);
-        descriptionTextView = (TextView)findViewById(R.id.ddnews_description_textView);
+        webView = (WebView) findViewById(R.id.rajyasabha_news_webView);
         dateTextView=(TextView)findViewById(R.id.ddnews_newsDate_textView);
 
         titleText.setText(news.getTitle());
 
-        news.setDescription(news.getDescription().replaceAll("<p>","<br>"));
-        news.setDescription(news.getDescription().replaceAll("</p>","<br>"));
 
+        webView.loadDataWithBaseURL("", news.getDescription(), "text/html", "UTF-8", "");
 
-
-        if (Build.VERSION.SDK_INT >= 24) {
-            descriptionTextView.setText(Html.fromHtml(news.getDescription(), Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH));
-        } else {
-            descriptionTextView.setText(Html.fromHtml(news.getDescription()));
-        }
-
-        //descriptionTextView.setText(news.getDescription());
 
         dateTextView.setText(news.getPubDate());
 
@@ -94,7 +86,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
         });
 
         try {
-            Answers.getInstance().logCustom(new CustomEvent("DD News feed Opened").putCustomAttribute("title", news.getTitle()).putCustomAttribute("Link", news.getLink()));
+            Answers.getInstance().logCustom(new CustomEvent("RSTV News feed Opened").putCustomAttribute("title", news.getTitle()).putCustomAttribute("Link", news.getLink()));
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
@@ -103,11 +95,14 @@ public class DDNewsFeedActivity extends AppCompatActivity {
         }
 
         initializeBottomNativeAds();
+        initializeTopNativeAds();
 
         pDialog = new ProgressDialog(this);
 
 
     }
+
+
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -195,7 +190,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
         //sharingIntent.putExtra(Intent.EXTRA_STREAM, newsMetaInfo.getNewsImageLocalPath());
 
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shortUrl
-                + "\n\nRead DD News update from PIB Reader & DD News App -\n https://play.google.com/store/apps/details?id=app.crafty.studio.current.affairs.pib");
+                + "\n\nRead RSTV News update from PIB Reader & DD News App -\n https://play.google.com/store/apps/details?id=app.crafty.studio.current.affairs.pib");
         startActivity(Intent.createChooser(sharingIntent, "share link via"));
 
 
@@ -232,7 +227,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
                     Log.d(TAG, "onError: " + adError);
 
                     try {
-                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","DD Newsfeed").putCustomAttribute("error", adError.getErrorMessage()));
+                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","RSTV FEED").putCustomAttribute("error", adError.getErrorMessage()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -241,14 +236,9 @@ public class DDNewsFeedActivity extends AppCompatActivity {
 
                 @Override
                 public void onAdLoaded(Ad ad) {
-                    NativeAdViewAttributes viewAttributes = new NativeAdViewAttributes()
-                            .setBackgroundColor(Color.LTGRAY)
-                            .setButtonBorderColor(getResources().getColor(R.color.colorPrimary))
-                            .setButtonColor(getResources().getColor(R.color.colorPrimary))
-                            .setButtonTextColor(Color.WHITE);
 
 
-                    View adView = NativeAdView.render(DDNewsFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400,viewAttributes);
+                    View adView = NativeAdView.render(RajyaSabhaFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400);
                     CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
                     // Add the Native Ad View to your ad container
                     nativeAdContainer.addView(adView);
@@ -272,6 +262,53 @@ public class DDNewsFeedActivity extends AppCompatActivity {
 
     }
 
+    private void initializeTopNativeAds() {
 
+        final NativeAd topNativeAd = new NativeAd(this, "1963281763960722_2001918973430334");
+        topNativeAd.setAdListener(new AdListener() {
+            @Override
+            public void onError(Ad ad, AdError adError) {
+                Log.d(TAG, "onError: " + adError);
+
+                try {
+                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","RSTV FEED TOP").putCustomAttribute("error", adError.getErrorMessage()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onAdLoaded(Ad ad) {
+
+                NativeAdViewAttributes viewAttributes = new NativeAdViewAttributes()
+                        .setBackgroundColor(Color.LTGRAY)
+                        .setButtonBorderColor(getResources().getColor(R.color.colorPrimary))
+                        .setButtonColor(getResources().getColor(R.color.colorPrimary))
+                        .setButtonTextColor(Color.WHITE)
+                        ;
+
+
+                View adView = NativeAdView.render(RajyaSabhaFeedActivity.this, topNativeAd, NativeAdView.Type.HEIGHT_120,viewAttributes);
+                CardView nativeAdContainer = (CardView) findViewById(R.id.rajyasabha_top_adContainer_LinearLayout);
+                // Add the Native Ad View to your ad container
+                nativeAdContainer.addView(adView);
+            }
+
+            @Override
+            public void onAdClicked(Ad ad) {
+
+            }
+
+            @Override
+            public void onLoggingImpression(Ad ad) {
+
+            }
+        });
+
+        // Initiate a request to load an ad.
+        topNativeAd.loadAd();
+
+    }
 
 }

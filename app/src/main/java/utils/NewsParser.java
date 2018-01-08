@@ -144,6 +144,62 @@ public class NewsParser {
         return newsArrayList;
     }
 
+    public ArrayList<News> parseRstvNews() {
+
+        XmlToJson xmlToJson = new XmlToJson.Builder(response).build();
+
+        Log.d(TAG, "NewsParser: " + xmlToJson.toFormattedString());
+
+        JSONObject jsonObject = xmlToJson.toJson();
+
+
+        ArrayList<News> newsArrayList = new ArrayList<>();
+        try {
+            JSONObject jsonObjectChannel = jsonObject.getJSONObject("rss").getJSONObject("channel");
+
+            JSONArray jsonArrayItem = jsonObjectChannel.getJSONArray("item");
+
+            Log.d(TAG, "parseJson: " + jsonArrayItem);
+
+            for (int i = 0; i < jsonArrayItem.length(); i++) {
+
+                JSONObject itemObject = jsonArrayItem.getJSONObject(i);
+
+                News news = new News();
+
+                /*news.setTitle(itemObject.getString("title"));
+                news.setDescription(itemObject.getString("description"));
+                news.setLink(itemObject.getString("link"));
+                news.setPubDate(itemObject.getString("pubDate"));
+*/
+                try {
+                    news.setTitle(URLDecoder.decode(URLEncoder.encode(itemObject.getString("title"), "iso8859-1"), "UTF-8"));
+                    //news.setDescription(URLDecoder.decode(URLEncoder.encode(itemObject.getString("description"), "iso8859-1"), "UTF-8"));
+                } catch (Exception e) {
+                    news.setTitle(itemObject.getString("title"));
+                    //news.setDescription(itemObject.getString("description"));
+                }
+                news.setLink(itemObject.getString("link"));
+
+                news.setDescription(itemObject.getString("content:encoded"));
+
+
+                if (itemObject.has("pubDate")) {
+                    news.setPubDate(itemObject.getString("pubDate"));
+                }
+
+                newsArrayList.add(news);
+
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return newsArrayList;
+    }
+
     public ArrayList<AIRNews> parseAIRNews() {
 
         XmlToJson xmlToJson = new XmlToJson.Builder(response).build();

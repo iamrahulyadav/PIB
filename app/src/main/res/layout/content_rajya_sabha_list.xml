@@ -2,25 +2,24 @@
 <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/ddnews_swipeRefreshLayout"
+    android:id="@+id/rajyasabha_news_swipeRefreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/backgroundColor"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="pib.affairs.current.app.pib.DDNewsListActivity"
-    tools:showIn="@layout/activity_ddnews_list">
 
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="pib.affairs.current.app.pib.RajyaSabhaListActivity"
+    tools:showIn="@layout/activity_rajya_sabha_list">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_height="match_parent">
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/ddnews_recyclerView"
+            android:id="@+id/rajyasabha_news_recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:layout_height="0dp">
 
         </android.support.v7.widget.RecyclerView>
 
@@ -36,5 +35,6 @@
 
 
     </LinearLayout>
+
 
 </android.support.v4.widget.SwipeRefreshLayout>

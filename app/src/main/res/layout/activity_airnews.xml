@@ -30,94 +30,109 @@
     <include layout="@layout/content_airnews" />
 
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/airActivity_viewpager"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="88dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <android.support.v4.view.ViewPager
+            android:id="@+id/airActivity_viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-    <android.support.v7.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cardElevation="10dp"
-        app:cardBackgroundColor="?attr/colorPrimary"
-        android:layout_gravity="bottom">
 
         <LinearLayout
+            android:id="@+id/airActivity_adContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/airActivity_newsTitle_textView"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
-                    android:layout_weight="1"
-                    android:text="Tap on news to play"
-                    android:textColor="?attr/primaryTextAccentColor"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/airActivity_timeElapsed_textView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="16dp"
-                    android:text=""
-                    android:textColor="?attr/primaryTextAccentColor"
-                    android:textSize="16sp" />
-
-            </LinearLayout>
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:src="?attr/primaryTextAccentColor"
-                />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:orientation="horizontal">
-
-
-                <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_weight="1"
-                    android:onClick="onPreviousClick"
-                    android:src="@drawable/exo_controls_rewind"
-
-                    />
-
-                <ImageView
-                    android:id="@+id/airActivity_play_imageView"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_weight="1"
-                    android:onClick="onPlayClick"
-                    android:src="@drawable/mr_media_play_dark" />
-
-                <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_weight="1"
-                    android:onClick="onNextClick"
-                    android:src="@android:drawable/ic_media_ff" />
-
-            </LinearLayout>
 
         </LinearLayout>
 
-    </android.support.v7.widget.CardView>
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            app:cardBackgroundColor="?attr/colorPrimary"
+            app:cardElevation="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/airActivity_newsTitle_textView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="16dp"
+                        android:layout_weight="1"
+                        android:text="Tap on news to play"
+                        android:textColor="?attr/primaryTextAccentColor"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/airActivity_timeElapsed_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="16dp"
+                        android:text=""
+                        android:textColor="?attr/primaryTextAccentColor"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:src="?attr/primaryTextAccentColor" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:orientation="horizontal">
+
+
+                    <ImageView
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:onClick="onPreviousClick"
+                        android:src="@drawable/exo_controls_rewind"
+
+                        />
+
+                    <ImageView
+                        android:id="@+id/airActivity_play_imageView"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:onClick="onPlayClick"
+                        android:src="@drawable/mr_media_play_dark" />
+
+                    <ImageView
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:onClick="onNextClick"
+                        android:src="@android:drawable/ic_media_ff" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+
+    </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

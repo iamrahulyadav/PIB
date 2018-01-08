@@ -1,6 +1,5 @@
 package pib.affairs.current.app.pib;
 
-import android.app.ActionBar;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -41,15 +40,14 @@ import utils.NewsParser;
 import utils.NightModeManager;
 
 
-public class DDNewsListActivity extends AppCompatActivity {
-
+public class RajyaSabhaListActivity extends AppCompatActivity {
 
     private ArrayList<Object> newsArrayList = new ArrayList<>();
 
 
     private RecyclerView recyclerView;
     private NewsAdapter newsAdapter;
-    private String urlToOpen= "http://ddnews.gov.in/rss-feeds";
+    private String urlToOpen = "http://rstv.nic.in/feed";
 
     ProgressDialog pDialog;
 
@@ -60,18 +58,16 @@ public class DDNewsListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (NightModeManager.getNightMode(this)) {
             setTheme(R.style.ActivityTheme_Primary_Base_Dark);
         }
-
-        setContentView(R.layout.activity_ddnews_list);
-         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setContentView(R.layout.activity_rajya_sabha_list);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         pDialog = new ProgressDialog(this);
 
-        recyclerView = (RecyclerView)findViewById(R.id.ddnews_recyclerView);
+        recyclerView = (RecyclerView) findViewById(R.id.rajyasabha_news_recyclerView);
 
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
@@ -82,7 +78,7 @@ public class DDNewsListActivity extends AppCompatActivity {
 
         recyclerView.setAdapter(newsAdapter);
 
-        swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.ddnews_swipeRefreshLayout);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.rajyasabha_news_swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -94,7 +90,7 @@ public class DDNewsListActivity extends AppCompatActivity {
             @Override
             public void onBookMarkClick(View view, int position) {
 
-                Toast.makeText(DDNewsListActivity.this, "Support for offline DD News will be available in next update", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RajyaSabhaListActivity.this, "Support for offline DD News will be available in next update", Toast.LENGTH_SHORT).show();
 
             }
 
@@ -111,16 +107,23 @@ public class DDNewsListActivity extends AppCompatActivity {
 
         try {
 
-            Answers.getInstance().logCustom(new CustomEvent("DD News list Opened"));
+            Answers.getInstance().logCustom(new CustomEvent("RSTV News list Opened"));
 
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-
         initializeAds();
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (adView != null) {
+            adView.destroy();
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -130,7 +133,7 @@ public class DDNewsListActivity extends AppCompatActivity {
     }
 
     private void onItemClick(int position) {
-        Intent intent = new Intent(this, DDNewsFeedActivity.class);
+        Intent intent = new Intent(this, RajyaSabhaFeedActivity.class);
         News news = (News) newsArrayList.get(position);
 
         intent.putExtra("news", news);
@@ -146,7 +149,7 @@ public class DDNewsListActivity extends AppCompatActivity {
 
 
 // Tag used to cancel the request
-        String tag_string_req = "dd_news_request";
+        String tag_string_req = "rstv_news_request";
 
         final String url = urlToOpen;
 
@@ -162,7 +165,7 @@ public class DDNewsListActivity extends AppCompatActivity {
 
 
                 newsArrayList.clear();
-                for (Object news : new NewsParser(response).parseDDNews()) {
+                for (Object news : new NewsParser(response).parseRstvNews()) {
                     newsArrayList.add(news);
                 }
 
@@ -180,10 +183,10 @@ public class DDNewsListActivity extends AppCompatActivity {
                 error.printStackTrace();
 
 
-                try{
-                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity","AIR Rss activity").putCustomAttribute("reason",error.getMessage()));
+                try {
+                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "AIR Rss activity").putCustomAttribute("reason", error.getMessage()));
 
-                }catch(Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -257,7 +260,6 @@ public class DDNewsListActivity extends AppCompatActivity {
         }
     }
 
-
     public void initializeAds() {
         // Instantiate an AdView view
         adView = new AdView(this, "1963281763960722_2001913650097533", AdSize.BANNER_HEIGHT_50);
@@ -276,10 +278,11 @@ public class DDNewsListActivity extends AppCompatActivity {
             public void onError(Ad ad, AdError adError) {
                 // Ad error callback
                 try {
-                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","DD News list").putCustomAttribute("error", adError.getErrorMessage()));
+                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","RSTV banner").putCustomAttribute("error", adError.getErrorMessage()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
             }
 
             @Override
@@ -299,6 +302,5 @@ public class DDNewsListActivity extends AppCompatActivity {
         });
 
     }
-
 
 }

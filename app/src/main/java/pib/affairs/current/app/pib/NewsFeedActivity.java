@@ -17,6 +17,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
@@ -47,6 +48,7 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdView;
+import com.facebook.ads.NativeAdViewAttributes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.dynamiclinks.DynamicLink;
@@ -59,6 +61,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -66,6 +69,7 @@ import java.util.Map;
 import fr.arnaudguyon.xmltojsonlib.XmlToJson;
 import utils.AppController;
 import utils.AppRater;
+import utils.FireBaseHandler;
 import utils.News;
 import utils.NewsParser;
 import utils.NightModeManager;
@@ -132,6 +136,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
                             webView.loadUrl(news.getLink());
                             swipeRefreshLayout.setRefreshing(false);
                             hideLoadingDialog();
+                            initializeBottomNativeAds();
 
                         } else {
                             getWebsite(news.getLink());
@@ -171,6 +176,8 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
                         webView.loadDataWithBaseURL("", htmlTextString, "text/html", "UTF-8", "");
 
+                        initializeBottomNativeAds();
+
                         hideLoadingDialog();
 
                     } else {
@@ -189,15 +196,13 @@ public class NewsFeedActivity extends AppCompatActivity implements
         }
 
 
-
-
         if (news.getNewsID() != null) {
             try {
                 if (news.getNewsID().equalsIgnoreCase("Initiatives")) {
                     if (!news.isBookMark()) {
                         webView.loadUrl(news.getLink());
                         hideLoadingDialog();
-
+                        initializeBottomNativeAds();
                     }
 
                 } else {
@@ -390,6 +395,21 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
     }
 
+
+    private void onPostClick() {
+        new FireBaseHandler().uploadNews(news, new FireBaseHandler.OnNewsListener() {
+            @Override
+            public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+
+            }
+
+            @Override
+            public void onNewsUpload(boolean isSuccessful) {
+
+                Toast.makeText(NewsFeedActivity.this, "News posted " + isSuccessful, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     private void onTtsReaderClick(MenuItem item) {
 
@@ -735,7 +755,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
     public void ttsReaderClick() {
 
-        if (tableDataString!= null) {
+        if (tableDataString != null) {
             Document doc = Jsoup.parse(tableDataString);
             Elements textElement = doc.select("p");
 
@@ -839,7 +859,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
                     Log.d(TAG, "onError: " + adError);
 
                     try {
-                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("error", adError.getErrorMessage()));
+                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","Newsfeed").putCustomAttribute("error", adError.getErrorMessage()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -848,8 +868,16 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
                 @Override
                 public void onAdLoaded(Ad ad) {
-                    View adView = NativeAdView.render(NewsFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400);
-                    LinearLayout nativeAdContainer = (LinearLayout) findViewById(R.id.newsFeed_adContainer_LinearLayout);
+
+                    NativeAdViewAttributes viewAttributes = new NativeAdViewAttributes()
+                            .setBackgroundColor(Color.LTGRAY)
+                            .setButtonBorderColor(getResources().getColor(R.color.colorPrimary))
+                            .setButtonColor(getResources().getColor(R.color.colorPrimary))
+                            .setButtonTextColor(Color.WHITE);
+
+
+                    View adView = NativeAdView.render(NewsFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400,viewAttributes);
+                    CardView nativeAdContainer = (CardView) findViewById(R.id.newsFeed_adContainer_LinearLayout);
                     // Add the Native Ad View to your ad container
                     nativeAdContainer.addView(adView);
                 }

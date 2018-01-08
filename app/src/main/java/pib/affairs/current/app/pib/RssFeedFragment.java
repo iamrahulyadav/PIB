@@ -425,36 +425,6 @@ public class RssFeedFragment extends Fragment {
         return view;
     }
 
-/*
-
-    public void onItemClick(int position) {
-        Intent intent = new Intent(getContext(), NewsDescriptionActivity.class);
-
-
-        News news = (News) newsArrayList.get(position);
-
-        intent.putExtra("news", news);
-
-        if (sourceType == SOURCETYPE_OFFLINE) {
-            intent.putExtra("isOffline", true);
-        }
-
-        startActivity(intent);
-
-        sqlDatabaseHelper = new SqlDatabaseHelper(getContext());
-        sqlDatabaseHelper.addReadNews(news);
-
-        news.setRead(true);
-        newsAdapter.notifyDataSetChanged();
-
-        newsCount++;
-        checkShowSurvey();
-
-
-
-
-    }
-*/
 
     public void onItemClick(int position) {
         Intent intent = new Intent(getContext(), NewsFeedActivity.class);

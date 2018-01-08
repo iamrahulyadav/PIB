@@ -436,6 +436,8 @@ public class MainActivity extends AppCompatActivity
             onAirNewsClick();
         } else if (id == R.id.nav_ddNews) {
             onDDNewsClick();
+        }else if(id==R.id.nav_rstvNews){
+            onRstvNewsClick();
         }
 
         //noinspection SimplifiableIfStatement
@@ -492,6 +494,10 @@ public class MainActivity extends AppCompatActivity
                 onDDNewsClick();
                 break;
 
+            case R.id.nav_rstvNews:
+                onRstvNewsClick();
+                break;
+
             case R.id.nav_personality_development:
                 onPersonalityDevelopmentClick();
                 break;
@@ -501,6 +507,11 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void onRstvNewsClick() {
+        Intent intent = new Intent(MainActivity.this, RajyaSabhaListActivity.class);
+        startActivity(intent);
     }
 
     private void onPersonalityDevelopmentClick() {

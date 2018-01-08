@@ -22,6 +22,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +33,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
+import com.facebook.ads.Ad;
+import com.facebook.ads.AdError;
+import com.facebook.ads.AdListener;
+import com.facebook.ads.AdSize;
+import com.facebook.ads.AdView;
 import com.google.android.gms.measurement.AppMeasurementInstallReferrerReceiver;
 
 import org.w3c.dom.Text;
@@ -71,6 +77,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     public static Toolbar toolbar;
 
     public static ProgressDialog pDialog;
+    private AdView adView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +130,8 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         }
 
         viewPager.setCurrentItem(1);
+
+        initializeAds();
 
     }
 
@@ -357,6 +366,48 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void initializeAds() {
+        // Instantiate an AdView view
+        adView = new AdView(this, "1963281763960722_2001913650097533", AdSize.BANNER_HEIGHT_50);
+
+        // Find the Ad Container
+        LinearLayout adContainer = (LinearLayout) findViewById(R.id.airActivity_adContainer);
+
+        // Add the ad view to your activity layout
+        adContainer.addView(adView);
+
+        // Request an ad
+        adView.loadAd();
+
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onError(Ad ad, AdError adError) {
+                // Ad error callback
+                try {
+                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","AIR NEWS").putCustomAttribute("error", adError.getErrorMessage()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onAdLoaded(Ad ad) {
+                // Ad loaded callback
+            }
+
+            @Override
+            public void onAdClicked(Ad ad) {
+                // Ad clicked callback
+            }
+
+            @Override
+            public void onLoggingImpression(Ad ad) {
+                // Ad impression logged callback
+            }
+        });
+
     }
 
 

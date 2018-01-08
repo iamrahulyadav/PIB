@@ -14,5 +14,7 @@
     <string name="title_activity_airnews">AIR News</string>
     <string name="title_activity_ddnews_list">DD News</string>
     <string name="title_activity_ddnews_feed">DD News</string>
+    <string name="title_activity_rajya_sabha_list">RSTV News</string>
+    <string name="title_activity_rajya_sabha_feed">RSTV News</string>
 
 </resources>

@@ -14,6 +14,12 @@
         android:icon="@drawable/ic_action_dd_news"
         />
 
+    <item
+        android:id="@+id/nav_rstvNews"
+        android:title="Rajya Sabha TV News"
+        android:icon="@drawable/ic_action_dd_news"
+        />
+
 
 
     <item android:title="Language">

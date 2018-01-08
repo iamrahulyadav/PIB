@@ -13,7 +13,12 @@
         android:id="@+id/nav_ddNews"
         android:title="DD News"
         app:showAsAction="never"
-        android:icon="@drawable/ic_action_dd_news"
+        />
+
+    <item
+        android:id="@+id/nav_rstvNews"
+        android:title="RSTV News"
+        app:showAsAction="never"
         />
 
 
