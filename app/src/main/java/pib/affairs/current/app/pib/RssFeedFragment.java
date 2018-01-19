@@ -478,6 +478,7 @@ public class RssFeedFragment extends Fragment {
                 SqlDatabaseHelper sqlDatabaseHelper = new SqlDatabaseHelper(getContext());
 
 
+
                 sqlDatabaseHelper.addSavedNews(news, response);
 
 
