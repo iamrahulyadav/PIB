@@ -16,5 +16,7 @@
     <string name="title_activity_ddnews_feed">DD News</string>
     <string name="title_activity_rajya_sabha_list">RSTV News</string>
     <string name="title_activity_rajya_sabha_feed">RSTV News</string>
+    <string name="title_activity_pib_old_news">Search Old News</string>
+    <string name="title_activity_pib_old_news_feed">PIB</string>
 
 </resources>

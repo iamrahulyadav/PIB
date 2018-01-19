@@ -436,8 +436,10 @@ public class MainActivity extends AppCompatActivity
             onAirNewsClick();
         } else if (id == R.id.nav_ddNews) {
             onDDNewsClick();
-        }else if(id==R.id.nav_rstvNews){
+        } else if (id == R.id.nav_rstvNews) {
             onRstvNewsClick();
+        } else if (id == R.id.nav_pibOld) {
+            onOldNewsClick();
         }
 
         //noinspection SimplifiableIfStatement
@@ -502,11 +504,49 @@ public class MainActivity extends AppCompatActivity
                 onPersonalityDevelopmentClick();
                 break;
 
+            case R.id.nav_oldPib_news:
+                onOldNewsClick();
+                break;
+
+            case R.id.nav_computer:
+                onComputerClick();
+                break;
+
+            case R.id.nav_shortcuts:
+                onShortcutsClick();
+                break;
+
+
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void onComputerClick() {
+        try {
+            String link = "https://play.google.com/store/apps/details?id=app.computer.basic.quiz.craftystudio.computerbasic";
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
+            Answers.getInstance().logCustom(new CustomEvent("computer click"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void onShortcutsClick() {
+        try {
+            String link = "https://play.google.com/store/apps/details?id=app.key.ashort.craftystudio.shortkeysapp";
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
+            Answers.getInstance().logCustom(new CustomEvent("Keyboard Shortcuts click"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void onOldNewsClick() {
+        Intent intent = new Intent(this, PibOldNewsActivity.class);
+        startActivity(intent);
     }
 
     private void onRstvNewsClick() {
@@ -520,7 +560,7 @@ public class MainActivity extends AppCompatActivity
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
             Answers.getInstance().logCustom(new CustomEvent("personality app click"));
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
         /*

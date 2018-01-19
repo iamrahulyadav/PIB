@@ -89,6 +89,14 @@
         <activity
             android:name=".RajyaSabhaFeedActivity"
             android:label="@string/title_activity_rajya_sabha_feed"
+            android:theme="@style/ActivityThemeLight" />
+        <activity
+            android:name=".PibOldNewsActivity"
+            android:label="@string/title_activity_pib_old_news"
+            android:theme="@style/ActivityThemeLight" />
+        <activity
+            android:name=".PibOldNewsFeedActivity"
+            android:label="@string/title_activity_pib_old_news_feed"
             android:theme="@style/ActivityThemeLight"></activity>
     </application>
 

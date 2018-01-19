@@ -656,6 +656,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
         Cache cache = AppController.getInstance().getRequestQueue().getCache();
 
+
         Cache.Entry entry = cache.get(url);
         if (entry != null) {
             //Cache data available.

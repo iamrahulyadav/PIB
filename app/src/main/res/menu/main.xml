@@ -21,5 +21,12 @@
         app:showAsAction="never"
         />
 
+    <item
+        android:id="@+id/nav_pibOld"
+        android:title="Search Old News"
+        app:showAsAction="never"
+        />
+
+
 
 </menu>

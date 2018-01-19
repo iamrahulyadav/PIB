@@ -146,6 +146,27 @@ public class DDNewsFeedActivity extends AppCompatActivity {
     }
 
 
+    private void openShareDialog(String shortUrl) {
+
+
+        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+
+        //sharingIntent.putExtra(Intent.EXTRA_STREAM, newsMetaInfo.getNewsImageLocalPath());
+
+        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shortUrl
+                + "\n\nRead DD News update from PIB Reader & DD News App -\n https://play.google.com/store/apps/details?id=app.crafty.studio.current.affairs.pib");
+        startActivity(Intent.createChooser(sharingIntent, "share link via"));
+
+
+        try {
+            Answers.getInstance().logCustom(new CustomEvent("Share Link Created").putCustomAttribute("shared dd news link", news.getTitle()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
     public void onShareClick() {
         showLoadingDialog("Loading...");
@@ -186,26 +207,6 @@ public class DDNewsFeedActivity extends AppCompatActivity {
 
     }
 
-    private void openShareDialog(String shortUrl) {
-
-
-        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-        sharingIntent.setType("text/plain");
-
-        //sharingIntent.putExtra(Intent.EXTRA_STREAM, newsMetaInfo.getNewsImageLocalPath());
-
-        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shortUrl
-                + "\n\nRead DD News update from PIB Reader & DD News App -\n https://play.google.com/store/apps/details?id=app.crafty.studio.current.affairs.pib");
-        startActivity(Intent.createChooser(sharingIntent, "share link via"));
-
-
-        try {
-            Answers.getInstance().logCustom(new CustomEvent("Share Link Created").putCustomAttribute("shared dd news link", news.getTitle()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
 
     public void showLoadingDialog(String message) {
         pDialog.setMessage(message);

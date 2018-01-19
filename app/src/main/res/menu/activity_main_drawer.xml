@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
 
     <item
@@ -20,6 +21,10 @@
         android:icon="@drawable/ic_action_dd_news"
         />
 
+    <item
+        android:id="@+id/nav_oldPib_news"
+        android:icon="@drawable/ic_action_old_pib"
+        android:title="Search Old News" />
 
 
     <item android:title="Language">
@@ -52,6 +57,16 @@
 
     <item android:title="More app from us">
         <menu>
+
+            <item
+                android:id="@+id/nav_computer"
+                android:title="Basic Computer" />
+
+            <item
+                android:id="@+id/nav_shortcuts"
+                android:title="Computer Keyboard Shortcut" />
+
+
             <item
                 android:id="@+id/nav_aptitude"
                 android:title="Aptitude Master app" />
@@ -69,8 +84,10 @@
                 android:title="Personality Development" />
 
 
+
         </menu>
     </item>
+
 
     <item android:title="Communicate">
         <menu>

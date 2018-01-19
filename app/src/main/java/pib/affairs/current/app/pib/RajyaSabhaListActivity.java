@@ -32,6 +32,8 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import utils.AppController;
 import utils.News;
@@ -116,7 +118,10 @@ public class RajyaSabhaListActivity extends AppCompatActivity {
 
         initializeAds();
 
+
+
     }
+
 
     @Override
     protected void onDestroy() {
@@ -278,7 +283,7 @@ public class RajyaSabhaListActivity extends AppCompatActivity {
             public void onError(Ad ad, AdError adError) {
                 // Ad error callback
                 try {
-                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","RSTV banner").putCustomAttribute("error", adError.getErrorMessage()));
+                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "RSTV banner").putCustomAttribute("error", adError.getErrorMessage()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
