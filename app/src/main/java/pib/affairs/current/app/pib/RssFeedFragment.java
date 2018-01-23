@@ -23,6 +23,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
+import com.facebook.ads.Ad;
+import com.facebook.ads.AdError;
+import com.facebook.ads.NativeAd;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
@@ -34,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.fabric.sdk.android.Fabric;
+import utils.AdsSubscriptionManager;
 import utils.AppController;
 import utils.FireBaseHandler;
 import utils.News;
@@ -145,6 +149,8 @@ public class RssFeedFragment extends Fragment {
 
 
                         RssFeedFragment.this.newsArrayList.add(news);
+
+                        addNativeExpressAds(false);
                         initializeFragment();
                     }
                 }
@@ -171,6 +177,7 @@ public class RssFeedFragment extends Fragment {
         Collections.reverse(newsArrayList);
 
         newNoteSaved = false;
+        addNativeExpressAds(false);
         initializeFragment();
 
     }
@@ -192,6 +199,8 @@ public class RssFeedFragment extends Fragment {
 
                         news.rectifyNewsLink();
                         RssFeedFragment.this.newsArrayList.add(news);
+
+                        addNativeExpressAds(false);
                         initializeFragment();
                     }
                 }
@@ -241,6 +250,7 @@ public class RssFeedFragment extends Fragment {
                     newsArrayList.add(object);
                 }
 
+                addNativeExpressAds(false);
 
                 initializeFragment();
 
@@ -332,6 +342,7 @@ public class RssFeedFragment extends Fragment {
                     newsArrayList.add(object);
                 }
 
+                addNativeExpressAds(true);
                 newsAdapter.notifyDataSetChanged();
                 pDialog.hide();
                 //initializeFragment();
@@ -429,6 +440,58 @@ public class RssFeedFragment extends Fragment {
         return view;
     }
 
+    private void addNativeExpressAds(boolean isCached) {
+
+        boolean subscription = AdsSubscriptionManager.getSubscription(getContext());
+
+        int count = AdsSubscriptionManager.ADSPOSITION_COUNT;
+        for (int i = 4; i < (newsArrayList.size()); i += count) {
+            if (newsArrayList.get(i) != null) {
+                if (newsArrayList.get(i).getClass() != NativeAd.class) {
+
+
+                    NativeAd nativeAd = new NativeAd(getContext(), "1963281763960722_2012202609068637");
+                    nativeAd.setAdListener(new com.facebook.ads.AdListener() {
+
+                        @Override
+                        public void onError(Ad ad, AdError error) {
+                            // Ad error callback
+                            try {
+                                Answers.getInstance().logCustom(new CustomEvent("Ad failed to load")
+                                        .putCustomAttribute("Placement", "List native").putCustomAttribute("errorType", error.getErrorMessage()).putCustomAttribute("Source", "Facebook"));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onAdLoaded(Ad ad) {
+                            // Ad loaded callback
+                            newsAdapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onAdClicked(Ad ad) {
+                            // Ad clicked callback
+                        }
+
+                        @Override
+                        public void onLoggingImpression(Ad ad) {
+                            // Ad impression logged callback
+                        }
+                    });
+                    if (!(subscription||isCached) ) {
+                        nativeAd.loadAd();
+                    }
+                    newsArrayList.add(i, nativeAd);
+
+                }
+            }
+        }
+
+
+    }
+
 
     public void onItemClick(int position) {
         Intent intent = new Intent(getContext(), NewsFeedActivity.class);
@@ -478,15 +541,16 @@ public class RssFeedFragment extends Fragment {
                 SqlDatabaseHelper sqlDatabaseHelper = new SqlDatabaseHelper(getContext());
 
 
-
                 sqlDatabaseHelper.addSavedNews(news, response);
 
 
                 RssFeedFragment.newNoteSaved = true;
                 for (Object object : newsArrayList) {
-                    News newsObject = (News) object;
-                    newsObject.setRead(sqlDatabaseHelper.getNewsReadStatus(newsObject));
-                    newsObject.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(newsObject));
+                    if (object.getClass() == News.class) {
+                        News newsObject = (News) object;
+                        newsObject.setRead(sqlDatabaseHelper.getNewsReadStatus(newsObject));
+                        newsObject.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(newsObject));
+                    }
                 }
 
                 newsAdapter.notifyDataSetChanged();
@@ -548,7 +612,7 @@ public class RssFeedFragment extends Fragment {
             SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm EEE dd MMM");
 
             String myDate = dateFormat.format(new Date(System.currentTimeMillis()));
-            MainActivity.toolbar.setSubtitle("Last updated - " + myDate);
+            MainActivity.toolbar.setSubtitle("Last Updated - " + myDate);
         } catch (Exception e) {
             e.printStackTrace();
         }

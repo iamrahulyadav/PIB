@@ -29,6 +29,7 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
+import com.facebook.ads.NativeAd;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -43,6 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import utils.AdsSubscriptionManager;
 import utils.AppController;
 import utils.News;
 import utils.NewsAdapter;
@@ -77,7 +79,7 @@ public class PibOldNewsActivity extends AppCompatActivity {
         pDialog = new ProgressDialog(this);
 
         recyclerView = (RecyclerView) findViewById(R.id.pibOld_recyclerView);
-        textView=(TextView)findViewById(R.id.pibOld_date_textView);
+        textView = (TextView) findViewById(R.id.pibOld_date_textView);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(mLayoutManager);
@@ -126,7 +128,7 @@ public class PibOldNewsActivity extends AppCompatActivity {
 
         Calendar cal = Calendar.getInstance();
 
-        int month = cal.get(Calendar.MONTH)+1;
+        int month = cal.get(Calendar.MONTH) + 1;
         int year = cal.get(Calendar.YEAR);
         int dayofmonth = cal.get(Calendar.DAY_OF_MONTH);
 
@@ -135,18 +137,18 @@ public class PibOldNewsActivity extends AppCompatActivity {
 
         textView.setText(dateString);
 
-        fetchNews(year,month,dayofmonth);
+        fetchNews(year, month, dayofmonth);
 
         try {
             Answers.getInstance().logCustom(new CustomEvent("old news search"));
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        initializeAds();
+        //initializeAds();
 
     }
 
@@ -199,6 +201,59 @@ public class PibOldNewsActivity extends AppCompatActivity {
     }
 
 
+    private void addNativeExpressAds() {
+
+        boolean subscription = AdsSubscriptionManager.getSubscription(this);
+
+        int count = AdsSubscriptionManager.ADSPOSITION_COUNT;
+        for (int i = 4; i < (newsArrayList.size()); i += count) {
+            if (newsArrayList.get(i) != null) {
+                if (newsArrayList.get(i).getClass() != NativeAd.class) {
+
+
+                    NativeAd nativeAd = new NativeAd(this, "1963281763960722_2012202609068637");
+                    nativeAd.setAdListener(new com.facebook.ads.AdListener() {
+
+                        @Override
+                        public void onError(Ad ad, AdError error) {
+                            // Ad error callback
+                            try {
+                                Answers.getInstance().logCustom(new CustomEvent("Ad failed to load")
+                                        .putCustomAttribute("Placement", "List native").putCustomAttribute("errorType", error.getErrorMessage()).putCustomAttribute("Source", "Facebook"));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onAdLoaded(Ad ad) {
+                            // Ad loaded callback
+                            newsAdapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onAdClicked(Ad ad) {
+                            // Ad clicked callback
+                        }
+
+                        @Override
+                        public void onLoggingImpression(Ad ad) {
+                            // Ad impression logged callback
+                        }
+                    });
+                    if (!subscription) {
+                        nativeAd.loadAd();
+                    }
+                    newsArrayList.add(i, nativeAd);
+
+                }
+            }
+        }
+
+
+    }
+
+
     public void onDateClick(View view) {
 
         Calendar cal = Calendar.getInstance();
@@ -212,10 +267,10 @@ public class PibOldNewsActivity extends AppCompatActivity {
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 
                 Calendar cal = Calendar.getInstance();
-                cal.set(year,monthOfYear,dayOfMonth);
+                cal.set(year, monthOfYear, dayOfMonth);
 
                 DateFormat df = new SimpleDateFormat("EEE, d MMM yyyy");
-                 dateString = df.format(cal.getTimeInMillis());
+                dateString = df.format(cal.getTimeInMillis());
 
                 textView.setText(dateString);
 
@@ -246,7 +301,6 @@ public class PibOldNewsActivity extends AppCompatActivity {
 
                     Elements links = doc.select("li");
 
-                    StringBuilder str = new StringBuilder();
                     String ministry = "";
 
                     newsArrayList.clear();
@@ -262,15 +316,12 @@ public class PibOldNewsActivity extends AppCompatActivity {
                             news.setPubDate(ministry);
                             news.setNewsID(dateString);
                             newsArrayList.add(news);
-                            str.append(element.text());
-                            str.append("\n");
+
                         } else {
                             ministry = element.text();
                         }
 
                     }
-
-
 
 
                 } catch (Exception e) {
@@ -280,9 +331,11 @@ public class PibOldNewsActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
+                        addNativeExpressAds();
+
                         newsAdapter.notifyDataSetChanged();
                         hideLoadingDialog();
-
 
 
                     }
@@ -310,6 +363,11 @@ public class PibOldNewsActivity extends AppCompatActivity {
     }
 
     public void initializeAds() {
+
+        if (AdsSubscriptionManager.getSubscription(this)) {
+            return;
+        }
+
         // Instantiate an AdView view
         adView = new AdView(this, "1963281763960722_2001913650097533", AdSize.BANNER_HEIGHT_50);
 

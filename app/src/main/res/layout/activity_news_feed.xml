@@ -36,6 +36,7 @@
         android:layout_margin="@dimen/fab_margin"
         android:layout_gravity="bottom|end"
         app:fabSize="mini"
-        app:srcCompat="@mipmap/ic_action_share" />
+
+        app:srcCompat="@mipmap/ic_reader_mode" />
 
 </android.support.design.widget.CoordinatorLayout>

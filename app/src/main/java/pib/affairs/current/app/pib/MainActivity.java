@@ -3,11 +3,13 @@ package pib.affairs.current.app.pib;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -15,6 +17,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -31,15 +34,20 @@ import android.view.MenuItem;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 
 import com.android.volley.Cache;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.anjlab.android.iab.v3.BillingProcessor;
+import com.anjlab.android.iab.v3.PurchaseState;
+import com.anjlab.android.iab.v3.TransactionDetails;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
+import com.crashlytics.android.answers.PurchaseEvent;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -53,9 +61,11 @@ import io.fabric.sdk.android.Fabric;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
+import utils.AdsSubscriptionManager;
 import utils.AppController;
 import utils.AppRater;
 import utils.LanguageManager;
@@ -72,6 +82,7 @@ public class MainActivity extends AppCompatActivity
 
 
     private static final String TAG = "tag";
+    private static final String PRODUCT_ID = "ads_free";
     public ArrayList<Object> newsArrayList = new ArrayList<>();
 
     RecyclerView recyclerView;
@@ -80,6 +91,8 @@ public class MainActivity extends AppCompatActivity
     private ViewPager viewPager;
 
     public static Toolbar toolbar;
+    private BillingProcessor bp;
+
 
 
     @Override
@@ -115,6 +128,7 @@ public class MainActivity extends AppCompatActivity
 
         MobileAds.initialize(this, "ca-app-pub-8455191357100024~5774774045");
 
+
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);
 
@@ -138,7 +152,91 @@ public class MainActivity extends AppCompatActivity
 
         viewPager.setCurrentItem(1);
 
+
+        initializeInAppBilling();
+
+        try {
+            if (AdsSubscriptionManager.getSubscription(this)) {
+                View header = navigationView.getHeaderView(0);
+                TextView statusTextView = (TextView) header.findViewById(R.id.nav_header_status);
+                statusTextView.setText("Pro member (Ads free)");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
+
+    private void initializeInAppBilling() {
+
+        try {
+            bp = new BillingProcessor(this,
+                    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqtqEm+63jCmT5ite3xpOzQ4mdMlUsVhPsqB/K005vFpdf8g0kK/g0NYMk/e0Kujcfh+6I7fSsIcqWxieP40iEhYHdq7rQvfF8WR+Nh/6EOuoqob9nzxRUWaNfGhOWeCMOrNh4QgRh+W8bCxUcGAJoS4bBg59z4cm+j8zgqtnH7mfijmFJm7Gddy+ma6uQWgc3qvheW+MsdA+jIT30isVJsY5fYW2lYBeCyHbAbqxcoxARtDo4N3QtHxl/OmXBqY7CTc7ItynCUNShWlnw1tVCGQq6zEmt8XWQ2e4dfFdA5oPxC6uQ/baGORUgFAk/AuQVuW6Z98jBHSqu5uJhFBY3QIDAQAB",
+                    new BillingProcessor.IBillingHandler() {
+                        @Override
+                        public void onProductPurchased(@NonNull String productId, @Nullable TransactionDetails details) {
+                            //Toast.makeText(EditorialListWithNavActivity.this, "product purchased - " + productId, Toast.LENGTH_SHORT).show();
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setTitle("Thank you for Purchase");
+                            builder.setMessage("We appreciate your contribution by going ads free.\n\nAds will be removed when you open the app next time. \n\n Contact us at acraftystudio@gmail.com in case of any problem");
+                            builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            });
+                            builder.show();
+
+                            AdsSubscriptionManager.setSubscription(MainActivity.this, true);
+
+                            Answers.getInstance().logPurchase(new PurchaseEvent().putItemType("ads free").putSuccess(true));
+
+                        }
+
+                        @Override
+                        public void onPurchaseHistoryRestored() {
+
+                            Log.d(TAG, "onPurchaseHistoryRestored: ");
+                        }
+
+                        @Override
+                        public void onBillingError(int errorCode, @Nullable Throwable error) {
+
+                        }
+
+                        @Override
+                        public void onBillingInitialized() {
+                            bp.loadOwnedPurchasesFromGoogle();
+
+                            //bp.consumePurchase(PRODUCT_ID);
+
+                            try {
+                                TransactionDetails transactionDetails = bp.getPurchaseTransactionDetails(PRODUCT_ID);
+
+                                if (transactionDetails == null) {
+                                    AdsSubscriptionManager.setSubscription(MainActivity.this, false);
+                                    return;
+                                }
+
+                                if (transactionDetails.purchaseInfo.purchaseData.purchaseState == PurchaseState.PurchasedSuccessfully) {
+                                    AdsSubscriptionManager.setSubscription(MainActivity.this, true);
+                                    Answers.getInstance().logCustom(new CustomEvent("Subscribed user enter"));
+                                } else {
+                                    AdsSubscriptionManager.setSubscription(MainActivity.this, false);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
     private void initializeWebview() {
 
@@ -182,6 +280,14 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
 
 
+    }
+
+    @Override
+    public void onDestroy() {
+        if (bp != null) {
+            bp.release();
+        }
+        super.onDestroy();
     }
 
     private void setupViewPager(ViewPager viewPager) {
@@ -516,12 +622,48 @@ public class MainActivity extends AppCompatActivity
                 onShortcutsClick();
                 break;
 
+            case R.id.nav_ad_free:
+                onPurchaseClick();
+                break;
+
 
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void onPurchaseClick() {
+        try {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Go Ads Free");
+            builder.setMessage("We are not a money making app. Ads are integrated to help app development and maintenance of apps.\n\nPlease make a small contribution and go ads free @ Rs.29");
+            builder.setPositiveButton("Go Ads Free", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (bp != null) {
+                        bp.purchase(MainActivity.this, PRODUCT_ID);
+
+                        Answers.getInstance().logCustom(new CustomEvent("Subscription Flow").putCustomAttribute("Selection", "yes"));
+
+                    }
+                }
+            });
+            builder.setNegativeButton("Maybe Later", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Answers.getInstance().logCustom(new CustomEvent("Subscription Flow").putCustomAttribute("Selection", "No"));
+
+                }
+            });
+
+            builder.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //bp.consumePurchase(PRODUCT_ID);
     }
 
     private void onComputerClick() {

@@ -53,6 +53,7 @@ import dm.audiostreamer.CurrentSessionCallback;
 import dm.audiostreamer.MediaMetaData;
 import io.fabric.sdk.android.services.common.SafeToast;
 import utils.AIRNews;
+import utils.AdsSubscriptionManager;
 import utils.AppController;
 import utils.LanguageManager;
 import utils.News;
@@ -369,6 +370,11 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     }
 
     public void initializeAds() {
+
+        if (AdsSubscriptionManager.getSubscription(this)){
+            return;
+        }
+
         // Instantiate an AdView view
         adView = new AdView(this, "1963281763960722_2001913650097533", AdSize.BANNER_HEIGHT_50);
 

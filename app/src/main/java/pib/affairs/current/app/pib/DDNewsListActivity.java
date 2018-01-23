@@ -28,12 +28,14 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
+import com.facebook.ads.NativeAd;
 
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import utils.AdsSubscriptionManager;
 import utils.AppController;
 import utils.News;
 import utils.NewsAdapter;
@@ -49,7 +51,7 @@ public class DDNewsListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private NewsAdapter newsAdapter;
-    private String urlToOpen= "http://ddnews.gov.in/rss-feeds";
+    private String urlToOpen = "http://ddnews.gov.in/rss-feeds";
 
     ProgressDialog pDialog;
 
@@ -66,12 +68,12 @@ public class DDNewsListActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_ddnews_list);
-         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         pDialog = new ProgressDialog(this);
 
-        recyclerView = (RecyclerView)findViewById(R.id.ddnews_recyclerView);
+        recyclerView = (RecyclerView) findViewById(R.id.ddnews_recyclerView);
 
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
@@ -82,7 +84,7 @@ public class DDNewsListActivity extends AppCompatActivity {
 
         recyclerView.setAdapter(newsAdapter);
 
-        swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.ddnews_swipeRefreshLayout);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.ddnews_swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -114,12 +116,12 @@ public class DDNewsListActivity extends AppCompatActivity {
             Answers.getInstance().logCustom(new CustomEvent("DD News list Opened"));
 
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
 
-        initializeAds();
+        //initializeAds();
 
     }
 
@@ -166,6 +168,8 @@ public class DDNewsListActivity extends AppCompatActivity {
                     newsArrayList.add(news);
                 }
 
+                addNativeExpressAds();
+
                 newsAdapter.notifyDataSetChanged();
 
 
@@ -180,10 +184,10 @@ public class DDNewsListActivity extends AppCompatActivity {
                 error.printStackTrace();
 
 
-                try{
-                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity","AIR Rss activity").putCustomAttribute("reason",error.getMessage()));
+                try {
+                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "AIR Rss activity").putCustomAttribute("reason", error.getMessage()));
 
-                }catch(Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -229,7 +233,7 @@ public class DDNewsListActivity extends AppCompatActivity {
                 for (Object news : new NewsParser(response).parseDDNews()) {
                     newsArrayList.add(news);
                 }
-
+                addNativeExpressAds();
                 newsAdapter.notifyDataSetChanged();
 
                 hideLoadingDialog();
@@ -257,8 +261,65 @@ public class DDNewsListActivity extends AppCompatActivity {
         }
     }
 
+    private void addNativeExpressAds() {
+
+        boolean subscription = AdsSubscriptionManager.getSubscription(this);
+
+        int count = AdsSubscriptionManager.ADSPOSITION_COUNT;
+        for (int i = 4; i < (newsArrayList.size()); i += count) {
+            if (newsArrayList.get(i) != null) {
+                if (newsArrayList.get(i).getClass() != NativeAd.class) {
+
+
+                    NativeAd nativeAd = new NativeAd(this, "1963281763960722_2012202609068637");
+                    nativeAd.setAdListener(new com.facebook.ads.AdListener() {
+
+                        @Override
+                        public void onError(Ad ad, AdError error) {
+                            // Ad error callback
+                            try {
+                                Answers.getInstance().logCustom(new CustomEvent("Ad failed to load")
+                                        .putCustomAttribute("Placement", "List native").putCustomAttribute("errorType", error.getErrorMessage()).putCustomAttribute("Source", "Facebook"));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onAdLoaded(Ad ad) {
+                            // Ad loaded callback
+                            newsAdapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onAdClicked(Ad ad) {
+                            // Ad clicked callback
+                        }
+
+                        @Override
+                        public void onLoggingImpression(Ad ad) {
+                            // Ad impression logged callback
+                        }
+                    });
+                    if (!subscription) {
+                        nativeAd.loadAd();
+                    }
+                    newsArrayList.add(i, nativeAd);
+
+                }
+            }
+        }
+
+
+    }
+
 
     public void initializeAds() {
+
+        if (AdsSubscriptionManager.getSubscription(this)){
+            return;
+        }
+
         // Instantiate an AdView view
         adView = new AdView(this, "1963281763960722_2001913650097533", AdSize.BANNER_HEIGHT_50);
 
@@ -276,7 +337,7 @@ public class DDNewsListActivity extends AppCompatActivity {
             public void onError(Ad ad, AdError adError) {
                 // Ad error callback
                 try {
-                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","DD News list").putCustomAttribute("error", adError.getErrorMessage()));
+                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "DD News list").putCustomAttribute("error", adError.getErrorMessage()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

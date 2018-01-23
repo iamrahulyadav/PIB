@@ -44,6 +44,7 @@ import org.jsoup.nodes.Document;
 
 import java.io.UnsupportedEncodingException;
 
+import utils.AdsSubscriptionManager;
 import utils.AppController;
 import utils.News;
 import utils.NightModeManager;
@@ -320,6 +321,10 @@ public class PibOldNewsFeedActivity extends AppCompatActivity {
     }
 
     public void initializeBottomNativeAds() {
+
+        if (AdsSubscriptionManager.getSubscription(this)){
+            return;
+        }
 
         if (nativeAd == null) {
 

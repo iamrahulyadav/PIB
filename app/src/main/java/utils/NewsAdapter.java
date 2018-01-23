@@ -10,7 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.facebook.ads.NativeAd;
+import com.facebook.ads.NativeAdView;
+import com.facebook.ads.NativeAdViewAttributes;
+import com.google.android.gms.ads.NativeExpressAdView;
 
 import org.w3c.dom.Text;
 
@@ -53,8 +59,8 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 @Override
                 public void onClick(View v) {
 
-                    if (clickListener!=null){
-                        clickListener.onBookMarkClick(v,getAdapterPosition());
+                    if (clickListener != null) {
+                        clickListener.onBookMarkClick(v, getAdapterPosition());
                     }
 
                 }
@@ -64,8 +70,8 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             View.OnClickListener onClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (clickListener!=null){
-                        clickListener.onTitleClick(v,getAdapterPosition());
+                    if (clickListener != null) {
+                        clickListener.onTitleClick(v, getAdapterPosition());
                     }
                 }
             };
@@ -78,8 +84,20 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public class NativeExpressAdViewHolder extends RecyclerView.ViewHolder {
 
+        LinearLayout linearLayout;
+        CardView cardView;
+
+        TextView recommendedTextView;
+
         public NativeExpressAdViewHolder(View itemView) {
             super(itemView);
+
+            linearLayout = (LinearLayout) itemView.findViewById(R.id.nativeExpress_container_linearLayout);
+
+            cardView = (CardView) itemView.findViewById(R.id.nativeExpress_background_cardView);
+
+            recommendedTextView = (TextView) itemView.findViewById(R.id.nativeExpress_recommended_textView);
+
         }
     }
 
@@ -92,11 +110,11 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
 
-           /* case AD_VIEW_TYPE:
+            case AD_VIEW_TYPE:
                 View nativeExpressLayoutView = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.native_express_ad_container, parent, false);
                 return new NativeExpressAdViewHolder(nativeExpressLayoutView);
-*/
+
             case NEWS_VIEW_TYPE:
             default:
                 View itemView = LayoutInflater.from(parent.getContext())
@@ -116,20 +134,47 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         switch (viewType) {
 
             case AD_VIEW_TYPE:
-            /*    NativeExpressAdViewHolder nativeExpressAdViewHolder = (NativeExpressAdViewHolder) holder;
-                NativeExpressAdView adView = (NativeExpressAdView) editorialGeneralInfoList.get(position);
-                ViewGroup adCardView = (ViewGroup) nativeExpressAdViewHolder.itemView;
-                adCardView.removeAllViews();
 
-                if (adView.getParent() != null) {
-                    ((ViewGroup) adView.getParent()).removeView(adView);
-                }
 
-                if (checkShowAds) {
-                    adCardView.addView(adView);
+               NativeExpressAdViewHolder adView = (NativeExpressAdViewHolder) holder;
+                boolean nightMode = NightModeManager.getNightMode(context);
+
+                NativeAd nativeAd = (NativeAd) newsArrayList.get(position);
+                if (nativeAd.isAdLoaded()) {
+                    adView.cardView.setVisibility(View.VISIBLE);
+                    //adView.recommendedTextView.setVisibility(View.VISIBLE);
+                    View view;
+                    if (nightMode) {
+
+                        NativeAdViewAttributes viewAttributes = new NativeAdViewAttributes()
+                                .setBackgroundColor(Color.parseColor("#28292e"))
+                                .setTitleTextColor(Color.WHITE)
+                                .setButtonTextColor(Color.WHITE)
+                                .setDescriptionTextColor(Color.WHITE)
+                                .setButtonColor(Color.parseColor("#F44336"));
+
+                        view = NativeAdView.render(context, nativeAd, NativeAdView.Type.HEIGHT_120, viewAttributes);
+                    } else {
+                        NativeAdViewAttributes viewAttributes = new NativeAdViewAttributes()
+                                .setButtonTextColor(Color.WHITE)
+                                .setButtonColor(Color.parseColor("#F44336"));
+
+                        view = NativeAdView.render(context, nativeAd, NativeAdView.Type.HEIGHT_120, viewAttributes);
+                    }
+
+
+                    adView.linearLayout.removeAllViews();
+                    adView.linearLayout.addView(view);
+
+                } else {
+
+                    adView.cardView.setVisibility(View.GONE);
+                    adView.recommendedTextView.setVisibility(View.GONE);
+
+
                 }
                 break;
-*/
+
             case NEWS_VIEW_TYPE:
             default:
 
@@ -151,9 +196,9 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     newsViewHolder.isReadMask.setVisibility(View.GONE);
                 }
 
-                if (news.isBookMark()){
+                if (news.isBookMark()) {
                     newsViewHolder.bookMarkImageView.setImageResource(R.drawable.book_marked);
-                }else{
+                } else {
                     newsViewHolder.bookMarkImageView.setImageResource(R.drawable.not_bookmark);
 
                 }
@@ -176,8 +221,8 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public int getItemViewType(int position) {
         //logic to implement ad in every 8th card
 
-        //return (position % 8 == 0) ? AD_VIEW_TYPE : EDITORIAL_VIEW_TYPE;
-        return NEWS_VIEW_TYPE;
+        return (position % AdsSubscriptionManager.ADSPOSITION_COUNT == 4) ? AD_VIEW_TYPE : NEWS_VIEW_TYPE;
+        //return NEWS_VIEW_TYPE;
 
     }
 

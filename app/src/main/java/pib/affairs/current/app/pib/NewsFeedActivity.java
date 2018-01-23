@@ -67,6 +67,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import fr.arnaudguyon.xmltojsonlib.XmlToJson;
+import utils.AdsSubscriptionManager;
 import utils.AppController;
 import utils.AppRater;
 import utils.FireBaseHandler;
@@ -222,7 +223,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onShareClick();
+                onReaderModeClick();
             }
         });
 
@@ -235,7 +236,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-            Answers.getInstance().logContentView(new ContentViewEvent().putContentId(news.getLink()).putContentName(news.getTitle()).putContentType(news.getNewsID()));
+            Answers.getInstance().logContentView(new ContentViewEvent().putContentId(news.getLink()).putContentName(news.getTitle()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -342,9 +343,23 @@ public class NewsFeedActivity extends AppCompatActivity implements
         } else if (id == R.id.action_tts_reader) {
             onTtsReaderClick(item);
             return true;
+        } else if (id == R.id.action_reader_mode) {
+            onReaderModeClick();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onReaderModeClick() {
+        News readerNews = new News();
+        readerNews.setTitle(news.getTitle());
+        readerNews.setDescription(tableDataString);
+        readerNews.setPubDate(news.getPubDate());
+
+        Intent intent = new Intent(NewsFeedActivity.this, NewsDescriptionActivity.class);
+        intent.putExtra("news", readerNews);
+        startActivity(intent);
     }
 
     @Override
@@ -699,17 +714,22 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
                     }
 
+
                     tableDataString = doc.select(".content-area").toString();
                     //tableDataString = doc.select(".innner-page-main-about-us-content-right-part").toString();
 
-                    doc = Jsoup.parse(tableDataString);
+
+
+/*
+
+doc = Jsoup.parse(tableDataString);
                     doc.select(".ReleaseLang").remove();
                     doc.select(".BackgroundRelease").remove();
                     doc.select(".RelTag").remove();
                     doc.select(".RelLink").remove();
 
                     tableDataString = doc.toString();
-/*
+
                     Elements links = doc.select("p");
                     links.select("style").remove();
 
@@ -735,9 +755,12 @@ public class NewsFeedActivity extends AppCompatActivity implements
                         newsMinistryTextView.setText(newsMinistry);
                         newsHeadingTextView.setText(news.getTitle());
 */
-                        tableDataString = "<html ><style>span{line-height: 120%;font-size:" + SettingManager.getTextSize(NewsFeedActivity.this) + "px}</style>" + tableDataString + "</html>";
+                        tableDataString = "<html ><style>span{line-height: 140%;font-size:" + SettingManager.getTextSize(NewsFeedActivity.this) + "px}</style>" + tableDataString + "</html>";
 
                         webView.loadDataWithBaseURL("", tableDataString, "text/html", "UTF-8", "");
+
+                        //webView.loadUrl(news.getLink());
+
                         hideLoadingDialog();
                         swipeRefreshLayout.setRefreshing(false);
 
@@ -851,6 +874,10 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
     public void initializeBottomNativeAds() {
 
+        if (AdsSubscriptionManager.getSubscription(this)){
+            return;
+        }
+
         if (nativeAd == null) {
 
             nativeAd = new NativeAd(this, "1963281763960722_1972656879689877");
@@ -860,7 +887,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
                     Log.d(TAG, "onError: " + adError);
 
                     try {
-                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","Newsfeed").putCustomAttribute("error", adError.getErrorMessage()));
+                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "Newsfeed").putCustomAttribute("error", adError.getErrorMessage()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -877,7 +904,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
                             .setButtonTextColor(Color.WHITE);
 
 
-                    View adView = NativeAdView.render(NewsFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400,viewAttributes);
+                    View adView = NativeAdView.render(NewsFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400, viewAttributes);
                     CardView nativeAdContainer = (CardView) findViewById(R.id.newsFeed_adContainer_LinearLayout);
                     // Add the Native Ad View to your ad container
                     nativeAdContainer.addView(adView);
@@ -902,4 +929,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
     }
 
 
+    public void OnShareButtonClick(View view) {
+        onShareClick();
+    }
 }

@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -34,6 +35,7 @@ import com.google.firebase.dynamiclinks.DynamicLink;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.ShortDynamicLink;
 
+import utils.AdsSubscriptionManager;
 import utils.News;
 import utils.NightModeManager;
 
@@ -44,6 +46,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
 
 
     TextView titleText, descriptionTextView , dateTextView;
+    WebView webView;
     private News news;
     private NativeAd nativeAd;
 
@@ -67,10 +70,14 @@ public class DDNewsFeedActivity extends AppCompatActivity {
         titleText = (TextView)findViewById(R.id.ddnews_title_textView);
         descriptionTextView = (TextView)findViewById(R.id.ddnews_description_textView);
         dateTextView=(TextView)findViewById(R.id.ddnews_newsDate_textView);
+        webView = findViewById(R.id.ddnews_news_webView);
 
         titleText.setText(news.getTitle());
 
-        news.setDescription(news.getDescription().replaceAll("<p>","<br>"));
+        webView.loadDataWithBaseURL("", news.getDescription(), "text/html", "UTF-8", "");
+
+
+       /* news.setDescription(news.getDescription().replaceAll("<p>","<br>"));
         news.setDescription(news.getDescription().replaceAll("</p>","<br>"));
 
 
@@ -79,7 +86,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
             descriptionTextView.setText(Html.fromHtml(news.getDescription(), Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH));
         } else {
             descriptionTextView.setText(Html.fromHtml(news.getDescription()));
-        }
+        }*/
 
         //descriptionTextView.setText(news.getDescription());
 
@@ -223,6 +230,10 @@ public class DDNewsFeedActivity extends AppCompatActivity {
 
 
     public void initializeBottomNativeAds() {
+
+        if (AdsSubscriptionManager.getSubscription(this)){
+            return;
+        }
 
         if (nativeAd == null) {
 

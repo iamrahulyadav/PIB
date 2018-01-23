@@ -3,6 +3,8 @@
     package="pib.affairs.current.app.pib">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="com.android.vending.BILLING" />
+
 
     <application
         android:name="utils.AppController"
@@ -24,7 +26,7 @@
         <activity
             android:name=".NewsDescriptionActivity"
             android:label="@string/title_activity_news_description"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/ActivityThemeLight"/>
         <activity
             android:name=".Dictionary"
             android:label="@string/title_activity_dictionary"
@@ -98,6 +100,10 @@
             android:name=".PibOldNewsFeedActivity"
             android:label="@string/title_activity_pib_old_news_feed"
             android:theme="@style/ActivityThemeLight"></activity>
+
+
+
+
     </application>
 
 </manifest>

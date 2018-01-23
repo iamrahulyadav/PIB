@@ -9,9 +9,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
@@ -25,6 +27,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,6 +45,7 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdView;
+import com.facebook.ads.NativeAdViewAttributes;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -68,211 +72,128 @@ import utils.NewsParser;
 import utils.NightModeManager;
 import utils.SettingManager;
 import utils.SqlDatabaseHelper;
+import utils.Translation;
 
 import static com.android.volley.VolleyLog.TAG;
 
 public class NewsDescriptionActivity extends AppCompatActivity {
     News news;
-    WebView webView;
     boolean pushNotification;
 
     private NativeAd nativeAd;
     private String tableDataString;
+    private TextView titleText;
+    private TextView descriptionTextView;
+    private TextView dateTextView;
+
+
+    private BottomSheetBehavior mBottomSheetBehavior;
+    public String selectedWord = "null";
+    TextView translationTextView;
+    private WebView webView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (NightModeManager.getNightMode(this)) {
+            setTheme(R.style.ActivityTheme_Primary_Base_Dark);
+        }
         setContentView(R.layout.activity_news_description);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         try {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-      /*  news = (News) getIntent().getSerializableExtra("news");
-        boolean isOffline = getIntent().getBooleanExtra("isOffline", false);
-        pushNotification= getIntent().getBooleanExtra("pushNotification",false);
+        news = (News) getIntent().getSerializableExtra("news");
 
 
-        String htmlTextString = "";
+        titleText = (TextView) findViewById(R.id.newsDescription_title_textView);
+        descriptionTextView = (TextView) findViewById(R.id.newsDescription_description_textView);
+        dateTextView = (TextView) findViewById(R.id.newsDescription_newsDate_textView);
 
-        if (news.isBookMark()) {
 
-            htmlTextString = new SqlDatabaseHelper(this)
-                    .getFullNews(news.getLink());
+        titleText.setText(news.getTitle());
+        dateTextView.setText(news.getPubDate());
 
-        }*/
 
-        webView = (WebView) findViewById(R.id.newsDesription_webView);
-        webView.getSettings().setJavaScriptEnabled(true);
+        if (Build.VERSION.SDK_INT >= 24) {
+            descriptionTextView.setText(Html.fromHtml(news.getDescription(), Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH));
+        } else {
+            descriptionTextView.setText(Html.fromHtml(news.getDescription()));
+        }
+
+
+        initializeActivityData(news.getDescription());
+
+
+        descriptionTextView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                getSelectedWord(1000);
+                return false;
+            }
+        });
+
+
+        initializeBottomSheet();
+        initializeBottomNativeAds();
+
+    }
+
+    private void initializeBottomSheet() {
+
+        View bottomSheet = findViewById(R.id.newsDescription_bottom_sheet);
+        mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        mBottomSheetBehavior.setHideable(false);
+
+        translationTextView = (TextView)findViewById(R.id.newsDescription_cardview_textview);
+
+        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
+
+        {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+
+                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+
+
+                    // loadWebview(selectedWord);
+
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
+        });
 
         initializeWebView();
 
-        webView.getSettings().setLoadWithOverviewMode(true);
-
-        webView.loadUrl("http://www.pib.gov.in/AllRelease.aspx?MenuId=3");
-
-        //getWebsite("http://www.pib.gov.in/AllRelease.aspx?MenuId=3");
-
-       /* webView.getSettings().setMinimumFontSize(50);
-        //webView.getSettings().setTextZoom(250);
-
-        //initializeWebView();
-
-        webView.getSettings().setLoadWithOverviewMode(true);
-        webView.getSettings().setUseWideViewPort(true);
-        webView.getSettings().setUserAgentString("Android");
-
-        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-
-        webView.getSettings().setAppCacheEnabled(true);
-        webView.getSettings().setAppCachePath(this.getCacheDir().getPath());
-        webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-
-        if (NightModeManager.getNightMode(this)) {
-            webView.setBackgroundColor(Color.parseColor("#5a666b"));
-        }
-        webView.setInitialScale(110);
-        webView.getSettings().setBuiltInZoomControls(true);
-        webView.getSettings().setDisplayZoomControls(false);
-
-*/
-
-       // webView.loadUrl("http://pib.nic.in/index.aspx");
-
-
-
-/*
-
-        if (news.isBookMark()) {
-            if (!htmlTextString.isEmpty()) {
-                webView.loadDataWithBaseURL("", htmlTextString, "text/html", "UTF-8", "");
-            } else {
-                webView.loadUrl("http://pib.nic.in/index.aspx");
-            }
-        } else {
-
-            webView.loadUrl(news.getLink());
-        }
-
-        AppRater.app_launched(this);
-
-
-        try{
-            Answers.getInstance().logContentView(new ContentViewEvent().putContentId(news.getLink()).putContentName(news.getTitle()));
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-
-        initializeBottomNativeAds(2000l);
-*/
-
-        //initializeAds();
-
-       /* if (Build.VERSION.SDK_INT > 19) {
-            webView.evaluateJavascript("(function(){return window.getSelection().toString()})()",
-                    new ValueCallback<String>() {
-                        @Override
-                        public void onReceiveValue(String value) {
-                            Log.v("Web view", "SELECTION:" + value);
-                        }
-                    });
-
-            webView.addJavascriptInterface(new JavaScriptInterface(), "javascriptinterface");
-            webView.loadUrl("javascript:javascriptinterface.callback(window.getSelection().toString())");
-
-        }
-*/
-        //temp();
-
-
-
     }
 
-    public void temp() {
 
-        String tag_string_req = "string_req";
-
-        final String url = news.getLink();
-
-        final ProgressDialog pDialog = new ProgressDialog(this);
-        pDialog.setMessage("Loading...");
-        pDialog.show();
-
-        StringRequest strReq = new StringRequest(Request.Method.GET,
-                url, new Response.Listener<String>() {
-
-            @Override
-            public void onResponse(String response) {
-                pDialog.hide();
-
-                response = response.replaceFirst("width:60%", "width:90%");
-
-                XmlToJson xmlToJson = new XmlToJson.Builder(response).build();
-
-                Log.d("NEWS", "onResponse: "+xmlToJson.toString());
-
-                //webView.loadDataWithBaseURL("", response, "text/html", "UTF-8", "");
-
-
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-
-                pDialog.hide();
-            }
-        });
-
-        strReq.setShouldCache(true);
-        // Adding request to request queue
-        AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
-
-
+    public void loadWebview(String mWord) {
+        webView.loadUrl("http://www.dictionary.com/browse/" + mWord);
     }
 
-    public void initializeWebView() {
-
-
-        webView.setWebViewClient(new WebViewClient() {
-            @SuppressWarnings("deprecation")
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView webView, String url) {
-                return shouldOverrideUrlLoading(url);
-            }
-
-            @TargetApi(Build.VERSION_CODES.N)
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
-                Uri uri = request.getUrl();
-                return shouldOverrideUrlLoading(uri.toString());
-            }
-
-            private boolean shouldOverrideUrlLoading(final String url) {
-                // Log.i(TAG, "shouldOverrideUrlLoading() URL : " + url);
-
-                // Here put your code
-                webView.loadUrl(url);
-
-
-                return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
-            }
-        });
-    }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        if (pushNotification){
-            Intent intent =new Intent(NewsDescriptionActivity.this ,MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
+
+        if (mBottomSheetBehavior != null){
+            if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED){
+                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            }else{
+                super.onBackPressed();
+            }
+        }else {
+            super.onBackPressed();
         }
     }
 
@@ -280,7 +201,6 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
 
         String tag_string_req = "string_req";
-
 
 
         StringRequest strReq = new StringRequest(Request.Method.GET,
@@ -307,9 +227,6 @@ public class NewsDescriptionActivity extends AppCompatActivity {
                 }
 
 
-
-
-
             }
         });
 
@@ -334,15 +251,15 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
                 try {
 
-                    Document doc = Jsoup.parse(data);
-                    //Document doc = Jsoup.connect(url).get();
-                    String title = doc.title();
+                    Document doc = Jsoup.parse(news.getDescription());
+                    if (news.getTitle() == null) {
+                        news.setTitle(doc.select("h2").text());
 
+                    }
 
+                    news.setPubDate(doc.select(".ReleaseDateSubHeaddateTime").text());
 
-                    tableDataString = doc.select(".pb40").toString();
-
-
+                    news.setDescription(doc.select("p").toString());
 
 
                 } catch (Exception e) {
@@ -353,8 +270,14 @@ public class NewsDescriptionActivity extends AppCompatActivity {
                     @Override
                     public void run() {
 
-                        webView.loadDataWithBaseURL("", tableDataString, "text/html", "UTF-8", "");
+                        if (Build.VERSION.SDK_INT >= 24) {
+                            descriptionTextView.setText(Html.fromHtml(news.getDescription(), Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH));
+                        } else {
+                            descriptionTextView.setText(Html.fromHtml(news.getDescription()));
+                        }
 
+                        titleText.setText(news.getTitle());
+                        dateTextView.setText(news.getPubDate());
 
                     }
                 });
@@ -385,12 +308,11 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             //onSaveOfflineClick();
             onPostInitiative();
             return true;
-        }
-        else if (id == R.id.action_open_browser) {
+        } else if (id == R.id.action_open_browser) {
             onOpenInBrowser();
             return true;
         } else if (id == R.id.action_share) {
-            onShareClick(webView);
+            onShareClick(titleText);
             return true;
         }
 
@@ -478,9 +400,9 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
 
 
-        try{
-            Answers.getInstance().logCustom(new CustomEvent("Save offline").putCustomAttribute("offline article",news.getTitle()));
-        }catch (Exception e){
+        try {
+            Answers.getInstance().logCustom(new CustomEvent("Save offline").putCustomAttribute("offline article", news.getTitle()));
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -537,36 +459,73 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(sharingIntent, "share link via"));
 
 
-        try{
-            Answers.getInstance().logCustom(new CustomEvent("Share Link Created").putCustomAttribute("share link",news.getTitle()));
-        }catch (Exception e){
+        try {
+            Answers.getInstance().logCustom(new CustomEvent("Share Link Created").putCustomAttribute("share link", news.getTitle()));
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    public void initializeBottomNativeAds(long timeDelay){
-        new Handler().postDelayed(new Runnable(){
+    public void getSelectedWord(long timeDelay) {
+
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                String string = descriptionTextView.getText().toString();
+                if (descriptionTextView.hasSelection()) {
+                    selectedWord = string.substring(descriptionTextView.getSelectionStart(), descriptionTextView.getSelectionEnd()).trim();
+                }
 
-                initializeBottomNativeAds();
+                //Toast.makeText(NewsDescriptionActivity.this, "Selected - " + selectedWord, Toast.LENGTH_SHORT).show();
+
+                loadWebview(selectedWord);
+
+                translationTextView.setText(selectedWord);
+
+                descriptionTextView.clearFocus();
+
+                new Translation(selectedWord).fetchTranslation(new Translation.TranslateListener() {
+                    @Override
+                    public void onTranslation(Translation translation) {
+
+                        if (translation.getWord().equalsIgnoreCase(selectedWord.trim())) {
+                            translationTextView.setText(translation.getWord() + " = " + translation.wordTranslation);
+                        }
+
+                    }
+                });
+
+
             }
         }, timeDelay);
+
     }
 
-    public void initializeBottomNativeAds(){
+
+    public void initializeBottomNativeAds() {
         nativeAd = new NativeAd(this, "1963281763960722_1972656879689877");
         nativeAd.setAdListener(new AdListener() {
             @Override
             public void onError(Ad ad, AdError adError) {
-
+                try {
+                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","reader mode").putCustomAttribute("error", adError.getErrorMessage()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
             public void onAdLoaded(Ad ad) {
-                View adView = NativeAdView.render(NewsDescriptionActivity.this, nativeAd, NativeAdView.Type.HEIGHT_300);
-                LinearLayout nativeAdContainer = (LinearLayout) findViewById(R.id.newsDesription_adContainer_linearLayout);
+                NativeAdViewAttributes viewAttributes = new NativeAdViewAttributes()
+                        .setBackgroundColor(Color.LTGRAY)
+                        .setButtonBorderColor(getResources().getColor(R.color.colorPrimary))
+                        .setButtonColor(getResources().getColor(R.color.colorPrimary))
+                        .setButtonTextColor(Color.WHITE);
+
+
+                View adView = NativeAdView.render(NewsDescriptionActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400,viewAttributes);
+                CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
                 // Add the Native Ad View to your ad container
                 nativeAdContainer.addView(adView);
             }
@@ -586,38 +545,51 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         nativeAd.loadAd();
 
     }
-/*
 
-    private void getWebsite(final String url) {
-        new Thread(new Runnable() {
+
+    public void initializeWebView() {
+        webView = (WebView) findViewById(R.id.newsDescription_bottomSheet_webview);
+
+        webView.getSettings().setLoadsImagesAutomatically(false);
+
+        webView.setWebViewClient(new WebViewClient() {
+            @SuppressWarnings("deprecation")
             @Override
-            public void run() {
-                final StringBuilder builder = new StringBuilder();
-
-                try {
-                    Document doc = Jsoup.connect(url).get();
-                    String title = doc.title();
-                    Elements links = doc.select("#condiv");
-
-
-                    builder.append(links.toString());
-
-
-                } catch (IOException e) {
-                    builder.append("Error : ").append(e.getMessage()).append("\n");
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d("NEWS", "run: "+builder.toString());
-                        webView.loadDataWithBaseURL("", builder.toString(), "text/html", "UTF-8", "");
-                    }
-                });
+            public boolean shouldOverrideUrlLoading(WebView webView, String url) {
+                return shouldOverrideUrlLoading(url);
             }
-        }).start();
+
+            @TargetApi(Build.VERSION_CODES.N)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                return shouldOverrideUrlLoading(uri.toString());
+            }
+
+            private boolean shouldOverrideUrlLoading(final String url) {
+                // Log.i(TAG, "shouldOverrideUrlLoading() URL : " + url);
+
+                // Here put your code
+                webView.loadUrl(url);
+
+                return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
+            }
+        });
+
+        webView.getSettings().setAppCacheEnabled(true);
+        webView.getSettings().setAppCachePath(this.getCacheDir().getPath());
+        webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+
+
     }
 
-*/
 
+    public void onDictionaryClick(View view) {
+        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
+    public void onGoogleClick(View view) {
+
+        webView.loadUrl("https://www.google.co.in/search?q=" + selectedWord);
+    }
 }

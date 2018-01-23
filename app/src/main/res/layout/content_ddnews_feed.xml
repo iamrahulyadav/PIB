@@ -84,9 +84,18 @@
             android:fontFamily="serif"
             android:lineSpacingMultiplier="1.1"
             android:text="Loading...."
+            android:visibility="gone"
             android:textColor="?attr/primaryTextColor"
             android:textSize="16sp"
             android:textStyle="normal" />
+
+        <WebView
+            android:layout_width="match_parent"
+            android:id="@+id/ddnews_news_webView"
+            android:layout_margin="8dp"
+            android:layout_height="match_parent">
+
+        </WebView>
 
 
         <android.support.v7.widget.CardView

@@ -27,6 +27,7 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
+import com.facebook.ads.NativeAd;
 
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
@@ -35,6 +36,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import utils.AdsSubscriptionManager;
 import utils.AppController;
 import utils.News;
 import utils.NewsAdapter;
@@ -116,9 +118,9 @@ public class RajyaSabhaListActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        initializeAds();
-
-
+        if (!AdsSubscriptionManager.getSubscription(this)) {
+            //initializeAds();
+        }
 
     }
 
@@ -173,6 +175,8 @@ public class RajyaSabhaListActivity extends AppCompatActivity {
                 for (Object news : new NewsParser(response).parseRstvNews()) {
                     newsArrayList.add(news);
                 }
+
+                addNativeExpressAds();
 
                 newsAdapter.notifyDataSetChanged();
 
@@ -237,7 +241,7 @@ public class RajyaSabhaListActivity extends AppCompatActivity {
                 for (Object news : new NewsParser(response).parseDDNews()) {
                     newsArrayList.add(news);
                 }
-
+                addNativeExpressAds();
                 newsAdapter.notifyDataSetChanged();
 
                 hideLoadingDialog();
@@ -248,6 +252,58 @@ public class RajyaSabhaListActivity extends AppCompatActivity {
         } else {
             // Cache data not exist.
         }
+
+    }
+
+    private void addNativeExpressAds() {
+
+        boolean subscription = AdsSubscriptionManager.getSubscription(this);
+
+        int count = AdsSubscriptionManager.ADSPOSITION_COUNT;
+        for (int i = 4; i < (newsArrayList.size()); i += count) {
+            if (newsArrayList.get(i) != null) {
+                if (newsArrayList.get(i).getClass() != NativeAd.class) {
+
+
+                    NativeAd nativeAd = new NativeAd(this, "1963281763960722_2012202609068637");
+                    nativeAd.setAdListener(new com.facebook.ads.AdListener() {
+
+                        @Override
+                        public void onError(Ad ad, AdError error) {
+                            // Ad error callback
+                            try {
+                                Answers.getInstance().logCustom(new CustomEvent("Ad failed")
+                                        .putCustomAttribute("Placement", "List native").putCustomAttribute("errorType", error.getErrorMessage()).putCustomAttribute("Source", "Facebook"));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onAdLoaded(Ad ad) {
+                            // Ad loaded callback
+                            newsAdapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onAdClicked(Ad ad) {
+                            // Ad clicked callback
+                        }
+
+                        @Override
+                        public void onLoggingImpression(Ad ad) {
+                            // Ad impression logged callback
+                        }
+                    });
+                    if (!subscription) {
+                        nativeAd.loadAd();
+                    }
+                    newsArrayList.add(i, nativeAd);
+
+                }
+            }
+        }
+
 
     }
 

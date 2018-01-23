@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.LinearLayout;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.crashlytics.android.answers.Answers;
@@ -35,6 +36,11 @@ import com.google.firebase.dynamiclinks.DynamicLink;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.ShortDynamicLink;
 
+
+
+import java.util.EnumSet;
+
+import utils.AdsSubscriptionManager;
 import utils.News;
 import utils.NightModeManager;
 
@@ -43,7 +49,7 @@ import static com.android.volley.VolleyLog.TAG;
 
 public class RajyaSabhaFeedActivity extends AppCompatActivity {
 
-    TextView titleText , dateTextView;
+    TextView titleText, dateTextView;
     WebView webView;
 
     private News news;
@@ -51,6 +57,7 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
 
 
     ProgressDialog pDialog;
+
 
 
     @Override
@@ -65,9 +72,9 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
 
         news = (News) getIntent().getSerializableExtra("news");
 
-        titleText = (TextView)findViewById(R.id.ddnews_title_textView);
+        titleText = (TextView) findViewById(R.id.ddnews_title_textView);
         webView = (WebView) findViewById(R.id.rajyasabha_news_webView);
-        dateTextView=(TextView)findViewById(R.id.ddnews_newsDate_textView);
+        dateTextView = (TextView) findViewById(R.id.ddnews_newsDate_textView);
 
         titleText.setText(news.getTitle());
 
@@ -90,18 +97,97 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        initializeBottomNativeAds();
-        initializeTopNativeAds();
+        if (!AdsSubscriptionManager.getSubscription(RajyaSabhaFeedActivity.this)) {
+            initializeBottomNativeAds();
+            initializeTopNativeAds();
+        }
+
+
 
         pDialog = new ProgressDialog(this);
 
 
     }
 
+    private void initializeMoPubAds() {
+
+/*
+        mobfoxNative = new Native(this);
+
+
+        mobfoxNative.setListener(new NativeListener() {
+            @Override
+            public void onNativeReady(Native aNative, CustomEventNative customEventNative, com.mobfox.sdk.nativeads.NativeAd nativeAd) {
+                Log.d(TAG, "onNativeReady: " + aNative);
+            }
+
+            @Override
+            public void onNativeError(Exception e) {
+                Log.d(TAG, "onNativeError: " + e);
+            }
+
+            @Override
+            public void onNativeClick(com.mobfox.sdk.nativeads.NativeAd nativeAd) {
+
+            }
+        });
+
+        mobfoxNative.load("ae23e4db7c8c880d086e805e0322a1d5");
+
+        ViewBinder viewBinder =new ViewBinder.Builder(R.layout.mopub_adrendrer)
+                .mainImageId(R.id.native_ad_main_image)
+                .iconImageId(R.id.native_ad_icon_image)
+                .titleId(R.id.native_ad_title)
+                .textId(R.id.native_ad_text)
+                .build();
+
+         MoPubNative moPubNative = new MoPubNative(this, "abf28c2b7a4c416e929c4d441f45f24e", new MoPubNative.MoPubNativeNetworkListener() {
+             @Override
+             public void onNativeLoad(com.mopub.nativeads.NativeAd nativeAd) {
+                 Log.d(TAG, "onNativeLoad: "+nativeAd);
+                 nativeAd.setMoPubNativeEventListener(new com.mopub.nativeads.NativeAd.MoPubNativeEventListener() {
+                     @Override
+                     public void onImpression(View view) {
+
+                     }
+
+                     @Override
+                     public void onClick(View view) {
+
+                     }
+                 });
+
+                 CardView nativeAdContainer = (CardView) findViewById(R.id.rajyasabha_top_adContainer_LinearLayout);
+
+                 nativeAd.renderAdView(nativeAdContainer);
+                 nativeAd.prepare(nativeAdContainer);
+             }
+
+             @Override
+             public void onNativeFail(NativeErrorCode errorCode) {
+                 Log.d(TAG, "onNativeFail: "+errorCode);
+             }
+         });
+        moPubNative.registerAdRenderer(new MoPubStaticNativeAdRenderer(viewBinder));
+
+        moPubNative.makeRequest(new RequestParameters.Builder()
+                .desiredAssets(EnumSet.of(
+                        RequestParameters.NativeAdAsset.TITLE,
+                        RequestParameters.NativeAdAsset.TEXT,
+                        RequestParameters.NativeAdAsset.MAIN_IMAGE,
+                        RequestParameters.NativeAdAsset.CALL_TO_ACTION_TEXT))
+                .build());
+*/
+    }
+
+    private void initializeStartappAds() {
+
+
+    }
 
 
     @Override
@@ -128,7 +214,7 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
         if (id == R.id.action_open_browser) {
             onOpenInBrowser();
             return true;
-        } else if (id==R.id.action_share){
+        } else if (id == R.id.action_share) {
             openShareDialog(news.getLink());
         }
 
@@ -139,7 +225,6 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(news.getLink()));
         startActivity(browserIntent);
     }
-
 
 
     public void onShareClick() {
@@ -227,7 +312,7 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
                     Log.d(TAG, "onError: " + adError);
 
                     try {
-                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","RSTV FEED").putCustomAttribute("error", adError.getErrorMessage()));
+                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "RSTV FEED").putCustomAttribute("error", adError.getErrorMessage()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -271,7 +356,7 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
                 Log.d(TAG, "onError: " + adError);
 
                 try {
-                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","RSTV FEED TOP").putCustomAttribute("error", adError.getErrorMessage()));
+                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "RSTV FEED TOP").putCustomAttribute("error", adError.getErrorMessage()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -285,11 +370,10 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
                         .setBackgroundColor(Color.LTGRAY)
                         .setButtonBorderColor(getResources().getColor(R.color.colorPrimary))
                         .setButtonColor(getResources().getColor(R.color.colorPrimary))
-                        .setButtonTextColor(Color.WHITE)
-                        ;
+                        .setButtonTextColor(Color.WHITE);
 
 
-                View adView = NativeAdView.render(RajyaSabhaFeedActivity.this, topNativeAd, NativeAdView.Type.HEIGHT_120,viewAttributes);
+                View adView = NativeAdView.render(RajyaSabhaFeedActivity.this, topNativeAd, NativeAdView.Type.HEIGHT_120, viewAttributes);
                 CardView nativeAdContainer = (CardView) findViewById(R.id.rajyasabha_top_adContainer_LinearLayout);
                 // Add the Native Ad View to your ad container
                 nativeAdContainer.addView(adView);
