@@ -102,7 +102,7 @@ public class FireBaseHandler {
     public void uploadInitiatives(final News news, final OnNewsListener onNewsListener) {
 
 
-        DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("Initiatives/");
+       /* DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("Initiatives/");
 
         news.setNewsID(mDatabaseRef.push().getKey());
 
@@ -124,7 +124,7 @@ public class FireBaseHandler {
 
             }
         });
-
+*/
 
     }
 
@@ -164,6 +164,41 @@ public class FireBaseHandler {
 
     }
 
+    public void downloadPIBSummaryList(int limit, final OnNewsListener onNewsListener) {
+
+
+        DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("Summary/");
+
+        Query myref2 = mDatabaseRef.limitToLast(limit);
+
+        myref2.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ArrayList<News> newsArrayList = new ArrayList<News>();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    News news = snapshot.getValue(News.class);
+
+                    newsArrayList.add(news);
+                }
+
+                Collections.reverse(newsArrayList);
+
+                onNewsListener.onNewsListDownload(newsArrayList, true);
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                onNewsListener.onNewsListDownload(null, false);
+
+            }
+        });
+
+
+    }
 
 
     public void downloadStoryList(int limit, String lastShortStoryID, final OnNewsListener onNewsListener) {

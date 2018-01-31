@@ -14,14 +14,24 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RatingBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.appnext.base.Appnext;
+import com.appnext.core.AppnextError;
+import com.appnext.nativeads.MediaView;
+import com.appnext.nativeads.NativeAdListener;
+import com.appnext.nativeads.NativeAdRequest;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
 import com.facebook.ads.Ad;
@@ -30,6 +40,7 @@ import com.facebook.ads.AdListener;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdView;
 import com.facebook.ads.NativeAdViewAttributes;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.dynamiclinks.DynamicLink;
@@ -37,13 +48,14 @@ import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.ShortDynamicLink;
 
 
-
+import java.util.ArrayList;
 import java.util.EnumSet;
 
 import utils.AdsSubscriptionManager;
 import utils.News;
 import utils.NightModeManager;
 
+import static android.util.Log.VERBOSE;
 import static com.android.volley.VolleyLog.TAG;
 
 
@@ -57,7 +69,6 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
 
 
     ProgressDialog pDialog;
-
 
 
     @Override
@@ -84,6 +95,7 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
 
         dateTextView.setText(news.getPubDate());
 
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,86 +119,113 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
         }
 
 
-
         pDialog = new ProgressDialog(this);
 
 
     }
 
-    private void initializeMoPubAds() {
+    private void initializeAppnext() {
 
-/*
-        mobfoxNative = new Native(this);
+        try {
+            com.appnext.nativeads.NativeAd appNextNative = new com.appnext.nativeads.NativeAd(this, "ac73473d-6ca6-4e38-baa8-5a81ae7b908c");
+            appNextNative.setAdListener(new com.appnext.nativeads.NativeAdListener() {
+                @Override
+                public void onAdLoaded(com.appnext.nativeads.NativeAd nativeAd) {
+                    super.onAdLoaded(nativeAd);
+                    Log.d(TAG, "onAdLoaded: ");
 
+                    showAppnextNative(nativeAd);
+                }
 
-        mobfoxNative.setListener(new NativeListener() {
-            @Override
-            public void onNativeReady(Native aNative, CustomEventNative customEventNative, com.mobfox.sdk.nativeads.NativeAd nativeAd) {
-                Log.d(TAG, "onNativeReady: " + aNative);
-            }
+                @Override
+                public void onAdClicked(com.appnext.nativeads.NativeAd nativeAd) {
+                    super.onAdClicked(nativeAd);
+                }
 
-            @Override
-            public void onNativeError(Exception e) {
-                Log.d(TAG, "onNativeError: " + e);
-            }
+                @Override
+                public void onError(com.appnext.nativeads.NativeAd nativeAd, AppnextError appnextError) {
+                    super.onError(nativeAd, appnextError);
+                    Log.d(TAG, "onError: ");
+                    try {
+                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "App Next").putCustomAttribute("error", appnextError.getErrorMessage()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
 
-            @Override
-            public void onNativeClick(com.mobfox.sdk.nativeads.NativeAd nativeAd) {
+                @Override
+                public void adImpression(com.appnext.nativeads.NativeAd nativeAd) {
+                    super.adImpression(nativeAd);
+                }
+            });
 
-            }
-        });
+            appNextNative.loadAd(new NativeAdRequest()
+                    .setCachingPolicy(NativeAdRequest.CachingPolicy.ALL)
+                    .setCreativeType(NativeAdRequest.CreativeType.ALL)
+                    .setVideoLength(NativeAdRequest.VideoLength.SHORT)
+                    .setVideoQuality(NativeAdRequest.VideoQuality.LOW)
+            );
 
-        mobfoxNative.load("ae23e4db7c8c880d086e805e0322a1d5");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        ViewBinder viewBinder =new ViewBinder.Builder(R.layout.mopub_adrendrer)
-                .mainImageId(R.id.native_ad_main_image)
-                .iconImageId(R.id.native_ad_icon_image)
-                .titleId(R.id.native_ad_title)
-                .textId(R.id.native_ad_text)
-                .build();
-
-         MoPubNative moPubNative = new MoPubNative(this, "abf28c2b7a4c416e929c4d441f45f24e", new MoPubNative.MoPubNativeNetworkListener() {
-             @Override
-             public void onNativeLoad(com.mopub.nativeads.NativeAd nativeAd) {
-                 Log.d(TAG, "onNativeLoad: "+nativeAd);
-                 nativeAd.setMoPubNativeEventListener(new com.mopub.nativeads.NativeAd.MoPubNativeEventListener() {
-                     @Override
-                     public void onImpression(View view) {
-
-                     }
-
-                     @Override
-                     public void onClick(View view) {
-
-                     }
-                 });
-
-                 CardView nativeAdContainer = (CardView) findViewById(R.id.rajyasabha_top_adContainer_LinearLayout);
-
-                 nativeAd.renderAdView(nativeAdContainer);
-                 nativeAd.prepare(nativeAdContainer);
-             }
-
-             @Override
-             public void onNativeFail(NativeErrorCode errorCode) {
-                 Log.d(TAG, "onNativeFail: "+errorCode);
-             }
-         });
-        moPubNative.registerAdRenderer(new MoPubStaticNativeAdRenderer(viewBinder));
-
-        moPubNative.makeRequest(new RequestParameters.Builder()
-                .desiredAssets(EnumSet.of(
-                        RequestParameters.NativeAdAsset.TITLE,
-                        RequestParameters.NativeAdAsset.TEXT,
-                        RequestParameters.NativeAdAsset.MAIN_IMAGE,
-                        RequestParameters.NativeAdAsset.CALL_TO_ACTION_TEXT))
-                .build());
-*/
     }
 
-    private void initializeStartappAds() {
+    private void showAppnextNative(com.appnext.nativeads.NativeAd appNextNative) {
+
+        try {
+            CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
+            nativeAdContainer.removeAllViews();
 
 
+            View appNextNativeLayout = getLayoutInflater().inflate(R.layout.native_appnext_container, null);
+
+
+            ImageView imageView = appNextNativeLayout.findViewById(R.id.appnextNative_na_icon);
+            //The ad Icon
+            appNextNative.downloadAndDisplayImage(imageView, appNextNative.getIconURL());
+
+
+            TextView textView = appNextNativeLayout.findViewById(R.id.appnextNative_na_title);
+            //The ad title
+            textView.setText(appNextNative.getAdTitle());
+
+            MediaView mediaView = appNextNativeLayout.findViewById(R.id.appnextNative_na_media);
+            //Setting up the Appnext MediaView
+
+            mediaView.setMute(true);
+            mediaView.setAutoPLay(false);
+            mediaView.setClickEnabled(true);
+            appNextNative.setMediaView(mediaView);
+
+            TextView description = appNextNativeLayout.findViewById(R.id.appnextNative_description);
+            //The ad description
+            String str = appNextNative.getAdDescription() + "\n" + appNextNative.getStoreDownloads() + " peoples have used the app";
+
+            description.setText(str);
+
+            Button ctaButton = appNextNativeLayout.findViewById(R.id.appnextNative_install);
+            //ctaButton.setText(appNextNative.getCTAText());
+
+
+            //Registering the clickable areas - see the array object in `setViews()` function
+            ArrayList<View> clickableView = new ArrayList<>();
+            clickableView.add(mediaView);
+            clickableView.add(textView);
+            clickableView.add(imageView);
+            clickableView.add(ctaButton);
+            appNextNative.registerClickableViews(clickableView);
+
+            com.appnext.nativeads.NativeAdView nativeAdView = appNextNativeLayout.findViewById(R.id.appnextNative_na_view);
+            //Setting up the entire native ad view
+            appNextNative.setNativeAdView(nativeAdView);
+
+
+            nativeAdContainer.addView(appNextNativeLayout);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -317,6 +356,7 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
+                    initializeAppnext();
                 }
 
                 @Override

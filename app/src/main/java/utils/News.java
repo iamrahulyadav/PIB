@@ -12,6 +12,7 @@ public class News implements Serializable {
 
     private String title, description, link, pubDate, newsID ;
     private boolean read, pushNotification,bookMark;
+    private int newsType=0;
 
 
 
@@ -77,6 +78,14 @@ public class News implements Serializable {
 
     public void setBookMark(boolean bookMark) {
         this.bookMark = bookMark;
+    }
+
+    public int getNewsType() {
+        return newsType;
+    }
+
+    public void setNewsType(int newsType) {
+        this.newsType = newsType;
     }
 
     public void rectifyNewsLink(){

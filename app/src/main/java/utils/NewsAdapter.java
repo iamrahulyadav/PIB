@@ -203,6 +203,12 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
                 }
 
+                if (news.getNewsType()==1){
+                    newsViewHolder.bookMarkImageView.setVisibility(View.GONE);
+                }else{
+                    newsViewHolder.bookMarkImageView.setVisibility(View.VISIBLE);
+                }
+
 
         }
 

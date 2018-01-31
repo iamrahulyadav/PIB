@@ -68,6 +68,7 @@ public class RssFeedFragment extends Fragment {
     private final int SOURCETYPE_FIREBASE = 1;
     private final int SOURCETYPE_HINDI = 3;
     private final int SOURCETYPE_INITIATIVES = 4;
+    private final int SOURCETYPE_SUMMARY = 5;
 
 
     // TODO: Rename and change types of parameters
@@ -127,12 +128,42 @@ public class RssFeedFragment extends Fragment {
             fetchNewsFromFireBase();
         } else if (sourceType == SOURCETYPE_OFFLINE) {
             fetchNewsFromDatabse();
-        } else if (sourceType == SOURCETYPE_INITIATIVES) {
+        }else if (sourceType == SOURCETYPE_INITIATIVES){
             fetchInitiative();
+        }
+        else if (sourceType == SOURCETYPE_SUMMARY) {
+            fetchPibSummary();
         } else {
             fetchNews();
         }
 
+    }
+
+    private void fetchPibSummary() {
+        FireBaseHandler fireBaseHandler = new FireBaseHandler();
+        fireBaseHandler.downloadPIBSummaryList(12, new FireBaseHandler.OnNewsListener() {
+            @Override
+            public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+                if (isSuccessful) {
+                    for (News news : newsArrayList) {
+
+                        //news.setRead(sqlDatabaseHelper.getNewsReadStatus(news));
+                        //news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news));
+
+
+                        RssFeedFragment.this.newsArrayList.add(news);
+
+                        addNativeExpressAds(false);
+                        initializeFragment();
+                    }
+                }
+            }
+
+            @Override
+            public void onNewsUpload(boolean isSuccessful) {
+
+            }
+        });
     }
 
     private void fetchInitiative() {
@@ -239,15 +270,19 @@ public class RssFeedFragment extends Fragment {
                 pDialog.hide();
 
                 response = response.substring(response.indexOf("<"));
+                ArrayList<News> arrayList = new NewsParser(response).parseJson();
 
-                newsArrayList.clear();
-                for (News object : new NewsParser(response).parseJson()) {
+                if (arrayList.size()>0) {
+                    newsArrayList.clear();
 
-                    object.setRead(sqlDatabaseHelper.getNewsReadStatus(object));
-                    object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object));
-                    object.rectifyNewsLink();
+                    for (News object : arrayList) {
 
-                    newsArrayList.add(object);
+                        object.setRead(sqlDatabaseHelper.getNewsReadStatus(object));
+                        object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object));
+                        object.rectifyNewsLink();
+
+                        newsArrayList.add(object);
+                    }
                 }
 
                 addNativeExpressAds(false);
@@ -335,7 +370,7 @@ public class RssFeedFragment extends Fragment {
                 response = response.substring(response.indexOf("<"));
 
                 newsArrayList.clear();
-                for (News object : new NewsParser(response).parseJson()) {
+                for (News object : new NewsParser(response).parseCacheJson()) {
                     object.setRead(sqlDatabaseHelper.getNewsReadStatus(object));
                     object.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(object));
                     object.rectifyNewsLink();
@@ -442,6 +477,14 @@ public class RssFeedFragment extends Fragment {
 
     private void addNativeExpressAds(boolean isCached) {
 
+        if (newsArrayList==null){
+            return;
+        }
+
+        if (getContext()==null){
+            return;
+        }
+
         boolean subscription = AdsSubscriptionManager.getSubscription(getContext());
 
         int count = AdsSubscriptionManager.ADSPOSITION_COUNT;
@@ -457,7 +500,7 @@ public class RssFeedFragment extends Fragment {
                         public void onError(Ad ad, AdError error) {
                             // Ad error callback
                             try {
-                                Answers.getInstance().logCustom(new CustomEvent("Ad failed to load")
+                                Answers.getInstance().logCustom(new CustomEvent("Ad failed")
                                         .putCustomAttribute("Placement", "List native").putCustomAttribute("errorType", error.getErrorMessage()).putCustomAttribute("Source", "Facebook"));
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -480,7 +523,7 @@ public class RssFeedFragment extends Fragment {
                             // Ad impression logged callback
                         }
                     });
-                    if (!(subscription||isCached) ) {
+                    if (!(subscription || isCached)) {
                         nativeAd.loadAd();
                     }
                     newsArrayList.add(i, nativeAd);
@@ -505,6 +548,19 @@ public class RssFeedFragment extends Fragment {
             intent.putExtra("isOffline", true);
         }
 
+        if (news.getNewsType() == 1) {
+            /*for news summary*/
+            Intent intentSummary = new Intent(getContext(), NewsDescriptionActivity.class);
+
+
+            News newsSummary = (News) newsArrayList.get(position);
+
+            intentSummary.putExtra("news", newsSummary);
+            startActivity(intentSummary);
+
+            return;
+        }
+
         startActivity(intent);
 
         sqlDatabaseHelper = new SqlDatabaseHelper(getContext());
@@ -520,6 +576,7 @@ public class RssFeedFragment extends Fragment {
     }
 
     public void onBookMark(int position) {
+
 
 
         String tag_string_req = "string_req";
@@ -595,7 +652,11 @@ public class RssFeedFragment extends Fragment {
                     fetchNewsFromDatabse();
                 } else if (sourceType == 4) {
                     fetchInitiative();
-                } else {
+                } else if (sourceType == SOURCETYPE_SUMMARY)
+                {
+                    fetchPibSummary();
+                }
+                else {
                     fetchNews();
                 }
 
@@ -655,4 +716,5 @@ public class RssFeedFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
 }

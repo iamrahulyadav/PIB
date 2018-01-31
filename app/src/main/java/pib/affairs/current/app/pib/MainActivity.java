@@ -44,6 +44,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.anjlab.android.iab.v3.BillingProcessor;
 import com.anjlab.android.iab.v3.PurchaseState;
 import com.anjlab.android.iab.v3.TransactionDetails;
+import com.appnext.base.Appnext;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
@@ -127,6 +128,9 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         MobileAds.initialize(this, "ca-app-pub-8455191357100024~5774774045");
+
+        Appnext.init(this);
+
 
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
@@ -301,10 +305,10 @@ public class MainActivity extends AppCompatActivity
 
         if (isEnglish) {
             adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3", 0), "Updates");
-            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=18&Lang=1&Regid=3", 0), "Featured");
+            //adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=18&Lang=1&Regid=3", 0), "Featured");
         } else {
             adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=2&Regid=3", 3), "RSS");
-            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=18&Lang=2&Regid=3", 3), "Featured");
+            //adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=18&Lang=2&Regid=3", 3), "Featured");
 
             try {
                 Answers.getInstance().logCustom(new CustomEvent("Hindi language"));
@@ -313,6 +317,8 @@ public class MainActivity extends AppCompatActivity
             }
 
         }
+
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 5), "PIB Summary");
 
         adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 4), "Key Initiative");
 

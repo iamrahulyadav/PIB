@@ -28,6 +28,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +38,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.appnext.core.AppnextError;
+import com.appnext.nativeads.MediaView;
+import com.appnext.nativeads.NativeAdRequest;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
 import com.crashlytics.android.answers.CustomEvent;
@@ -119,6 +123,9 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         titleText.setText(news.getTitle());
         dateTextView.setText(news.getPubDate());
 
+        if (news.getNewsType()==1){
+            news.setDescription(news.getDescription().replaceAll("\n","<br>"));
+        }
 
         if (Build.VERSION.SDK_INT >= 24) {
             descriptionTextView.setText(Html.fromHtml(news.getDescription(), Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH));
@@ -126,8 +133,9 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             descriptionTextView.setText(Html.fromHtml(news.getDescription()));
         }
 
-
-        initializeActivityData(news.getDescription());
+        if (news.getNewsType() != 1) {
+            initializeActivityData(news.getDescription());
+        }
 
 
         descriptionTextView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -138,6 +146,11 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             }
         });
 
+        try {
+            Answers.getInstance().logCustom(new CustomEvent("Reader mode").putCustomAttribute("link", news.getLink()).putCustomAttribute("Title", news.getTitle()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         initializeBottomSheet();
         initializeBottomNativeAds();
@@ -151,7 +164,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         mBottomSheetBehavior.setHideable(false);
 
-        translationTextView = (TextView)findViewById(R.id.newsDescription_cardview_textview);
+        translationTextView = (TextView) findViewById(R.id.newsDescription_cardview_textview);
 
         mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback()
 
@@ -186,13 +199,13 @@ public class NewsDescriptionActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        if (mBottomSheetBehavior != null){
-            if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED){
+        if (mBottomSheetBehavior != null) {
+            if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                 mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-            }else{
+            } else {
                 super.onBackPressed();
             }
-        }else {
+        } else {
             super.onBackPressed();
         }
     }
@@ -292,7 +305,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.activity_description_options, menu);
+        // getMenuInflater().inflate(R.menu.menu_ddnews_feed, menu);
         return true;
     }
 
@@ -304,11 +317,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_save_offline) {
-            //onSaveOfflineClick();
-            onPostInitiative();
-            return true;
-        } else if (id == R.id.action_open_browser) {
+        if (id == R.id.action_open_browser) {
             onOpenInBrowser();
             return true;
         } else if (id == R.id.action_share) {
@@ -408,7 +417,6 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
     }
 
-
     public void onShareClick(View view) {
 
         Task<ShortDynamicLink> shortLinkTask = FirebaseDynamicLinks.getInstance().createDynamicLink()
@@ -439,6 +447,8 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
                         } else {
 
+                            openShareDialog(news.getLink());
+
                         }
                     }
                 });
@@ -447,6 +457,27 @@ public class NewsDescriptionActivity extends AppCompatActivity {
     }
 
     private void openShareDialog(Uri shortUrl) {
+
+
+        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+
+        //sharingIntent.putExtra(Intent.EXTRA_STREAM, newsMetaInfo.getNewsImageLocalPath());
+
+        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shortUrl
+                + "\n\nRead Press Information Bureau update from PIB News");
+        startActivity(Intent.createChooser(sharingIntent, "share link via"));
+
+
+        try {
+            Answers.getInstance().logCustom(new CustomEvent("Share Link Created").putCustomAttribute("share link", news.getTitle()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void openShareDialog(String shortUrl) {
 
 
         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
@@ -509,10 +540,12 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             @Override
             public void onError(Ad ad, AdError adError) {
                 try {
-                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","reader mode").putCustomAttribute("error", adError.getErrorMessage()));
+                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "reader mode").putCustomAttribute("error", adError.getErrorMessage()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                initializeAppnext();
             }
 
             @Override
@@ -524,7 +557,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
                         .setButtonTextColor(Color.WHITE);
 
 
-                View adView = NativeAdView.render(NewsDescriptionActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400,viewAttributes);
+                View adView = NativeAdView.render(NewsDescriptionActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400, viewAttributes);
                 CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
                 // Add the Native Ad View to your ad container
                 nativeAdContainer.addView(adView);
@@ -544,6 +577,110 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         // Initiate a request to load an ad.
         nativeAd.loadAd();
 
+    }
+
+    private void initializeAppnext() {
+
+        try {
+            com.appnext.nativeads.NativeAd appNextNative = new com.appnext.nativeads.NativeAd(this, "ac73473d-6ca6-4e38-baa8-5a81ae7b908c");
+            appNextNative.setAdListener(new com.appnext.nativeads.NativeAdListener() {
+                @Override
+                public void onAdLoaded(com.appnext.nativeads.NativeAd nativeAd) {
+                    super.onAdLoaded(nativeAd);
+                    Log.d(TAG, "onAdLoaded: ");
+
+                    showAppnextNative(nativeAd);
+                }
+
+                @Override
+                public void onAdClicked(com.appnext.nativeads.NativeAd nativeAd) {
+                    super.onAdClicked(nativeAd);
+                }
+
+                @Override
+                public void onError(com.appnext.nativeads.NativeAd nativeAd, AppnextError appnextError) {
+                    super.onError(nativeAd, appnextError);
+                    Log.d(TAG, "onError: ");
+                    try {
+                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "App Next").putCustomAttribute("error", appnextError.getErrorMessage()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void adImpression(com.appnext.nativeads.NativeAd nativeAd) {
+                    super.adImpression(nativeAd);
+                }
+            });
+
+            appNextNative.loadAd(new NativeAdRequest()
+                    .setCachingPolicy(NativeAdRequest.CachingPolicy.ALL)
+                    .setCreativeType(NativeAdRequest.CreativeType.ALL)
+                    .setVideoLength(NativeAdRequest.VideoLength.SHORT)
+                    .setVideoQuality(NativeAdRequest.VideoQuality.LOW)
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void showAppnextNative(com.appnext.nativeads.NativeAd appNextNative) {
+
+        try {
+            CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
+            nativeAdContainer.removeAllViews();
+
+
+            View appNextNativeLayout = getLayoutInflater().inflate(R.layout.native_appnext_container, null);
+
+
+            ImageView imageView = appNextNativeLayout.findViewById(R.id.appnextNative_na_icon);
+            //The ad Icon
+            appNextNative.downloadAndDisplayImage(imageView, appNextNative.getIconURL());
+
+
+            TextView textView = appNextNativeLayout.findViewById(R.id.appnextNative_na_title);
+            //The ad title
+            textView.setText(appNextNative.getAdTitle());
+
+            MediaView mediaView = appNextNativeLayout.findViewById(R.id.appnextNative_na_media);
+            //Setting up the Appnext MediaView
+
+            mediaView.setMute(true);
+            mediaView.setAutoPLay(false);
+            mediaView.setClickEnabled(true);
+            appNextNative.setMediaView(mediaView);
+
+            TextView description = appNextNativeLayout.findViewById(R.id.appnextNative_description);
+            //The ad description
+            String str = appNextNative.getAdDescription() + "\n" + appNextNative.getStoreDownloads() + " users have used the app";
+
+            description.setText(str);
+
+            Button ctaButton = appNextNativeLayout.findViewById(R.id.appnextNative_install);
+            //ctaButton.setText(appNextNative.getCTAText());
+
+
+            //Registering the clickable areas - see the array object in `setViews()` function
+            ArrayList<View> clickableView = new ArrayList<>();
+            clickableView.add(mediaView);
+            clickableView.add(textView);
+            clickableView.add(imageView);
+            clickableView.add(ctaButton);
+            appNextNative.registerClickableViews(clickableView);
+
+            com.appnext.nativeads.NativeAdView nativeAdView = appNextNativeLayout.findViewById(R.id.appnextNative_na_view);
+            //Setting up the entire native ad view
+            appNextNative.setNativeAdView(nativeAdView);
+
+
+            nativeAdContainer.addView(appNextNativeLayout);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

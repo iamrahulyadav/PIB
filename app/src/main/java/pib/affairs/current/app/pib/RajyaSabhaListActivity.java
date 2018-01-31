@@ -172,7 +172,8 @@ public class RajyaSabhaListActivity extends AppCompatActivity {
 
 
                 newsArrayList.clear();
-                for (Object news : new NewsParser(response).parseRstvNews()) {
+                for (News news : new NewsParser(response).parseRstvNews()) {
+                    news.setNewsType(1);
                     newsArrayList.add(news);
                 }
 

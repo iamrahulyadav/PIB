@@ -30,6 +30,8 @@ import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +42,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.appnext.core.AppnextError;
+import com.appnext.nativeads.MediaView;
+import com.appnext.nativeads.NativeAdRequest;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
 import com.crashlytics.android.answers.CustomEvent;
@@ -61,6 +66,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
@@ -244,6 +250,9 @@ public class NewsFeedActivity extends AppCompatActivity implements
         tts = new TextToSpeech(this, this);
 
         initializeWebView();
+
+
+
     }
 
     @Override
@@ -352,10 +361,20 @@ public class NewsFeedActivity extends AppCompatActivity implements
     }
 
     private void onReaderModeClick() {
+
+        if (tableDataString == null) {
+            Toast.makeText(this, "Refresh and try again", Toast.LENGTH_SHORT).show();
+            return;
+        } else if (tableDataString.isEmpty()) {
+            Toast.makeText(this, "Refresh and try again", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         News readerNews = new News();
         readerNews.setTitle(news.getTitle());
         readerNews.setDescription(tableDataString);
         readerNews.setPubDate(news.getPubDate());
+        readerNews.setLink(news.getLink());
 
         Intent intent = new Intent(NewsFeedActivity.this, NewsDescriptionActivity.class);
         intent.putExtra("news", readerNews);
@@ -777,6 +796,7 @@ doc = Jsoup.parse(tableDataString);
         // hideLoadingDialog();
     }
 
+
     public void ttsReaderClick() {
 
         if (tableDataString != null) {
@@ -874,7 +894,7 @@ doc = Jsoup.parse(tableDataString);
 
     public void initializeBottomNativeAds() {
 
-        if (AdsSubscriptionManager.getSubscription(this)){
+        if (AdsSubscriptionManager.getSubscription(this)) {
             return;
         }
 
@@ -892,6 +912,8 @@ doc = Jsoup.parse(tableDataString);
                         e.printStackTrace();
                     }
 
+                    initializeAppnext();
+
                 }
 
                 @Override
@@ -907,6 +929,7 @@ doc = Jsoup.parse(tableDataString);
                     View adView = NativeAdView.render(NewsFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400, viewAttributes);
                     CardView nativeAdContainer = (CardView) findViewById(R.id.newsFeed_adContainer_LinearLayout);
                     // Add the Native Ad View to your ad container
+                    nativeAdContainer.removeAllViews();
                     nativeAdContainer.addView(adView);
                 }
 
@@ -924,12 +947,236 @@ doc = Jsoup.parse(tableDataString);
             // Initiate a request to load an ad.
             nativeAd.loadAd();
         }
+    }
+
+    private void initializeAppnext() {
+
+        try {
+            com.appnext.nativeads.NativeAd appNextNative = new com.appnext.nativeads.NativeAd(this, "ac73473d-6ca6-4e38-baa8-5a81ae7b908c");
+            appNextNative.setAdListener(new com.appnext.nativeads.NativeAdListener() {
+                @Override
+                public void onAdLoaded(com.appnext.nativeads.NativeAd nativeAd) {
+                    super.onAdLoaded(nativeAd);
+                    Log.d(TAG, "onAdLoaded: ");
+
+                    showAppnextNative(nativeAd);
+                }
+
+                @Override
+                public void onAdClicked(com.appnext.nativeads.NativeAd nativeAd) {
+                    super.onAdClicked(nativeAd);
+                }
+
+                @Override
+                public void onError(com.appnext.nativeads.NativeAd nativeAd, AppnextError appnextError) {
+                    super.onError(nativeAd, appnextError);
+                    Log.d(TAG, "onError: ");
+                    try {
+                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "App Next").putCustomAttribute("error", appnextError.getErrorMessage()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void adImpression(com.appnext.nativeads.NativeAd nativeAd) {
+                    super.adImpression(nativeAd);
+                }
+            });
+
+            appNextNative.loadAd(new NativeAdRequest()
+                    .setCachingPolicy(NativeAdRequest.CachingPolicy.ALL)
+                    .setCreativeType(NativeAdRequest.CreativeType.ALL)
+                    .setVideoLength(NativeAdRequest.VideoLength.SHORT)
+                    .setVideoQuality(NativeAdRequest.VideoQuality.LOW)
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void showAppnextNative(com.appnext.nativeads.NativeAd appNextNative) {
+
+        try {
+            CardView nativeAdContainer = (CardView) findViewById(R.id.newsFeed_adContainer_LinearLayout);
+            nativeAdContainer.removeAllViews();
 
 
+            View appNextNativeLayout = getLayoutInflater().inflate(R.layout.native_appnext_container, null);
+
+
+            ImageView imageView = appNextNativeLayout.findViewById(R.id.appnextNative_na_icon);
+            //The ad Icon
+            appNextNative.downloadAndDisplayImage(imageView, appNextNative.getIconURL());
+
+
+            TextView textView = appNextNativeLayout.findViewById(R.id.appnextNative_na_title);
+            //The ad title
+            textView.setText(appNextNative.getAdTitle());
+
+            MediaView mediaView = appNextNativeLayout.findViewById(R.id.appnextNative_na_media);
+            //Setting up the Appnext MediaView
+
+            mediaView.setMute(true);
+            mediaView.setAutoPLay(false);
+            mediaView.setClickEnabled(true);
+            appNextNative.setMediaView(mediaView);
+
+            TextView description = appNextNativeLayout.findViewById(R.id.appnextNative_description);
+            //The ad description
+            String str = appNextNative.getAdDescription() + "\n" + appNextNative.getStoreDownloads() + " users have used the app";
+
+            description.setText(str);
+
+            Button ctaButton = appNextNativeLayout.findViewById(R.id.appnextNative_install);
+            //ctaButton.setText(appNextNative.getCTAText());
+
+
+            //Registering the clickable areas - see the array object in `setViews()` function
+            ArrayList<View> clickableView = new ArrayList<>();
+            clickableView.add(mediaView);
+            clickableView.add(textView);
+            clickableView.add(imageView);
+            clickableView.add(ctaButton);
+            appNextNative.registerClickableViews(clickableView);
+
+            com.appnext.nativeads.NativeAdView nativeAdView = appNextNativeLayout.findViewById(R.id.appnextNative_na_view);
+            //Setting up the entire native ad view
+            appNextNative.setNativeAdView(nativeAdView);
+
+
+            nativeAdContainer.addView(appNextNativeLayout);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
     public void OnShareButtonClick(View view) {
         onShareClick();
     }
+
+
+
+    /*summary functions*/
+
+    private void getSummaryWebsite(final String url) {
+
+
+        String tag_string_req = "string_req";
+
+
+        StringRequest strReq = new StringRequest(Request.Method.GET,
+                url, new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+
+                initializeSummaryData(response);
+
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+
+                webView.loadDataWithBaseURL("", news.getDescription(), "text/html", "UTF-8", "");
+
+                try {
+                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "News feed activity").putCustomAttribute("reason", error.getMessage()));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                if (tableDataString == null) {
+                    Toast.makeText(NewsFeedActivity.this, "Unable to load data. Please try again later", Toast.LENGTH_SHORT).show();
+                } else if (tableDataString.isEmpty()) {
+                    Toast.makeText(NewsFeedActivity.this, "Unable to load data. Please try again later", Toast.LENGTH_SHORT).show();
+
+                }
+
+                hideLoadingDialog();
+
+            }
+        });
+
+
+        strReq.setShouldCache(true);
+        // Adding request to request queue
+        //AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+
+        strReq.setTag(TextUtils.isEmpty(tag_string_req) ? TAG : tag_string_req);
+        Volley.newRequestQueue(getApplicationContext()).add(strReq);
+
+
+    }
+
+
+    public void initializeSummaryData(final String data) {
+
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final StringBuilder builder = new StringBuilder();
+
+                try {
+
+
+                    Document doc = Jsoup.parse(data);
+
+
+                    if (news.getTitle() == null) {
+                        news.setTitle(doc.select("h2").text());
+
+                    }
+
+
+                    //tableDataString = doc.select("#primary").toString();
+
+                    tableDataString = doc.select(".entry-content article").toString();
+
+                    Log.d(TAG, "run: " + tableDataString);
+
+                    doc = Jsoup.parse(tableDataString);
+                    doc.select(".breadcrumbs").remove();
+
+
+                } catch (Exception e) {
+                    builder.append("Error : ").append(e.getMessage()).append("\n");
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+
+                        tableDataString = "<html ><style>span{line-height: 140%;font-size:" + SettingManager.getTextSize(NewsFeedActivity.this) + "px}</style>" + tableDataString + "</html>";
+
+                        webView.loadDataWithBaseURL("", tableDataString, "text/html", "UTF-8", "");
+
+                        //webView.loadUrl(news.getLink());
+
+                        hideLoadingDialog();
+                        swipeRefreshLayout.setRefreshing(false);
+
+                        initializeBottomNativeAds();
+
+                    }
+                });
+
+
+            }
+        }).start();
+
+
+        // hideLoadingDialog();
+    }
+
+
 }

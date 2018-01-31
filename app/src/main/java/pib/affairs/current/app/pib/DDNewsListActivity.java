@@ -164,7 +164,8 @@ public class DDNewsListActivity extends AppCompatActivity {
 
 
                 newsArrayList.clear();
-                for (Object news : new NewsParser(response).parseDDNews()) {
+                for (News news : new NewsParser(response).parseDDNews()) {
+                    news.setNewsType(1);
                     newsArrayList.add(news);
                 }
 

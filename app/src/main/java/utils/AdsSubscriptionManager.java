@@ -71,11 +71,15 @@ public class AdsSubscriptionManager {
 
 
     public static boolean getSubscription(Context mContext ) {
-        SharedPreferences prefs = mContext.getSharedPreferences("adsmanager", 0);
+        try {
+            SharedPreferences prefs = mContext.getSharedPreferences("adsmanager", 0);
 
-        boolean isSubscribed = prefs.getBoolean("issubscribed", false) ;
-        return isSubscribed;
-
+            boolean isSubscribed = prefs.getBoolean("issubscribed", false);
+            return isSubscribed;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
     }
 
 
