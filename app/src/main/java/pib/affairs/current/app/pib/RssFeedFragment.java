@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.Toast;
 
 import com.android.volley.Cache;
@@ -128,10 +129,9 @@ public class RssFeedFragment extends Fragment {
             fetchNewsFromFireBase();
         } else if (sourceType == SOURCETYPE_OFFLINE) {
             fetchNewsFromDatabse();
-        }else if (sourceType == SOURCETYPE_INITIATIVES){
+        } else if (sourceType == SOURCETYPE_INITIATIVES) {
             fetchInitiative();
-        }
-        else if (sourceType == SOURCETYPE_SUMMARY) {
+        } else if (sourceType == SOURCETYPE_SUMMARY) {
             fetchPibSummary();
         } else {
             fetchNews();
@@ -272,7 +272,7 @@ public class RssFeedFragment extends Fragment {
                 response = response.substring(response.indexOf("<"));
                 ArrayList<News> arrayList = new NewsParser(response).parseJson();
 
-                if (arrayList.size()>0) {
+                if (arrayList.size() > 0) {
                     newsArrayList.clear();
 
                     for (News object : arrayList) {
@@ -431,30 +431,7 @@ public class RssFeedFragment extends Fragment {
             }
         });
 
-       /* recyclerView.addOnItemTouchListener(new RecyclerTouchListener(getContext(), recyclerView, new RecyclerTouchListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
 
-
-
-            }
-
-            @Override
-            public void onLongItemClick(View view, int position) {
-
-
-
-               *//* WebView webView = (WebView) view.findViewById(R.id.contentMain_cache_webView);
-                webView.getSettings().setAppCacheEnabled(true);
-                webView.getSettings().setAppCachePath(getContext().getCacheDir().getPath());
-                webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-
-                webView.loadUrl(((News) newsArrayList.get(position)).getLink());
-*//*
-
-            }
-        }));
-*/
         initializeSwipeRefresh(view);
 
 
@@ -472,16 +449,21 @@ public class RssFeedFragment extends Fragment {
         }
 
 
+        if (sourceType == 0) {
+            HorizontalScrollView horizontalScrollView = view.findViewById(R.id.fragmentRss_option_horizontalView);
+            horizontalScrollView.setVisibility(View.VISIBLE);
+        }
+
         return view;
     }
 
     private void addNativeExpressAds(boolean isCached) {
 
-        if (newsArrayList==null){
+        if (newsArrayList == null) {
             return;
         }
 
-        if (getContext()==null){
+        if (getContext() == null) {
             return;
         }
 
@@ -578,7 +560,6 @@ public class RssFeedFragment extends Fragment {
     public void onBookMark(int position) {
 
 
-
         String tag_string_req = "string_req";
 
         final News news = (News) newsArrayList.get(position);
@@ -652,11 +633,9 @@ public class RssFeedFragment extends Fragment {
                     fetchNewsFromDatabse();
                 } else if (sourceType == 4) {
                     fetchInitiative();
-                } else if (sourceType == SOURCETYPE_SUMMARY)
-                {
+                } else if (sourceType == SOURCETYPE_SUMMARY) {
                     fetchPibSummary();
-                }
-                else {
+                } else {
                     fetchNews();
                 }
 

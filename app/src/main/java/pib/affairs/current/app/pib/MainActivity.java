@@ -848,6 +848,37 @@ public class MainActivity extends AppCompatActivity
         finish();
     }
 
+
+
+    public void onDDNewsClick(View view) {
+        onDDNewsClick();
+    }
+
+    public void onGoAdsFreeClick(View view) {
+        onPurchaseClick();
+    }
+
+    public void onPIBSummaryClick(View view) {
+        viewPager.setCurrentItem(2,true);
+
+    }
+
+    public void onAIRNewsClick(View view) {
+        onAirNewsClick();
+    }
+
+    public void onRateUsClick(View view) {
+        onRateUsClick();
+    }
+
+    public void onRSTVNewsClick(View view) {
+        onRstvNewsClick();
+    }
+
+    public void onSearchOldClick(View view) {
+        onOldNewsClick();
+    }
+
     public class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
