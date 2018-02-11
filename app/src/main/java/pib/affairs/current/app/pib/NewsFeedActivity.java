@@ -269,9 +269,6 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
         try {
 
-            if (Build.VERSION.SDK_INT > 18) {
-            }
-
             tts.speak(speakWord, TextToSpeech.QUEUE_FLUSH, null);
 
 
