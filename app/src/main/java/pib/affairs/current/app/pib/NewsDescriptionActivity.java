@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
@@ -51,6 +52,7 @@ import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdView;
 import com.facebook.ads.NativeAdViewAttributes;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -68,6 +70,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import fr.arnaudguyon.xmltojsonlib.XmlToJson;
+import utils.AdsSubscriptionManager;
 import utils.AppController;
 import utils.AppRater;
 import utils.FireBaseHandler;
@@ -114,6 +117,8 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
         news = (News) getIntent().getSerializableExtra("news");
 
+        pushNotification = getIntent().getBooleanExtra("pushNotification", false);
+
 
         titleText = (TextView) findViewById(R.id.newsDescription_title_textView);
         descriptionTextView = (TextView) findViewById(R.id.newsDescription_description_textView);
@@ -123,15 +128,14 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         titleText.setText(news.getTitle());
         dateTextView.setText(news.getPubDate());
 
-        if (news.getNewsType()==1){
-            news.setDescription(news.getDescription().replaceAll("\n","<br>"));
+
+        if (pushNotification) {
+            downloadSummaryById();
+
+        } else {
+            initializeUI();
         }
 
-        if (Build.VERSION.SDK_INT >= 24) {
-            descriptionTextView.setText(Html.fromHtml(news.getDescription(), Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH));
-        } else {
-            descriptionTextView.setText(Html.fromHtml(news.getDescription()));
-        }
 
         if (news.getNewsType() != 1) {
             initializeActivityData(news.getDescription());
@@ -153,8 +157,43 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         }
 
         initializeBottomSheet();
-        initializeBottomNativeAds();
 
+        if (!AdsSubscriptionManager.getSubscription(this)) {
+            initializeBottomNativeAds();
+            initializeTopAdmob();
+        }
+
+
+    }
+
+    private void downloadSummaryById() {
+        new FireBaseHandler().downloadPIBSummaryById(news.getNewsID(), new FireBaseHandler.OnNewsListener() {
+            @Override
+            public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+                if (!newsArrayList.isEmpty()) {
+                    news = newsArrayList.get(0);
+                    initializeUI();
+                }
+
+            }
+
+            @Override
+            public void onNewsUpload(boolean isSuccessful) {
+
+            }
+        });
+    }
+
+    private void initializeUI() {
+        if (news.getNewsType() == 1) {
+            news.setDescription(news.getDescription().replaceAll("\n", "<br>"));
+        }
+
+        if (Build.VERSION.SDK_INT >= 24) {
+            descriptionTextView.setText(Html.fromHtml(news.getDescription(), Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH));
+        } else {
+            descriptionTextView.setText(Html.fromHtml(news.getDescription()));
+        }
     }
 
     private void initializeBottomSheet() {
@@ -202,6 +241,11 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         if (mBottomSheetBehavior != null) {
             if (mBottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
                 mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            } else if (pushNotification) {
+                super.onBackPressed();
+                Intent intent = new Intent(NewsDescriptionActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             } else {
                 super.onBackPressed();
             }
@@ -545,7 +589,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                initializeAppnext();
+                initializeAdmob();
             }
 
             @Override
@@ -578,6 +622,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         nativeAd.loadAd();
 
     }
+
 
     private void initializeAppnext() {
 
@@ -681,6 +726,36 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void initializeAdmob() {
+
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.MEDIUM_RECTANGLE);
+        adView.setAdUnitId("ca-app-pub-8455191357100024/4291164035");
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
+        CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
+        nativeAdContainer.removeAllViews();
+        nativeAdContainer.addView(adView);
+
+
+    }
+
+    private void initializeTopAdmob() {
+
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId("ca-app-pub-8455191357100024/4291164035");
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
+        CardView nativeAdContainer = (CardView) findViewById(R.id.newsFeed_adContainer_LinearLayout);
+        nativeAdContainer.removeAllViews();
+        nativeAdContainer.addView(adView);
     }
 
 

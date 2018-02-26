@@ -37,16 +37,35 @@ public class FireBasePushNotificationService extends FirebaseMessagingService {
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
 
-            intent = new Intent(this, NewsFeedActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             News news = new News();
             news.setTitle(remoteMessage.getData().get("notificationT"));
             news.setDescription(remoteMessage.getData().get("notificationB"));
             news.setLink(remoteMessage.getData().get("newsLink"));
+            news.setNewsID(remoteMessage.getData().get("id"));
 
+            try {
+                news.setNewsType(0);
+                String strNewsType = remoteMessage.getData().get("contentT");
+                news.setNewsType(Integer.valueOf(strNewsType));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            switch (news.getNewsType()) {
+                case 1:
+                    intent = new Intent(this, NewsDescriptionActivity.class);
+                    break;
+                default:
+                    intent = new Intent(this, NewsFeedActivity.class);
+                    break;
+            }
+
+
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.putExtra("news", news);
-            intent.putExtra("pushNotification",true);
+            intent.putExtra("pushNotification", true);
 
             showNotification(remoteMessage.getData().get("notificationT"), remoteMessage.getData().get("notificationB"));
 

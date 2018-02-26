@@ -146,6 +146,8 @@ public class MainActivity extends AppCompatActivity
 
 
         FirebaseMessaging.getInstance().subscribeToTopic("subscribed");
+        FirebaseMessaging.getInstance().subscribeToTopic("summaryNotification");
+        FirebaseMessaging.getInstance().subscribeToTopic("OtherNewsNotification");
 
         //fetchNews();
 
@@ -304,10 +306,10 @@ public class MainActivity extends AppCompatActivity
 
 
         if (isEnglish) {
-            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3", 0), "Updates");
+            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3", 0), "PIB");
             //adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=18&Lang=1&Regid=3", 0), "Featured");
         } else {
-            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=2&Regid=3", 3), "RSS");
+            adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=2&Regid=3", 3), "PIB");
             //adapter.addFragment(RssFeedFragment.newInstance("http://www.pib.gov.in/RssMain.aspx?ModId=18&Lang=2&Regid=3", 3), "Featured");
 
             try {
@@ -322,6 +324,7 @@ public class MainActivity extends AppCompatActivity
 
         adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 4), "Key Initiative");
 
+        adapter.addFragment(DDNewsListFragment.newInstance(),"DD News");
 
         //adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 3), "PIB Hindi");
 

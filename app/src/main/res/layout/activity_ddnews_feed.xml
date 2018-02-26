@@ -34,4 +34,8 @@
         app:layout_scrollFlags="scroll|enterAlways"
         app:srcCompat="@mipmap/ic_action_share" />
 
+
+
+
+
 </android.support.design.widget.CoordinatorLayout>

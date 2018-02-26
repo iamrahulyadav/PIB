@@ -41,6 +41,9 @@ import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdView;
 import com.facebook.ads.NativeAdViewAttributes;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.dynamiclinks.DynamicLink;
@@ -356,7 +359,7 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    initializeAppnext();
+                    initializeAdmob();
                 }
 
                 @Override
@@ -401,6 +404,8 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
+                initializeTopAdmob();
+
             }
 
             @Override
@@ -434,5 +439,36 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
         topNativeAd.loadAd();
 
     }
+
+    private void initializeAdmob(){
+
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.MEDIUM_RECTANGLE);
+        adView.setAdUnitId("ca-app-pub-8455191357100024/4291164035");
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
+        CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
+        nativeAdContainer.removeAllViews();
+        nativeAdContainer.addView(adView);
+        nativeAdContainer.setCardBackgroundColor(getResources().getColor(R.color.colorAccent));
+    }
+
+    private void initializeTopAdmob(){
+
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId("ca-app-pub-8455191357100024/4291164035");
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
+        CardView nativeAdContainer = (CardView) findViewById(R.id.rajyasabha_top_adContainer_LinearLayout);
+        nativeAdContainer.removeAllViews();
+        nativeAdContainer.addView(adView);
+        nativeAdContainer.setCardBackgroundColor(getResources().getColor(R.color.colorAccent));
+    }
+
 
 }

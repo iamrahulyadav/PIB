@@ -71,7 +71,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     TextView newsTitleTextView, timeElapsedTextView;
 
-    public static MediaPlayer mediaPlayer;
+    public MediaPlayer mediaPlayer;
 
     public MediaMetaData currentMetaData;
     ImageView playImageView;
@@ -79,6 +79,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     public static ProgressDialog pDialog;
     private AdView adView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,6 +135,8 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
         initializeAds();
 
+        mediaPlayer = new MediaPlayer();
+
     }
 
 
@@ -156,36 +159,38 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     }
 
-    public static void playFromURL(String url) {
+    public void initializeSeekBarData(String url) {
 
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.stop();
+        if (mediaPlayer != null) {
+            mediaPlayer.reset();
+            mediaPlayer.release();
         }
+
         try {
-
             mediaPlayer.setDataSource(url);
-            mediaPlayer.prepare();
-
-            int i = mediaPlayer.getDuration();
+            mediaPlayer.prepareAsync();
 
 
-            Log.d("MP", "playFromURL: " + i);
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                public void onPrepared(final MediaPlayer mp) {
 
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
+
+                    //start media player
+                    //mp.start();
+
+                    int mDuration = mediaPlayer.getDuration();
+
+                    Toast.makeText(AIRNewsActivity.this, "Duration is - " + mDuration, Toast.LENGTH_SHORT).show();
+
+
+                    newsTitleTextView.setText(getTimeString(mDuration));
+
+                }
+            });
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
-        // mediaPlayer.start();
 
 
     }
@@ -302,6 +307,8 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         currentMetaData = mediaMetaData;
         playImageView.setImageDrawable(getResources().getDrawable(R.drawable.mr_media_pause_dark));
 
+        //initializeSeekBarData(mediaMetaData.getMediaUrl());
+
 
         try {
             Answers.getInstance().logCustom(new CustomEvent("AIR Radio played").putCustomAttribute("News title", mediaMetaData.getMediaTitle()));
@@ -338,7 +345,6 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0), "AIR Hindi");
 
 
-
         viewPager.setAdapter(adapter);
     }
 
@@ -371,7 +377,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     public void initializeAds() {
 
-        if (AdsSubscriptionManager.getSubscription(this)){
+        if (AdsSubscriptionManager.getSubscription(this)) {
             return;
         }
 
@@ -392,7 +398,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
             public void onError(Ad ad, AdError adError) {
                 // Ad error callback
                 try {
-                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","AIR NEWS").putCustomAttribute("error", adError.getErrorMessage()));
+                    Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "AIR NEWS").putCustomAttribute("error", adError.getErrorMessage()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -414,6 +420,22 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
             }
         });
 
+    }
+
+    private String getTimeString(long millis) {
+        StringBuffer buf = new StringBuffer();
+
+        long hours = millis / (1000 * 60 * 60);
+        long minutes = (millis % (1000 * 60 * 60)) / (1000 * 60);
+        long seconds = ((millis % (1000 * 60 * 60)) % (1000 * 60)) / 1000;
+
+        buf.append(String.format("%02d", hours))
+                .append(":")
+                .append(String.format("%02d", minutes))
+                .append(":")
+                .append(String.format("%02d", seconds));
+
+        return buf.toString();
     }
 
 

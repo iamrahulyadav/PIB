@@ -200,6 +200,40 @@ public class FireBaseHandler {
 
     }
 
+    public void downloadPIBSummaryById(String summaryId, final OnNewsListener onNewsListener) {
+
+
+        DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("Summary/"+summaryId);
+
+
+        mDatabaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ArrayList<News> newsArrayList = new ArrayList<News>();
+
+
+                News news = dataSnapshot.getValue(News.class);
+
+                newsArrayList.add(news);
+
+
+
+                onNewsListener.onNewsListDownload(newsArrayList, true);
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                onNewsListener.onNewsListDownload(null, false);
+
+            }
+        });
+
+
+    }
+
+
 
     public void downloadStoryList(int limit, String lastShortStoryID, final OnNewsListener onNewsListener) {
 

@@ -182,6 +182,7 @@ public class NewsParser {
                     news.setTitle(itemObject.getString("title"));
                     //news.setDescription(itemObject.getString("description"));
                 }
+                news.setTitle(itemObject.getString("title"));
                 news.setLink(itemObject.getString("link"));
 
                 news.setDescription(itemObject.getString("description"));

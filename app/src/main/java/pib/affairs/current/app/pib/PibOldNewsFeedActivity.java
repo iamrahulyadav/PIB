@@ -44,6 +44,7 @@ import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdView;
+import com.google.android.gms.ads.AdRequest;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -347,7 +348,7 @@ public class PibOldNewsFeedActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    initializeAppnext();
+                    initializeAdmob();
                 }
 
                 @Override
@@ -479,6 +480,22 @@ public class PibOldNewsFeedActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+    private void initializeAdmob(){
+
+        com.google.android.gms.ads.AdView adView = new com.google.android.gms.ads.AdView(this);
+        adView.setAdSize(com.google.android.gms.ads.AdSize.LARGE_BANNER);
+        adView.setAdUnitId("ca-app-pub-8455191357100024/4291164035");
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
+        CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
+        nativeAdContainer.removeAllViews();
+        nativeAdContainer.addView(adView);
+        nativeAdContainer.setCardBackgroundColor(getResources().getColor(R.color.colorAccent));
     }
 
 
