@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -23,9 +24,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.appnext.core.AppnextError;
-import com.appnext.nativeads.MediaView;
-import com.appnext.nativeads.NativeAdRequest;
+
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
 import com.facebook.ads.Ad;
@@ -46,6 +45,7 @@ import com.google.firebase.dynamiclinks.ShortDynamicLink;
 import java.util.ArrayList;
 
 import utils.AdsSubscriptionManager;
+import utils.FireBaseHandler;
 import utils.News;
 import utils.NightModeManager;
 
@@ -55,13 +55,14 @@ import static com.android.volley.VolleyLog.TAG;
 public class DDNewsFeedActivity extends AppCompatActivity {
 
 
-    TextView titleText, descriptionTextView , dateTextView;
+    TextView titleText, descriptionTextView, dateTextView;
     WebView webView;
     private News news;
     private NativeAd nativeAd;
 
 
     ProgressDialog pDialog;
+    private boolean pushNotification;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,16 +77,18 @@ public class DDNewsFeedActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         news = (News) getIntent().getSerializableExtra("news");
+        pushNotification = getIntent().getBooleanExtra("pushNotification", false);
 
-        titleText = (TextView)findViewById(R.id.ddnews_title_textView);
-        descriptionTextView = (TextView)findViewById(R.id.ddnews_description_textView);
-        dateTextView=(TextView)findViewById(R.id.ddnews_newsDate_textView);
+        titleText = (TextView) findViewById(R.id.ddnews_title_textView);
+        descriptionTextView = (TextView) findViewById(R.id.ddnews_description_textView);
+        dateTextView = (TextView) findViewById(R.id.ddnews_newsDate_textView);
         webView = findViewById(R.id.ddnews_news_webView);
 
-        titleText.setText(news.getTitle());
 
-        webView.loadDataWithBaseURL("", news.getDescription(), "text/html", "UTF-8", "");
-
+        if (pushNotification) {
+            downloadNewsById();
+        }
+        initializeUI();
 
        /* news.setDescription(news.getDescription().replaceAll("<p>","<br>"));
         news.setDescription(news.getDescription().replaceAll("</p>","<br>"));
@@ -100,7 +103,6 @@ public class DDNewsFeedActivity extends AppCompatActivity {
 
         //descriptionTextView.setText(news.getDescription());
 
-        dateTextView.setText(news.getPubDate());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -115,14 +117,54 @@ public class DDNewsFeedActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         initializeBottomNativeAds();
 
-        pDialog = new ProgressDialog(this);
 
+
+
+    }
+
+    private void downloadNewsById() {
+        showLoadingDialog("Loading...");
+        new FireBaseHandler().downloadOtherNewsById(news.getNewsID(), new FireBaseHandler.OnNewsListener() {
+            @Override
+            public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+                if (!newsArrayList.isEmpty()) {
+                    news = newsArrayList.get(0);
+                    initializeUI();
+                    hideLoadingDialog();
+                }
+            }
+
+            @Override
+            public void onNewsUpload(boolean isSuccessful) {
+
+            }
+        });
+    }
+
+    private void initializeUI() {
+        titleText.setText(news.getTitle());
+
+        webView.loadDataWithBaseURL("", news.getDescription(), "text/html", "UTF-8", "");
+        dateTextView.setText(news.getPubDate());
+
+    }
+
+    public void onBackPressed() {
+
+        if (pushNotification) {
+            super.onBackPressed();
+            Intent intent = new Intent(DDNewsFeedActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        } else {
+            super.onBackPressed();
+        }
 
     }
 
@@ -150,7 +192,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
         if (id == R.id.action_open_browser) {
             onOpenInBrowser();
             return true;
-        } else if (id==R.id.action_share){
+        } else if (id == R.id.action_share) {
             openShareDialog(news.getLink());
         }
 
@@ -226,6 +268,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
 
 
     public void showLoadingDialog(String message) {
+        pDialog = new ProgressDialog(this);
         pDialog.setMessage(message);
         pDialog.show();
     }
@@ -241,9 +284,11 @@ public class DDNewsFeedActivity extends AppCompatActivity {
 
     public void initializeBottomNativeAds() {
 
-        if (AdsSubscriptionManager.getSubscription(this)){
+        if (AdsSubscriptionManager.getSubscription(this)) {
             return;
         }
+
+        initializeTopAdmob();
 
         if (nativeAd == null) {
 
@@ -254,7 +299,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
                     Log.d(TAG, "onError: " + adError);
 
                     try {
-                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement","DD Newsfeed").putCustomAttribute("error", adError.getErrorMessage()));
+                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "DD Newsfeed").putCustomAttribute("error", adError.getErrorMessage()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -272,7 +317,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
                             .setButtonTextColor(Color.WHITE);
 
 
-                    View adView = NativeAdView.render(DDNewsFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400,viewAttributes);
+                    View adView = NativeAdView.render(DDNewsFeedActivity.this, nativeAd, NativeAdView.Type.HEIGHT_400, viewAttributes);
                     CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
                     // Add the Native Ad View to your ad container
                     nativeAdContainer.removeAllViews();
@@ -297,7 +342,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
 
     }
 
-    private void initializeAdmob(){
+    private void initializeAdmob() {
 
         AdView adView = new AdView(this);
         adView.setAdSize(AdSize.MEDIUM_RECTANGLE);
@@ -306,116 +351,24 @@ public class DDNewsFeedActivity extends AppCompatActivity {
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
 
-        CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
+        CardView nativeAdContainer =  findViewById(R.id.admobAdContainer_LinearLayout);
         nativeAdContainer.removeAllViews();
         nativeAdContainer.addView(adView);
-        nativeAdContainer.setCardBackgroundColor(getResources().getColor(R.color.colorAccent));
     }
 
-    private void initializeAppnext() {
+    private void initializeTopAdmob() {
 
-        try {
-            com.appnext.nativeads.NativeAd appNextNative = new com.appnext.nativeads.NativeAd(this, "ac73473d-6ca6-4e38-baa8-5a81ae7b908c");
-            appNextNative.setAdListener(new com.appnext.nativeads.NativeAdListener() {
-                @Override
-                public void onAdLoaded(com.appnext.nativeads.NativeAd nativeAd) {
-                    super.onAdLoaded(nativeAd);
-                    Log.d(TAG, "onAdLoaded: ");
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId("ca-app-pub-8455191357100024/4291164035");
 
-                    showAppnextNative(nativeAd);
-                }
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
 
-                @Override
-                public void onAdClicked(com.appnext.nativeads.NativeAd nativeAd) {
-                    super.onAdClicked(nativeAd);
-                }
-
-                @Override
-                public void onError(com.appnext.nativeads.NativeAd nativeAd, AppnextError appnextError) {
-                    super.onError(nativeAd, appnextError);
-                    Log.d(TAG, "onError: ");
-                    try {
-                        Answers.getInstance().logCustom(new CustomEvent("Ad failed").putCustomAttribute("Placement", "App Next").putCustomAttribute("error", appnextError.getErrorMessage()));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void adImpression(com.appnext.nativeads.NativeAd nativeAd) {
-                    super.adImpression(nativeAd);
-                }
-            });
-
-            appNextNative.loadAd(new NativeAdRequest()
-                    .setCachingPolicy(NativeAdRequest.CachingPolicy.ALL)
-                    .setCreativeType(NativeAdRequest.CreativeType.ALL)
-                    .setVideoLength(NativeAdRequest.VideoLength.SHORT)
-                    .setVideoQuality(NativeAdRequest.VideoQuality.LOW)
-            );
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        CardView nativeAdContainer =  findViewById(R.id.admobAdContainer_top_LinearLayout);
+        nativeAdContainer.removeAllViews();
+        nativeAdContainer.addView(adView);
     }
-
-    private void showAppnextNative(com.appnext.nativeads.NativeAd appNextNative) {
-
-        try {
-            CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
-            nativeAdContainer.removeAllViews();
-
-
-            View appNextNativeLayout = getLayoutInflater().inflate(R.layout.native_appnext_container, null);
-
-
-            ImageView imageView = appNextNativeLayout.findViewById(R.id.appnextNative_na_icon);
-            //The ad Icon
-            appNextNative.downloadAndDisplayImage(imageView, appNextNative.getIconURL());
-
-
-            TextView textView = appNextNativeLayout.findViewById(R.id.appnextNative_na_title);
-            //The ad title
-            textView.setText(appNextNative.getAdTitle());
-
-            MediaView mediaView = appNextNativeLayout.findViewById(R.id.appnextNative_na_media);
-            //Setting up the Appnext MediaView
-
-            mediaView.setMute(true);
-            mediaView.setAutoPLay(false);
-            mediaView.setClickEnabled(true);
-            appNextNative.setMediaView(mediaView);
-
-            TextView description = appNextNativeLayout.findViewById(R.id.appnextNative_description);
-            //The ad description
-            String str = appNextNative.getAdDescription() + "\n" + appNextNative.getStoreDownloads() + " peoples have used the app";
-
-            description.setText(str);
-
-            Button ctaButton = appNextNativeLayout.findViewById(R.id.appnextNative_install);
-            //ctaButton.setText(appNextNative.getCTAText());
-
-
-            //Registering the clickable areas - see the array object in `setViews()` function
-            ArrayList<View> clickableView = new ArrayList<>();
-            clickableView.add(mediaView);
-            clickableView.add(textView);
-            clickableView.add(imageView);
-            clickableView.add(ctaButton);
-            appNextNative.registerClickableViews(clickableView);
-
-            com.appnext.nativeads.NativeAdView nativeAdView = appNextNativeLayout.findViewById(R.id.appnextNative_na_view);
-            //Setting up the entire native ad view
-            appNextNative.setNativeAdView(nativeAdView);
-
-
-            nativeAdContainer.addView(appNextNativeLayout);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
 
 

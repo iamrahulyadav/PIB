@@ -76,9 +76,7 @@ dependencies {
 
     compile 'com.anjlab.android.iab.v3:library:1.0.44'
 
-    compile 'com.appnext.sdk:native-ads2:2.+'
-    compile 'com.google.android.gms:play-services-basement:11.8.0' // Mandatory
-    compile 'com.google.android.gms:play-services-location:11.8.0'
+
 
     compile 'com.android.support:multidex:1.0.2'
 

@@ -27,11 +27,7 @@ import android.widget.RatingBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import com.appnext.base.Appnext;
-import com.appnext.core.AppnextError;
-import com.appnext.nativeads.MediaView;
-import com.appnext.nativeads.NativeAdListener;
-import com.appnext.nativeads.NativeAdRequest;
+
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
 import com.facebook.ads.Ad;
@@ -55,6 +51,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 
 import utils.AdsSubscriptionManager;
+import utils.FireBaseHandler;
 import utils.News;
 import utils.NightModeManager;
 
@@ -72,6 +69,7 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
 
 
     ProgressDialog pDialog;
+    private boolean pushNotification;
 
 
     @Override
@@ -85,18 +83,16 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         news = (News) getIntent().getSerializableExtra("news");
+        pushNotification = getIntent().getBooleanExtra("pushNotification", false);
 
         titleText = (TextView) findViewById(R.id.ddnews_title_textView);
         webView = (WebView) findViewById(R.id.rajyasabha_news_webView);
         dateTextView = (TextView) findViewById(R.id.ddnews_newsDate_textView);
 
-        titleText.setText(news.getTitle());
-
-
-        webView.loadDataWithBaseURL("", news.getDescription(), "text/html", "UTF-8", "");
-
-
-        dateTextView.setText(news.getPubDate());
+        if (pushNotification) {
+            downloadNewsById();
+        }
+        initializeUI();
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -122,13 +118,52 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
         }
 
 
-        pDialog = new ProgressDialog(this);
+    }
 
+    private void downloadNewsById() {
+        showLoadingDialog("Loading...");
+        new FireBaseHandler().downloadOtherNewsById(news.getNewsID(), new FireBaseHandler.OnNewsListener() {
+            @Override
+            public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+                if (!newsArrayList.isEmpty()) {
+                    news = newsArrayList.get(0);
+                    initializeUI();
+                    hideLoadingDialog();
+                }
+            }
+
+            @Override
+            public void onNewsUpload(boolean isSuccessful) {
+
+            }
+        });
+    }
+
+    private void initializeUI() {
+
+        webView.getSettings().setJavaScriptEnabled(true);
+        titleText.setText(news.getTitle());
+        webView.loadDataWithBaseURL("", news.getDescription(), "text/html", "UTF-8", "");
+        dateTextView.setText(news.getPubDate());
+
+    }
+
+    public void onBackPressed() {
+
+        if (pushNotification) {
+            super.onBackPressed();
+            Intent intent = new Intent(RajyaSabhaFeedActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        } else {
+            super.onBackPressed();
+        }
 
     }
 
     private void initializeAppnext() {
 
+/*
         try {
             com.appnext.nativeads.NativeAd appNextNative = new com.appnext.nativeads.NativeAd(this, "ac73473d-6ca6-4e38-baa8-5a81ae7b908c");
             appNextNative.setAdListener(new com.appnext.nativeads.NativeAdListener() {
@@ -172,11 +207,12 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+*/
 
     }
 
-    private void showAppnextNative(com.appnext.nativeads.NativeAd appNextNative) {
-
+    private void showAppnextNative() {
+/*
         try {
             CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
             nativeAdContainer.removeAllViews();
@@ -228,7 +264,7 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
             nativeAdContainer.addView(appNextNativeLayout);
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
 
@@ -330,6 +366,8 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
     }
 
     public void showLoadingDialog(String message) {
+        pDialog = new ProgressDialog(this);
+
         pDialog.setMessage(message);
         pDialog.show();
     }
@@ -440,7 +478,7 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
 
     }
 
-    private void initializeAdmob(){
+    private void initializeAdmob() {
 
         AdView adView = new AdView(this);
         adView.setAdSize(AdSize.MEDIUM_RECTANGLE);
@@ -449,13 +487,13 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
 
-        CardView nativeAdContainer = (CardView) findViewById(R.id.ddnews_adContainer_LinearLayout);
+        CardView nativeAdContainer = findViewById(R.id.admobAdContainer_LinearLayout);
         nativeAdContainer.removeAllViews();
         nativeAdContainer.addView(adView);
-        nativeAdContainer.setCardBackgroundColor(getResources().getColor(R.color.colorAccent));
     }
 
-    private void initializeTopAdmob(){
+
+    private void initializeTopAdmob() {
 
         AdView adView = new AdView(this);
         adView.setAdSize(AdSize.BANNER);
@@ -464,10 +502,9 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
 
-        CardView nativeAdContainer = (CardView) findViewById(R.id.rajyasabha_top_adContainer_LinearLayout);
+        CardView nativeAdContainer = (CardView) findViewById(R.id.admobAdContainer_top_LinearLayout);
         nativeAdContainer.removeAllViews();
         nativeAdContainer.addView(adView);
-        nativeAdContainer.setCardBackgroundColor(getResources().getColor(R.color.colorAccent));
     }
 
 

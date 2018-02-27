@@ -44,7 +44,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.anjlab.android.iab.v3.BillingProcessor;
 import com.anjlab.android.iab.v3.PurchaseState;
 import com.anjlab.android.iab.v3.TransactionDetails;
-import com.appnext.base.Appnext;
+
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
@@ -129,7 +129,6 @@ public class MainActivity extends AppCompatActivity
 
         MobileAds.initialize(this, "ca-app-pub-8455191357100024~5774774045");
 
-        Appnext.init(this);
 
 
 
@@ -244,42 +243,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void initializeWebview() {
-
-        final WebView webView = (WebView) findViewById(R.id.contentMain_cache_webView);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setLoadWithOverviewMode(true);
-
-       /* if (AppRater.getLaunchCount(MainActivity.this) < 5) {
-
-        }*/
-        //webView.loadUrl("http://pib.nic.in/index.aspx");
-
-        webView.setWebViewClient(new WebViewClient() {
-            @SuppressWarnings("deprecation")
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView webView, String url) {
-                return shouldOverrideUrlLoading(url);
-            }
-
-            @TargetApi(Build.VERSION_CODES.N)
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
-                Uri uri = request.getUrl();
-                return shouldOverrideUrlLoading(uri.toString());
-            }
-
-            private boolean shouldOverrideUrlLoading(final String url) {
-                // Log.i(TAG, "shouldOverrideUrlLoading() URL : " + url);
-
-                // Here put your code
-                webView.loadUrl(url);
-
-                return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
-            }
-        });
-
-    }
 
     @Override
     public void onResume() {
@@ -320,11 +283,12 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 5), "PIB Summary");
-
-        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 4), "Key Initiative");
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 5), "Summary");
 
         adapter.addFragment(DDNewsListFragment.newInstance(),"DD News");
+
+
+        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 4), "Key Initiative");
 
         //adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 3), "PIB Hindi");
 

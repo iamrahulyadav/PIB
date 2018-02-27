@@ -12,9 +12,11 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 
+import pib.affairs.current.app.pib.DDNewsFeedActivity;
 import pib.affairs.current.app.pib.NewsDescriptionActivity;
 import pib.affairs.current.app.pib.NewsFeedActivity;
 import pib.affairs.current.app.pib.R;
+import pib.affairs.current.app.pib.RajyaSabhaFeedActivity;
 
 
 /**
@@ -49,6 +51,7 @@ public class FireBasePushNotificationService extends FirebaseMessagingService {
                 String strNewsType = remoteMessage.getData().get("contentT");
                 news.setNewsType(Integer.valueOf(strNewsType));
             } catch (Exception e) {
+                news.setNewsType(0);
                 e.printStackTrace();
             }
 
@@ -56,6 +59,13 @@ public class FireBasePushNotificationService extends FirebaseMessagingService {
             switch (news.getNewsType()) {
                 case 1:
                     intent = new Intent(this, NewsDescriptionActivity.class);
+                    break;
+                case 2:
+                    intent = new Intent(this, DDNewsFeedActivity.class);
+                    break;
+                case 3:
+                    intent = new Intent(this, RajyaSabhaFeedActivity.class);
+
                     break;
                 default:
                     intent = new Intent(this, NewsFeedActivity.class);
