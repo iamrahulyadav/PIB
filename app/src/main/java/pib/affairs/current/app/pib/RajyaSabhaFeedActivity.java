@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -18,6 +19,8 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -26,6 +29,7 @@ import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.crashlytics.android.answers.Answers;
@@ -54,6 +58,7 @@ import utils.AdsSubscriptionManager;
 import utils.FireBaseHandler;
 import utils.News;
 import utils.NightModeManager;
+import utils.Translation;
 
 import static android.util.Log.VERBOSE;
 import static com.android.volley.VolleyLog.TAG;
@@ -141,12 +146,114 @@ public class RajyaSabhaFeedActivity extends AppCompatActivity {
 
     private void initializeUI() {
 
+
+        news.setDescription(news.getDescription() + "function getSelected() {\n" +
+                "\n" +
+                "\n" +
+                "\n" +
+                "    if(window.getSelection) { \n" +
+                "    alert(window.getSelection());\n" +
+                "    return window.getSelection(); }\n" +
+                "        else if(document.getSelection) { \n" +
+                "        alert(document.getSelection());\n" +
+                "        return document.getSelection(); }\n" +
+                "                    else {\n" +
+                "                            var selection = document.selection && document.selection.createRange();\n" +
+                "                            if(selection.text) { \n" +
+                "                                      alert(selection.text);\n" +
+                "                            return selection.text; \n" +
+                "                            }\n" +
+                "                return false;\n" +
+                "            }\n" +
+                "            return false;\n" +
+                "        }\n" +
+                "        \n" +
+                "     document.addEventListener('dblclick', function(){ \n" +
+                "\n" +
+                "getSelected(); myWordSelection.getWord('from webview');\n" +
+                "});");
+
+
         webView.getSettings().setJavaScriptEnabled(true);
         titleText.setText(news.getTitle());
         webView.loadDataWithBaseURL("", news.getDescription(), "text/html", "UTF-8", "");
         dateTextView.setText(news.getPubDate());
 
+
+        webView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+
+                getSelectedWord(1000);
+                return false;
+            }
+        });
+
+
+
     }
+
+    public void callJavaScript() {
+
+
+   /*     if (Build.VERSION.SDK_INT >= 19) {
+            webView.evaluateJavascript("function getSelected() {\n" +
+                    "\n" +
+                    "\n" +
+                    "\n" +
+                    "    if(window.getSelection) { \n" +
+                    "    alert(window.getSelection());\n" +
+                    "    return window.getSelection(); }\n" +
+                    "        else if(document.getSelection) { \n" +
+                    "        alert(document.getSelection());\n" +
+                    "        return document.getSelection(); }\n" +
+                    "                    else {\n" +
+                    "                            var selection = document.selection && document.selection.createRange();\n" +
+                    "                            if(selection.text) { \n" +
+                    "                                      alert(selection.text);\n" +
+                    "                            return selection.text; \n" +
+                    "                            }\n" +
+                    "                return false;\n" +
+                    "            }\n" +
+                    "            return false;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "     document.addEventListener('taphold', function(){ \n" +
+                    "\n" +
+                    "getSelected();\n" +
+                    "});", new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String s) {
+                    Toast.makeText(RajyaSabhaFeedActivity.this, "Value is " + s, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }*/
+
+        if (Build.VERSION.SDK_INT >= 19) {
+            webView.evaluateJavascript("(function(){return window.getSelection().toString()})()",
+                    new ValueCallback<String>() {
+                        @Override
+                        public void onReceiveValue(String value) {
+                            Toast.makeText(RajyaSabhaFeedActivity.this, "Selection "+ value, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
+    }
+
+
+    public void getSelectedWord(long timeDelay) {
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                callJavaScript();
+
+            }
+        }, timeDelay);
+
+    }
+
 
     public void onBackPressed() {
 

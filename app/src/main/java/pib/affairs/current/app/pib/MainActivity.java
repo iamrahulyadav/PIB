@@ -95,8 +95,6 @@ public class MainActivity extends AppCompatActivity
     private BillingProcessor bp;
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -131,13 +129,12 @@ public class MainActivity extends AppCompatActivity
         MobileAds.initialize(this, "ca-app-pub-8455191357100024~5774774045");
 
 
-
-
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+
 
 
         recyclerView = (RecyclerView) findViewById(R.id.contentMain_recyclerView);
@@ -244,7 +241,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
     @Override
     public void onResume() {
         super.onResume();
@@ -286,7 +282,7 @@ public class MainActivity extends AppCompatActivity
 
         adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 5), "Summary");
 
-        adapter.addFragment(DDNewsListFragment.newInstance(),"DD News");
+        adapter.addFragment(DDNewsListFragment.newInstance(), "DD News");
 
 
         adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 4), "Key Initiative");
@@ -599,13 +595,25 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_ad_free:
                 onPurchaseClick();
                 break;
-
+            case R.id.nav_current_affairs:
+                onCurrentAffairsClick();
+                break;
 
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void onCurrentAffairsClick() {
+        try {
+            String link = "https://play.google.com/store/apps/details?id=gk.affairs.current.craftystudio.app.currentaffairs";
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link)));
+            Answers.getInstance().logCustom(new CustomEvent("Current affairs click"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void onPurchaseClick() {
@@ -817,9 +825,9 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
     public void onDDNewsClick(View view) {
-        onDDNewsClick();
+        viewPager.setCurrentItem(3, true);
+
     }
 
     public void onGoAdsFreeClick(View view) {
@@ -827,7 +835,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onPIBSummaryClick(View view) {
-        viewPager.setCurrentItem(2,true);
+        viewPager.setCurrentItem(2, true);
 
     }
 

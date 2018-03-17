@@ -164,8 +164,6 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         }
 
 
-
-
     }
 
     private void downloadSummaryById() {
@@ -568,8 +566,12 @@ public class NewsDescriptionActivity extends AppCompatActivity {
             @Override
             public void run() {
                 String string = descriptionTextView.getText().toString();
-                if (descriptionTextView.hasSelection()) {
-                    selectedWord = string.substring(descriptionTextView.getSelectionStart(), descriptionTextView.getSelectionEnd()).trim();
+                try {
+                    if (descriptionTextView.hasSelection()) {
+                        selectedWord = string.substring(descriptionTextView.getSelectionStart(), descriptionTextView.getSelectionEnd()).trim();
+                    }
+                } catch (Exception e) {
+                    selectedWord = "word";
                 }
 
                 //Toast.makeText(NewsDescriptionActivity.this, "Selected - " + selectedWord, Toast.LENGTH_SHORT).show();
@@ -653,7 +655,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
 
-        CardView nativeAdContainer =  findViewById(R.id.admobAdContainer_LinearLayout);
+        CardView nativeAdContainer = findViewById(R.id.admobAdContainer_LinearLayout);
         nativeAdContainer.removeAllViews();
         nativeAdContainer.addView(adView);
 
@@ -669,7 +671,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
 
-        CardView nativeAdContainer =  findViewById(R.id.admobAdContainer_top_LinearLayout);
+        CardView nativeAdContainer = findViewById(R.id.admobAdContainer_top_LinearLayout);
         nativeAdContainer.removeAllViews();
         nativeAdContainer.addView(adView);
     }

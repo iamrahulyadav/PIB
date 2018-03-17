@@ -208,7 +208,7 @@ public class RssFeedFragment extends Fragment {
         Collections.reverse(newsArrayList);
 
         newNoteSaved = false;
-        addNativeExpressAds(false);
+        addNativeExpressAds(true);
         initializeFragment();
 
     }
@@ -231,7 +231,7 @@ public class RssFeedFragment extends Fragment {
                         news.rectifyNewsLink();
                         RssFeedFragment.this.newsArrayList.add(news);
 
-                        addNativeExpressAds(false);
+                        addNativeExpressAds(true);
                         initializeFragment();
                     }
                 }

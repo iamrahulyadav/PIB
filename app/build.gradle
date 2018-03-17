@@ -25,8 +25,8 @@ android {
         applicationId "app.crafty.studio.current.affairs.pib"
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 20
-        versionName "1.20"
+        versionCode 23
+        versionName "1.23"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }

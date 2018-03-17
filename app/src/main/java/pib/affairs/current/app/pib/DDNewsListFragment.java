@@ -139,13 +139,19 @@ public class DDNewsListFragment extends Fragment {
                     newsArrayList.add(news);
                 }
 
-                addNativeExpressAds();
+                try {
+                    addNativeExpressAds();
 
-                newsAdapter.notifyDataSetChanged();
-                swipeRefreshLayout.setRefreshing(false);
+                    newsAdapter.notifyDataSetChanged();
 
+                    if (swipeRefreshLayout != null) {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
 
-                setLastUpdated();
+                    setLastUpdated();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
 
             }
         }, new Response.ErrorListener() {
