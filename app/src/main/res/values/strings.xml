@@ -9,7 +9,7 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_dictionary">Dictionary</string>
+    <string name="title_activity_dictionary">PIB Reader</string>
     <string name="title_activity_news_feed">PIB</string>
     <string name="title_activity_airnews">AIR News</string>
     <string name="title_activity_ddnews_list">DD News</string>
@@ -18,5 +18,6 @@
     <string name="title_activity_rajya_sabha_feed">RSTV News</string>
     <string name="title_activity_pib_old_news">Search Old News</string>
     <string name="title_activity_pib_old_news_feed">PIB</string>
+    <string name="title_activity_pib_link_feed">PIB</string>
 
 </resources>

@@ -18,6 +18,9 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
@@ -27,6 +30,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.DownloadListener;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -79,6 +83,7 @@ import utils.AppController;
 import utils.AppRater;
 import utils.FireBaseHandler;
 import utils.News;
+import utils.NewsAdapter;
 import utils.NewsParser;
 import utils.NightModeManager;
 import utils.SettingManager;
@@ -108,6 +113,11 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
     private TextToSpeech tts;
     private int voiceReaderChunk;
+
+
+    RecyclerView recyclerView;
+    NewsAdapter newsAdapter;
+    ArrayList<Object> recommendedNewsArrayList = new ArrayList<>();
 
 
     @Override
@@ -145,6 +155,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
                             swipeRefreshLayout.setRefreshing(false);
                             hideLoadingDialog();
                             initializeBottomNativeAds();
+                            initializeRecommendedList();
 
                         } else {
                             getWebsite(news.getLink());
@@ -254,6 +265,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
 
 
+
     }
 
     @Override
@@ -309,6 +321,10 @@ public class NewsFeedActivity extends AppCompatActivity implements
                 return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
             }
         });
+
+
+
+
     }
 
     @Override
@@ -644,6 +660,9 @@ public class NewsFeedActivity extends AppCompatActivity implements
             public void onResponse(String response) {
 
                 initializeActivityData(response);
+
+                //webView.loadUrl(url);
+
                 //webView.loadDataWithBaseURL("", response, "text/html", "UTF-8", "");
 
 
@@ -732,27 +751,15 @@ public class NewsFeedActivity extends AppCompatActivity implements
                     }
 
 
-                    tableDataString = doc.select(".content-area").toString();
+                    tableDataString = doc.getElementById("thd1").toString() + "<br><br>"+ doc.getElementById("condiv").toString();
+
+
+
                     //tableDataString = doc.select(".innner-page-main-about-us-content-right-part").toString();
 
 
 
-/*
 
-doc = Jsoup.parse(tableDataString);
-                    doc.select(".ReleaseLang").remove();
-                    doc.select(".BackgroundRelease").remove();
-                    doc.select(".RelTag").remove();
-                    doc.select(".RelLink").remove();
-
-                    tableDataString = doc.toString();
-
-                    Elements links = doc.select("p");
-                    links.select("style").remove();
-
-
-                    builder.append(links.toString());
-                    Log.d(TAG, "run: " + links.toString() + tableDataString);*/
 
                 } catch (Exception e) {
                     builder.append("Error : ").append(e.getMessage()).append("\n");
@@ -762,16 +769,6 @@ doc = Jsoup.parse(tableDataString);
                     @Override
                     public void run() {
 
-                       /* Log.d("NEWS", "run: " + builder.toString());
-                        if (Build.VERSION.SDK_INT >= 24) {
-                            newsTextView.setText(Html.fromHtml(builder.toString(), Html.FROM_HTML_MODE_COMPACT));
-                        } else {
-                            newsTextView.setText(Html.fromHtml(builder.toString()));
-                        }
-                        newsTextString = builder.toString();
-                        newsMinistryTextView.setText(newsMinistry);
-                        newsHeadingTextView.setText(news.getTitle());
-*/
                         tableDataString = "<html ><style>span{line-height: 140%;font-size:" + SettingManager.getTextSize(NewsFeedActivity.this) + "px}</style>" + tableDataString + "</html>";
 
                         webView.loadDataWithBaseURL("", tableDataString, "text/html", "UTF-8", "");
@@ -782,6 +779,8 @@ doc = Jsoup.parse(tableDataString);
                         swipeRefreshLayout.setRefreshing(false);
 
                         initializeBottomNativeAds();
+
+                        initializeRecommendedList();
 
                     }
                 });
@@ -948,7 +947,7 @@ doc = Jsoup.parse(tableDataString);
     }
 
 
-    private void initializeAdmob(){
+    private void initializeAdmob() {
 
         AdView adView = new AdView(this);
         adView.setAdSize(AdSize.MEDIUM_RECTANGLE);
@@ -957,7 +956,7 @@ doc = Jsoup.parse(tableDataString);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
 
-        CardView nativeAdContainer =  findViewById(R.id.admobAdContainer_LinearLayout);
+        CardView nativeAdContainer = findViewById(R.id.admobAdContainer_LinearLayout);
         nativeAdContainer.removeAllViews();
         nativeAdContainer.addView(adView);
     }
@@ -968,123 +967,140 @@ doc = Jsoup.parse(tableDataString);
     }
 
 
+    /*Recommended article system*/
+    public void initializeRecommendedList() {
 
-    /*summary functions*/
+        try {
 
-    private void getSummaryWebsite(final String url) {
+            recommendedNewsArrayList.clear();
+            recommendedNewsArrayList.addAll(MainActivity.newsArrayList);
 
-
-        String tag_string_req = "string_req";
-
-
-        StringRequest strReq = new StringRequest(Request.Method.GET,
-                url, new Response.Listener<String>() {
-
-            @Override
-            public void onResponse(String response) {
-
-                initializeSummaryData(response);
+            addNativeExpressAds(false);
 
 
-            }
-        }, new Response.ErrorListener() {
+            newsAdapter = new NewsAdapter(recommendedNewsArrayList, this, false);
 
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
+            recyclerView = findViewById(R.id.newsFeed_recommended_recyclerView);
 
-                webView.loadDataWithBaseURL("", news.getDescription(), "text/html", "UTF-8", "");
+            RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+            recyclerView.setLayoutManager(mLayoutManager);
+            recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-                try {
-                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "News feed activity").putCustomAttribute("reason", error.getMessage()));
+            recyclerView.setAdapter(newsAdapter);
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
 
-                if (tableDataString == null) {
-                    Toast.makeText(NewsFeedActivity.this, "Unable to load data. Please try again later", Toast.LENGTH_SHORT).show();
-                } else if (tableDataString.isEmpty()) {
-                    Toast.makeText(NewsFeedActivity.this, "Unable to load data. Please try again later", Toast.LENGTH_SHORT).show();
+            newsAdapter.setClickListener(new NewsAdapter.ClickListener() {
+                @Override
+                public void onBookMarkClick(View view, int position) {
 
                 }
 
-                hideLoadingDialog();
+                @Override
+                public void onTitleClick(View view, int position) {
+
+                    onItemClickListener(position);
+                }
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void onItemClickListener(int position) {
+        try {
+            News news = (News) recommendedNewsArrayList.get(position);
+
+            Intent intent;
+
+            switch (news.getNewsType()) {
+                case 0:
+                    intent = new Intent(NewsFeedActivity.this, NewsFeedActivity.class);
+                    break;
+                case 1:
+                    intent = new Intent(NewsFeedActivity.this, NewsDescriptionActivity.class);
+                    break;
+                case 2:
+                    intent = new Intent(NewsFeedActivity.this, DDNewsFeedActivity.class);
+                    break;
+                case 3:
+                    intent = new Intent(NewsFeedActivity.this, RajyaSabhaFeedActivity.class);
+                    break;
+
+                default:
+                    return;
 
             }
-        });
 
 
-        strReq.setShouldCache(true);
-        // Adding request to request queue
-        //AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+            intent.putExtra("news", news);
+            startActivity(intent);
 
-        strReq.setTag(TextUtils.isEmpty(tag_string_req) ? TAG : tag_string_req);
-        Volley.newRequestQueue(getApplicationContext()).add(strReq);
+            finish();
+
+            Answers.getInstance().logContentView(new ContentViewEvent().putContentId(news.getLink()).putContentName(news.getTitle()).putCustomAttribute("type", "recommended article"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
     }
 
+    private void addNativeExpressAds(boolean isCached) {
 
-    public void initializeSummaryData(final String data) {
+        try {
+            boolean subscription = AdsSubscriptionManager.getSubscription(this);
 
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final StringBuilder builder = new StringBuilder();
-
-                try {
-
-
-                    Document doc = Jsoup.parse(data);
+            int count = AdsSubscriptionManager.ADSPOSITION_COUNT;
+            for (int i = 2; i < (recommendedNewsArrayList.size()); i += count) {
+                if (recommendedNewsArrayList.get(i) != null) {
+                    if (recommendedNewsArrayList.get(i).getClass() != NativeAd.class) {
 
 
-                    if (news.getTitle() == null) {
-                        news.setTitle(doc.select("h2").text());
+                        NativeAd nativeAd = new NativeAd(this, "1963281763960722_2012202609068637");
+                        nativeAd.setAdListener(new com.facebook.ads.AdListener() {
+
+                            @Override
+                            public void onError(Ad ad, AdError error) {
+                                // Ad error callback
+                                try {
+                                    Answers.getInstance().logCustom(new CustomEvent("Ad failed to load")
+                                            .putCustomAttribute("Placement", "List native").putCustomAttribute("errorType", error.getErrorMessage()).putCustomAttribute("Source", "Facebook"));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            @Override
+                            public void onAdLoaded(Ad ad) {
+                                // Ad loaded callback
+                                newsAdapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onAdClicked(Ad ad) {
+                                // Ad clicked callback
+                            }
+
+                            @Override
+                            public void onLoggingImpression(Ad ad) {
+                                // Ad impression logged callback
+                            }
+                        });
+                        if (!(subscription || isCached)) {
+                            nativeAd.loadAd();
+                        }
+                        recommendedNewsArrayList.add(i, nativeAd);
 
                     }
-
-
-                    //tableDataString = doc.select("#primary").toString();
-
-                    tableDataString = doc.select(".entry-content article").toString();
-
-                    Log.d(TAG, "run: " + tableDataString);
-
-                    doc = Jsoup.parse(tableDataString);
-                    doc.select(".breadcrumbs").remove();
-
-
-                } catch (Exception e) {
-                    builder.append("Error : ").append(e.getMessage()).append("\n");
                 }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-
-                        tableDataString = "<html ><style>span{line-height: 140%;font-size:" + SettingManager.getTextSize(NewsFeedActivity.this) + "px}</style>" + tableDataString + "</html>";
-
-                        webView.loadDataWithBaseURL("", tableDataString, "text/html", "UTF-8", "");
-
-                        //webView.loadUrl(news.getLink());
-
-                        hideLoadingDialog();
-                        swipeRefreshLayout.setRefreshing(false);
-
-                        initializeBottomNativeAds();
-
-                    }
-                });
-
-
             }
-        }).start();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
 
-        // hideLoadingDialog();
     }
 
 

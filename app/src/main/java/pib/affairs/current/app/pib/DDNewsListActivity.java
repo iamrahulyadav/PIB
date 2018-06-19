@@ -169,7 +169,7 @@ public class DDNewsListActivity extends AppCompatActivity {
                     newsArrayList.add(news);
                 }
 
-                addNativeExpressAds();
+                addNativeExpressAds(false);
 
                 newsAdapter.notifyDataSetChanged();
 
@@ -234,7 +234,7 @@ public class DDNewsListActivity extends AppCompatActivity {
                 for (Object news : new NewsParser(response).parseDDNews()) {
                     newsArrayList.add(news);
                 }
-                addNativeExpressAds();
+                addNativeExpressAds(true);
                 newsAdapter.notifyDataSetChanged();
 
                 hideLoadingDialog();
@@ -262,12 +262,12 @@ public class DDNewsListActivity extends AppCompatActivity {
         }
     }
 
-    private void addNativeExpressAds() {
+    private void addNativeExpressAds(boolean isCached) {
 
         boolean subscription = AdsSubscriptionManager.getSubscription(this);
 
         int count = AdsSubscriptionManager.ADSPOSITION_COUNT;
-        for (int i = 4; i < (newsArrayList.size()); i += count) {
+        for (int i = 2; i < (newsArrayList.size()); i += count) {
             if (newsArrayList.get(i) != null) {
                 if (newsArrayList.get(i).getClass() != NativeAd.class) {
 
@@ -302,7 +302,7 @@ public class DDNewsListActivity extends AppCompatActivity {
                             // Ad impression logged callback
                         }
                     });
-                    if (!subscription) {
+                    if (!(subscription || isCached)) {
                         nativeAd.loadAd();
                     }
                     newsArrayList.add(i, nativeAd);

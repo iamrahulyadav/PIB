@@ -38,6 +38,8 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     ClickListener clickListener;
 
+    boolean isBookMarkIconVisible = true;
+
 
     public class NewsViewHolder extends RecyclerView.ViewHolder {
         public TextView title, description, pubDate;
@@ -104,6 +106,13 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public NewsAdapter(List<Object> newsArrayList, Context context) {
         this.newsArrayList = newsArrayList;
         this.context = context;
+    }
+
+    public NewsAdapter(List<Object> newsArrayList, Context context, boolean bookMarkIconVisible) {
+        this.newsArrayList = newsArrayList;
+        this.context = context;
+
+        isBookMarkIconVisible= bookMarkIconVisible;
     }
 
     @Override
@@ -210,6 +219,9 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 }
 
 
+                if (!isBookMarkIconVisible){
+                    newsViewHolder.bookMarkImageView.setVisibility(View.GONE);
+                }
         }
 
     }
@@ -227,7 +239,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public int getItemViewType(int position) {
         //logic to implement ad in every 8th card
 
-        return (position % AdsSubscriptionManager.ADSPOSITION_COUNT == 4) ? AD_VIEW_TYPE : NEWS_VIEW_TYPE;
+        return (position % AdsSubscriptionManager.ADSPOSITION_COUNT == 2) ? AD_VIEW_TYPE : NEWS_VIEW_TYPE;
         //return NEWS_VIEW_TYPE;
 
     }

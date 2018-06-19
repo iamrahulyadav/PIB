@@ -219,7 +219,7 @@ public class DDNewsListFragment extends Fragment {
         boolean subscription = AdsSubscriptionManager.getSubscription(getContext());
 
         int count = AdsSubscriptionManager.ADSPOSITION_COUNT;
-        for (int i = 4; i < (newsArrayList.size()); i += count) {
+        for (int i = 2; i < (newsArrayList.size()); i += count) {
             if (newsArrayList.get(i) != null) {
                 if (newsArrayList.get(i).getClass() != NativeAd.class) {
 

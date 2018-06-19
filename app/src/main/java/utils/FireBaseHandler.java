@@ -180,6 +180,7 @@ public class FireBaseHandler {
 
                     News news = snapshot.getValue(News.class);
 
+                    news.setNewsID(snapshot.getKey());
                     newsArrayList.add(news);
                 }
 
@@ -209,17 +210,14 @@ public class FireBaseHandler {
         mDatabaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                ArrayList<News> newsArrayList = new ArrayList<News>();
 
+                ArrayList<News> newsArrayList = new ArrayList<News>();
 
                 News news = dataSnapshot.getValue(News.class);
 
                 newsArrayList.add(news);
 
-
-
                 onNewsListener.onNewsListDownload(newsArrayList, true);
-
 
             }
 
@@ -262,6 +260,42 @@ public class FireBaseHandler {
         });
     }
 
+    public void downloadOtherNewsList(int limit, final OnNewsListener onNewsListener){
+        DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("otherNews/");
+
+        Query myref2 = mDatabaseRef.limitToLast(limit);
+
+        myref2.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ArrayList<News> newsArrayList = new ArrayList<News>();
+
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    News news = snapshot.getValue(News.class);
+                    if (news != null) {
+
+                        news.setNewsID(snapshot.getKey());
+
+                    }
+                    newsArrayList.add(news);
+                }
+
+                Collections.reverse(newsArrayList);
+
+                onNewsListener.onNewsListDownload(newsArrayList, true);
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                onNewsListener.onNewsListDownload(null, false);
+
+            }
+        });
+    }
 
 
     public void downloadStoryList(int limit, String lastShortStoryID, final OnNewsListener onNewsListener) {

@@ -52,6 +52,7 @@ import com.crashlytics.android.answers.PurchaseEvent;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -65,10 +66,12 @@ import java.util.ArrayList;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import utils.AdsSubscriptionManager;
 import utils.AppController;
 import utils.AppRater;
+import utils.FireBaseHandler;
 import utils.LanguageManager;
 import utils.News;
 import utils.NewsAdapter;
@@ -84,7 +87,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = "tag";
     private static final String PRODUCT_ID = "ads_free";
-    public ArrayList<Object> newsArrayList = new ArrayList<>();
+    public static ArrayList<Object> newsArrayList = new ArrayList<>();
 
     RecyclerView recyclerView;
     NewsAdapter newsAdapter;
@@ -136,7 +139,6 @@ public class MainActivity extends AppCompatActivity
         tabLayout.setupWithViewPager(viewPager);
 
 
-
         recyclerView = (RecyclerView) findViewById(R.id.contentMain_recyclerView);
 
         openDynamicLink();
@@ -168,6 +170,8 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
+
+        intializeRecommendedPibNewsList();
 
     }
 
@@ -307,7 +311,22 @@ public class MainActivity extends AppCompatActivity
                             deepLink = pendingDynamicLinkData.getLink();
                             Log.d("DeepLink", "onSuccess: " + deepLink);
 
-                            openNewsDescription(deepLink);
+                            try {
+                                int contentType = Integer.valueOf(deepLink.getQueryParameter("contentType"));
+
+                                if (contentType == 1) {
+                                    String id = deepLink.getQueryParameter("id");
+                                    openSummaryDynamicLink(id);
+                                } else {
+                                    openNewsDescription(deepLink);
+
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                openNewsDescription(deepLink);
+
+                            }
+
 
                             try {
                                 Answers.getInstance().logCustom(new CustomEvent("User via dynamic link").putCustomAttribute("share link", deepLink.toString()));
@@ -345,6 +364,18 @@ public class MainActivity extends AppCompatActivity
                         Log.w("DeepLink", "getDynamicLink:onFailure", e);
                     }
                 });
+    }
+
+    private void openSummaryDynamicLink(String id) {
+        News news = new News();
+        news.setNewsID(id);
+        news.setNewsType(1);
+
+
+        Intent intent = new Intent(MainActivity.this, NewsDescriptionActivity.class);
+        intent.putExtra("news", news);
+        intent.putExtra("share", true);
+        startActivity(intent);
     }
 
     private void openNewsDescription(Uri deepLink) {
@@ -389,7 +420,7 @@ public class MainActivity extends AppCompatActivity
                 }
 
 
-                initializeActivity();
+                //initializeActivity();
 
 
             }
@@ -399,7 +430,7 @@ public class MainActivity extends AppCompatActivity
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
 
-                loadCache(url);
+                //loadCache(url);
 
                 pDialog.hide();
             }
@@ -427,7 +458,7 @@ public class MainActivity extends AppCompatActivity
                     newsArrayList.add(object);
                 }
 
-                initializeActivity();
+                // initializeActivity();
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -822,6 +853,87 @@ public class MainActivity extends AppCompatActivity
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
+    }
+
+
+    private void intializeRecommendedPibNewsList() {
+
+        try {
+
+            new FireBaseHandler().downloadNewsList(3, new FireBaseHandler.OnNewsListener() {
+                @Override
+                public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+
+                    try {
+                        if (MainActivity.newsArrayList.size()<7) {
+                            for (int i = 0; i < newsArrayList.size(); i++) {
+
+                                News news = newsArrayList.get(i);
+                                news.setPubDate("PIB");
+                                news.setNewsType(0);
+                                MainActivity.newsArrayList.add(news);
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    intializeRecommendedOtherNewsList();
+                }
+
+                @Override
+                public void onNewsUpload(boolean isSuccessful) {
+
+                }
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void intializeRecommendedOtherNewsList() {
+
+        try {
+
+            new FireBaseHandler().downloadOtherNewsList(3, new FireBaseHandler.OnNewsListener() {
+                @Override
+                public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+
+                    try {
+                        if (MainActivity.newsArrayList.size()<7) {
+                            for (int i = 0; i < newsArrayList.size(); i++) {
+
+                                News news = newsArrayList.get(i);
+
+                                if (news.getNewsType() == 2) {
+                                    news.setPubDate("DD NEWS");
+                                } else if (news.getNewsType() == 3) {
+                                    news.setPubDate("RSTV NEWS");
+                                }
+                                MainActivity.newsArrayList.add(news);
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    Log.d(TAG, "onNewsListDownload: " + MainActivity.this.newsArrayList);
+                }
+
+                @Override
+                public void onNewsUpload(boolean isSuccessful) {
+
+                }
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
 

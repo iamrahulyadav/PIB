@@ -110,7 +110,7 @@
                         android:layout_height="50dp"
                         android:layout_weight="1"
                         android:onClick="onPreviousClick"
-                        android:src="@android:drawable/ic_media_ff"
+                        android:src="@android:drawable/ic_media_rew"
 
                         />
 

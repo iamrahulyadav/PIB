@@ -86,6 +86,12 @@ public class PibOldNewsFeedActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        if (news==null){
+            news = new News();
+            news.setLink(getIntent().getData().toString());
+        }
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,6 +120,21 @@ public class PibOldNewsFeedActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        try{
+            if (news.getTitle()==null){
+                Intent intent = new Intent(this,MainActivity.class);
+                startActivity(intent);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -64,11 +64,11 @@
 
             <item
                 android:id="@+id/nav_current_affairs"
-                android:title="🗞 Current Affairs Master" />
+                android:title="Current Affairs Master" />
 
             <item
                 android:id="@+id/nav_computer"
-                android:title="🖥 Basic Computer" />
+                android:title="Basic Computer" />
 
             <item
                 android:id="@+id/nav_shortcuts"

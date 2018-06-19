@@ -28,8 +28,8 @@
         android:id="@+id/dictionary_adView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        ads:adSize="SMART_BANNER"
+        android:layout_gravity="center_horizontal"
+        ads:adSize="LARGE_BANNER"
         ads:adUnitId="ca-app-pub-8455191357100024/2960429519">
 
     </com.google.android.gms.ads.AdView>

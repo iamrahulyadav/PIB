@@ -2,29 +2,30 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
+    <!--<item
         android:id="@+id/action_save_offline"
         android:orderInCategory="100"
         android:title="Save offline"
         app:showAsAction="never" />
 
-   <!-- <item
+    <item
         android:id="@+id/action_post"
         android:orderInCategory="100"
         android:title="Post PIB"
         app:showAsAction="never" />
--->
+
     <item
         android:id="@+id/action_open_browser"
         android:orderInCategory="100"
         android:title="Open in Browser"
-        app:showAsAction="never" />
+        app:showAsAction="never" />-->
 
     <item
         android:id="@+id/action_share"
         android:orderInCategory="100"
         android:title="Share"
-        app:showAsAction="never" />
+        android:icon="@mipmap/ic_action_share"
+        app:showAsAction="always" />
 
 
 </menu>

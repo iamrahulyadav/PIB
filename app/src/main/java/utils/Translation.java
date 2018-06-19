@@ -76,7 +76,7 @@ public class Translation {
 // Tag used to cancel the request
         String tag_string_req = "translate_req";
 
-        final String url = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=trnsl.1.1.20170221T102515Z.fc9649d041fb5960.9c4e8caa31a36d7eb789cb3fae48c0e4c2cafd46&text="+getWord().trim()+"&lang=hi&[format=html]&[options=1]";
+        final String url = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=trnsl.1.1.20180318T123355Z.89cee6c627b0f4c6.67a2e05de9d43e4d0f87f4b378758a46cb38aae9&text="+getWord().trim()+"&lang=hi&[format=html]&[options=1]";
 
 
 

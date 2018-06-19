@@ -288,7 +288,7 @@ public class DDNewsFeedActivity extends AppCompatActivity {
             return;
         }
 
-        initializeTopAdmob();
+        initializeTopNative();
 
         if (nativeAd == null) {
 
@@ -354,6 +354,42 @@ public class DDNewsFeedActivity extends AppCompatActivity {
         CardView nativeAdContainer =  findViewById(R.id.admobAdContainer_LinearLayout);
         nativeAdContainer.removeAllViews();
         nativeAdContainer.addView(adView);
+    }
+
+    private void initializeTopNative() {
+
+
+        com.facebook.ads.AdView adView = new com.facebook.ads.AdView(this, "1963281763960722_2041347772820787", com.facebook.ads.AdSize.BANNER_HEIGHT_50);
+
+        CardView nativeAdContainer = findViewById(R.id.admobAdContainer_top_LinearLayout);
+        nativeAdContainer.removeAllViews();
+        nativeAdContainer.addView(adView);
+
+        // Request an ad
+        adView.loadAd();
+
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onError(Ad ad, AdError adError) {
+                initializeTopAdmob();
+            }
+
+            @Override
+            public void onAdLoaded(Ad ad) {
+                Log.d(TAG, "onAdLoaded: " + ad);
+            }
+
+            @Override
+            public void onAdClicked(Ad ad) {
+
+            }
+
+            @Override
+            public void onLoggingImpression(Ad ad) {
+
+            }
+        });
+
     }
 
     private void initializeTopAdmob() {

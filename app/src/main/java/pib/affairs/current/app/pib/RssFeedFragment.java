@@ -153,8 +153,13 @@ public class RssFeedFragment extends Fragment {
 
                         RssFeedFragment.this.newsArrayList.add(news);
 
-                        addNativeExpressAds(false);
+                        addNativeExpressAds(true);
                         initializeFragment();
+
+                    }
+
+                    if (MainActivity.newsArrayList.size() < 8) {
+                        MainActivity.newsArrayList.add(0, newsArrayList.get(0));
                     }
                 }
             }
@@ -421,7 +426,15 @@ public class RssFeedFragment extends Fragment {
             @Override
             public void onBookMarkClick(View view, int position) {
 
-                onBookMark(position);
+
+                if (sourceType == SOURCETYPE_SUMMARY) {
+
+                    onPibSummaryBookMark();
+                } else {
+                    onBookMark(position);
+
+                }
+
             }
 
             @Override
@@ -457,6 +470,7 @@ public class RssFeedFragment extends Fragment {
         return view;
     }
 
+
     private void addNativeExpressAds(boolean isCached) {
 
         if (newsArrayList == null) {
@@ -470,7 +484,7 @@ public class RssFeedFragment extends Fragment {
         boolean subscription = AdsSubscriptionManager.getSubscription(getContext());
 
         int count = AdsSubscriptionManager.ADSPOSITION_COUNT;
-        for (int i = 4; i < (newsArrayList.size()); i += count) {
+        for (int i = 2; i < (newsArrayList.size()); i += count) {
             if (newsArrayList.get(i) != null) {
                 if (newsArrayList.get(i).getClass() != NativeAd.class) {
 
@@ -608,6 +622,11 @@ public class RssFeedFragment extends Fragment {
         strReq.setShouldCache(true);
         // Adding request to request queue
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+
+
+    }
+
+    private void onPibSummaryBookMark() {
 
 
     }

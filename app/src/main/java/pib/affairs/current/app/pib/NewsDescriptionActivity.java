@@ -118,6 +118,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         news = (News) getIntent().getSerializableExtra("news");
 
         pushNotification = getIntent().getBooleanExtra("pushNotification", false);
+        boolean shared = getIntent().getBooleanExtra("share", false);
 
 
         titleText = (TextView) findViewById(R.id.newsDescription_title_textView);
@@ -129,7 +130,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         dateTextView.setText(news.getPubDate());
 
 
-        if (pushNotification) {
+        if (pushNotification || shared) {
             downloadSummaryById();
 
         } else {
@@ -145,7 +146,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         descriptionTextView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                getSelectedWord(1000);
+                getSelectedWord(300);
                 return false;
             }
         });
@@ -160,11 +161,12 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
         if (!AdsSubscriptionManager.getSubscription(this)) {
             initializeBottomNativeAds();
-            initializeTopAdmob();
+            initializeTopNative();
         }
 
 
     }
+
 
     private void downloadSummaryById() {
 
@@ -212,6 +214,8 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         } else {
             descriptionTextView.setText(Html.fromHtml(news.getDescription()));
         }
+
+        titleText.setText(news.getTitle());
     }
 
     private void initializeBottomSheet() {
@@ -245,7 +249,60 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
         initializeWebView();
 
+        initializeBottomSheetAds();
+
     }
+
+    private void initializeBottomSheetAds() {
+
+        com.facebook.ads.AdView adView = new com.facebook.ads.AdView(this, "1963281763960722_2041347772820787", com.facebook.ads.AdSize.BANNER_HEIGHT_50);
+
+        CardView nativeAdContainer = findViewById(R.id.admobAdContainer_bottomSheet_LinearLayout);
+        nativeAdContainer.removeAllViews();
+        nativeAdContainer.addView(adView);
+
+        // Request an ad
+        adView.loadAd();
+
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onError(Ad ad, AdError adError) {
+                initializeBottomSheetAdmobAds();
+            }
+
+            @Override
+            public void onAdLoaded(Ad ad) {
+                Log.d(TAG, "onAdLoaded: " + ad);
+            }
+
+            @Override
+            public void onAdClicked(Ad ad) {
+
+            }
+
+            @Override
+            public void onLoggingImpression(Ad ad) {
+
+            }
+        });
+
+
+    }
+
+    private void initializeBottomSheetAdmobAds() {
+
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId("ca-app-pub-8455191357100024/4291164035");
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
+        CardView nativeAdContainer = findViewById(R.id.admobAdContainer_bottomSheet_LinearLayout);
+        nativeAdContainer.removeAllViews();
+        nativeAdContainer.addView(adView);
+    }
+
 
 
     public void loadWebview(String mWord) {
@@ -367,7 +424,7 @@ public class NewsDescriptionActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        // getMenuInflater().inflate(R.menu.menu_ddnews_feed, menu);
+        getMenuInflater().inflate(R.menu.activity_description_options, menu);
         return true;
     }
 
@@ -379,15 +436,60 @@ public class NewsDescriptionActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_open_browser) {
-            onOpenInBrowser();
-            return true;
-        } else if (id == R.id.action_share) {
-            onShareClick(titleText);
+        if (id == R.id.action_share) {
+
+            if (news.getNewsType() == 1) {
+                onSummaryShareClick();
+
+            } else if (news.getNewsType() == 5) {
+                onShareClick(titleText);
+            }
+
+
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onSummaryShareClick() {
+
+
+        Task<ShortDynamicLink> shortLinkTask = FirebaseDynamicLinks.getInstance().createDynamicLink()
+                .setLink(Uri.parse("https://goo.gl/3yhEi4?contentType=1&id=" + news.getNewsID()))
+                .setDynamicLinkDomain("mbj78.app.goo.gl")
+                .setAndroidParameters(
+                        new DynamicLink.AndroidParameters.Builder("app.crafty.studio.current.affairs.pib")
+                                .build())
+                .setGoogleAnalyticsParameters(
+                        new DynamicLink.GoogleAnalyticsParameters.Builder()
+                                .setSource("user")
+                                .setMedium("share")
+                                .setCampaign("linkshare")
+                                .build())
+                .setSocialMetaTagParameters(
+                        new DynamicLink.SocialMetaTagParameters.Builder()
+                                .setTitle(news.getTitle())
+                                .setDescription(news.getDescription())
+                                .build())
+                .buildShortDynamicLink()
+                .addOnCompleteListener(new OnCompleteListener<ShortDynamicLink>() {
+                    @Override
+                    public void onComplete(@NonNull Task<ShortDynamicLink> task) {
+                        if (task.isSuccessful()) {
+
+                            Uri uri = task.getResult().getShortLink();
+                            openShareDialog(uri);
+
+                        } else {
+
+                            openShareDialog(news.getLink());
+
+                        }
+                    }
+                });
+
+
     }
 
     private void onPostInitiative() {
@@ -594,6 +696,9 @@ public class NewsDescriptionActivity extends AppCompatActivity {
                 });
 
 
+                Answers.getInstance().logCustom(new CustomEvent("Word Meaning").putCustomAttribute("word", selectedWord));
+
+
             }
         }, timeDelay);
 
@@ -661,6 +766,44 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
 
     }
+
+
+    private void initializeTopNative() {
+
+
+        com.facebook.ads.AdView adView = new com.facebook.ads.AdView(this, "1963281763960722_2041347772820787", com.facebook.ads.AdSize.BANNER_HEIGHT_50);
+
+        CardView nativeAdContainer = findViewById(R.id.newsFeed_adContainer_LinearLayout);
+        nativeAdContainer.removeAllViews();
+        nativeAdContainer.addView(adView);
+
+        // Request an ad
+        adView.loadAd();
+
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onError(Ad ad, AdError adError) {
+                initializeTopAdmob();
+            }
+
+            @Override
+            public void onAdLoaded(Ad ad) {
+                Log.d(TAG, "onAdLoaded: " + ad);
+            }
+
+            @Override
+            public void onAdClicked(Ad ad) {
+
+            }
+
+            @Override
+            public void onLoggingImpression(Ad ad) {
+
+            }
+        });
+
+    }
+
 
     private void initializeTopAdmob() {
 
