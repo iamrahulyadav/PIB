@@ -201,6 +201,44 @@ public class FireBaseHandler {
 
     }
 
+
+    public void downloadPIBSummaryList( int limitTo ,String lastID, final OnNewsListener onNewsListener){
+
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference().child("Summary/");
+
+        Query query = database.orderByKey().limitToLast(limitTo).endAt(lastID);
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                ArrayList<News> newsArrayList = new ArrayList<News>();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    News news = snapshot.getValue(News.class);
+
+                    news.setNewsID(snapshot.getKey());
+                    newsArrayList.add(news);
+                }
+
+                Collections.reverse(newsArrayList);
+
+                onNewsListener.onNewsListDownload(newsArrayList, true);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                onNewsListener.onNewsListDownload(null, false);
+            }
+        });
+
+
+    }
+
+
+
     public void downloadPIBSummaryById(String summaryId, final OnNewsListener onNewsListener) {
 
 

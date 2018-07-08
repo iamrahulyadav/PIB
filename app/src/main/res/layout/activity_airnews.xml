@@ -42,6 +42,17 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
+        <WebView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:id="@+id/airActivity_webView"
+            android:visibility="gone"
+            >
+
+        </WebView>
+
+
 
         <LinearLayout
             android:id="@+id/airActivity_adContainer"
@@ -55,6 +66,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
+            app:cardCornerRadius="0dp"
             app:cardBackgroundColor="?attr/colorPrimary"
             app:cardElevation="10dp">
 
@@ -106,11 +118,24 @@
 
 
                     <ImageView
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:layout_weight="1"
+                        android:rotation="180"
+                        android:layout_gravity="center"
                         android:onClick="onPreviousClick"
-                        android:src="@android:drawable/ic_media_rew"
+                        android:src="@mipmap/ic_forward"
+
+                        />
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:rotation="180"
+                        android:layout_gravity="center"
+                        android:onClick="onSlowPreviousClick"
+                        android:src="@mipmap/ic_slow_forward"
 
                         />
 
@@ -122,12 +147,23 @@
                         android:onClick="onPlayClick"
                         android:src="@drawable/mr_media_play_dark" />
 
+
                     <ImageView
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:layout_weight="1"
+                        android:layout_gravity="center"
+                        android:onClick="onSlowNextClick"
+                        android:src="@mipmap/ic_slow_forward"
+                        />
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:layout_gravity="center"
                         android:onClick="onNextClick"
-                        android:src="@android:drawable/ic_media_ff" />
+                        android:src="@mipmap/ic_forward" />
 
                 </LinearLayout>
 

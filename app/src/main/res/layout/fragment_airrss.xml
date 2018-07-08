@@ -4,19 +4,20 @@
     android:layout_height="match_parent"
     tools:context="pib.affairs.current.app.pib.AIRRssFragment">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:layout_width="match_parent"
 
-        android:id="@+id/fragment_rss_swipeRefresh"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/fragment_airrss_list_recyclerView"
+        android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/fragment_airrss_list_recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
 
-        </android.support.v7.widget.RecyclerView>
+    </android.support.v7.widget.RecyclerView>
 
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/fragment_rss_swipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
     </android.support.v4.widget.SwipeRefreshLayout>
 

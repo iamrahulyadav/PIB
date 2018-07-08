@@ -88,6 +88,9 @@ public class RssFeedFragment extends Fragment {
 
     public static int newsCount;
 
+    private boolean isLoading = false;
+
+
     public RssFeedFragment() {
         // Required empty public constructor
     }
@@ -133,6 +136,7 @@ public class RssFeedFragment extends Fragment {
             fetchInitiative();
         } else if (sourceType == SOURCETYPE_SUMMARY) {
             fetchPibSummary();
+            isLoading = true;
         } else {
             fetchNews();
         }
@@ -141,22 +145,16 @@ public class RssFeedFragment extends Fragment {
 
     private void fetchPibSummary() {
         FireBaseHandler fireBaseHandler = new FireBaseHandler();
-        fireBaseHandler.downloadPIBSummaryList(12, new FireBaseHandler.OnNewsListener() {
+        fireBaseHandler.downloadPIBSummaryList(15, new FireBaseHandler.OnNewsListener() {
             @Override
             public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
                 if (isSuccessful) {
-                    for (News news : newsArrayList) {
 
-                        //news.setRead(sqlDatabaseHelper.getNewsReadStatus(news));
-                        //news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news));
+                    RssFeedFragment.this.newsArrayList.addAll(newsArrayList);
 
-
-                        RssFeedFragment.this.newsArrayList.add(news);
-
-                        addNativeExpressAds(true);
-                        initializeFragment();
-
-                    }
+                    addNativeExpressAds(false);
+                    initializeFragment();
+                    isLoading = false;
 
                     if (MainActivity.newsArrayList.size() < 8) {
                         MainActivity.newsArrayList.add(0, newsArrayList.get(0));
@@ -186,9 +184,13 @@ public class RssFeedFragment extends Fragment {
 
                         RssFeedFragment.this.newsArrayList.add(news);
 
-                        addNativeExpressAds(false);
-                        initializeFragment();
+
                     }
+
+                    addNativeExpressAds(false);
+                    initializeFragment();
+
+
                 }
             }
 
@@ -236,9 +238,12 @@ public class RssFeedFragment extends Fragment {
                         news.rectifyNewsLink();
                         RssFeedFragment.this.newsArrayList.add(news);
 
-                        addNativeExpressAds(true);
-                        initializeFragment();
+
                     }
+
+                    addNativeExpressAds(true);
+                    initializeFragment();
+
                 }
             }
 
@@ -467,7 +472,64 @@ public class RssFeedFragment extends Fragment {
             horizontalScrollView.setVisibility(View.VISIBLE);
         }
 
+
+       /* if (sourceType==5) {
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+
+                    if (!recyclerView.canScrollVertically(1)) {
+
+                        if (!isLoading) {
+
+                            isLoading = true;
+
+
+                            fetchMorePibSummary();
+
+                        }
+
+                    }
+                }
+            });
+        }*/
+
         return view;
+    }
+
+    private void fetchMorePibSummary() {
+
+        FireBaseHandler fireBaseHandler = new FireBaseHandler();
+        fireBaseHandler.downloadPIBSummaryList(12, ((News) newsArrayList.get(newsArrayList.size() - 1)).getNewsID(), new FireBaseHandler.OnNewsListener() {
+            @Override
+            public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
+                if (isSuccessful) {
+                    for (News news : newsArrayList) {
+
+                        //news.setRead(sqlDatabaseHelper.getNewsReadStatus(news));
+                        //news.setBookMark(sqlDatabaseHelper.getNewsBookMarkStatus(news));
+
+
+                        RssFeedFragment.this.newsArrayList.add(news);
+
+
+                    }
+                    addNativeExpressAds(true);
+                    initializeFragment();
+                    isLoading = false;
+
+
+                }
+            }
+
+            @Override
+            public void onNewsUpload(boolean isSuccessful) {
+
+            }
+        });
+
+
     }
 
 

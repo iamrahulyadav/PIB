@@ -41,6 +41,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import dm.audiostreamer.MediaMetaData;
 import utils.AIRNews;
@@ -80,6 +81,9 @@ public class AIRRssFragment extends Fragment {
 
     private ArrayList<Object> newsArrayList = new ArrayList<>();
 
+    private ArrayList<News> newsLinkArrayList = new ArrayList<>();
+
+
 
     private RecyclerView recyclerView;
     private NewsAdapter newsAdapter;
@@ -98,11 +102,12 @@ public class AIRRssFragment extends Fragment {
      * @return A new instance of fragment AIRRssFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static AIRRssFragment newInstance(String param1, int param2) {
+    public static AIRRssFragment newInstance(String param1, int param2, ArrayList<News> newsLinkList) {
         AIRRssFragment fragment = new AIRRssFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putInt(ARG_PARAM2, param2);
+        args.putSerializable("links", newsLinkList);
         fragment.setArguments(args);
         return fragment;
     }
@@ -113,23 +118,34 @@ public class AIRRssFragment extends Fragment {
         if (getArguments() != null) {
             urlToOpen = getArguments().getString(ARG_PARAM1);
             sourceType = getArguments().getInt(ARG_PARAM2, 0);
+            newsLinkArrayList = (ArrayList<News>) getArguments().getSerializable("links");
         }
+
+
+
 
         if (pDialog == null) {
             pDialog = AIRNewsActivity.pDialog;
 
         }
 
+        for (int i=0 ; i<newsLinkArrayList.size();i++){
+            newsArrayList.add(newsLinkArrayList.get(i));
+        }
+        addNativeExpressAds();
+
         newsAdapter = new NewsAdapter(newsArrayList, getContext());
 
         if (sourceType == 1) {
             readAIRNewsFromStorage();
         } else {
-            fetchNews();
+            //fetchNews();
         }
 
 
     }
+
+
 
 
     private void fetchNews() {
@@ -262,7 +278,7 @@ public class AIRRssFragment extends Fragment {
             }
         });
 
-        SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.fragment_rss_swipeRefresh);
+       /* SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.fragment_rss_swipeRefresh);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -270,11 +286,11 @@ public class AIRRssFragment extends Fragment {
                 if (sourceType == 1) {
                     readAIRNewsFromStorage();
                 } else {
-                    fetchNews();
+                    //fetchNews();
                 }
 
             }
-        });
+        });*/
 
         return view;
     }

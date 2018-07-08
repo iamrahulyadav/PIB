@@ -16,8 +16,11 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -27,10 +30,13 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Cache;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
 import com.facebook.ads.Ad;
@@ -40,10 +46,16 @@ import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
 import com.google.android.gms.measurement.AppMeasurementInstallReferrerReceiver;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.w3c.dom.Text;
 
+import java.io.Console;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +63,7 @@ import java.util.Map;
 import dm.audiostreamer.AudioStreamingManager;
 import dm.audiostreamer.CurrentSessionCallback;
 import dm.audiostreamer.MediaMetaData;
+import io.fabric.sdk.android.Fabric;
 import io.fabric.sdk.android.services.common.SafeToast;
 import utils.AIRNews;
 import utils.AdsSubscriptionManager;
@@ -59,6 +72,9 @@ import utils.LanguageManager;
 import utils.News;
 import utils.NewsParser;
 import utils.NightModeManager;
+import utils.SettingManager;
+
+import static com.android.volley.VolleyLog.TAG;
 
 
 public class AIRNewsActivity extends AppCompatActivity implements CurrentSessionCallback {
@@ -81,6 +97,16 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     private AdView adView;
 
 
+    WebView webView;
+
+    ArrayList<String> audioLinkArrayList = new ArrayList<>();
+
+    ArrayList<News> newsArrayList = new ArrayList<>();
+
+    Elements elements;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,7 +127,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         pDialog.setMessage("Loading...");
 
         viewPager = (ViewPager) findViewById(R.id.airActivity_viewpager);
-        setupViewPager(viewPager);
+        //setupViewPager(viewPager);
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -110,6 +136,8 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         newsTitleTextView = (TextView) findViewById(R.id.airActivity_newsTitle_textView);
         timeElapsedTextView = (TextView) findViewById(R.id.airActivity_timeElapsed_textView);
         playImageView = (ImageView) findViewById(R.id.airActivity_play_imageView);
+
+        webView = findViewById(R.id.airActivity_webView);
 
 
         try {
@@ -133,18 +161,46 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
         viewPager.setCurrentItem(1);
 
-        initializeAds();
+        //initializeAds();
 
         mediaPlayer = new MediaPlayer();
 
-    }
 
+        getWebsite("http://www.newsonair.nic.in/Default.aspx");
+
+        showLoadingDialog("Loading...");
+
+    }
 
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_airnews_feed, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_refresh) {
+            getWebsite("http://www.newsonair.nic.in/Default.aspx");
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 
     private void playNews() {
         MediaMetaData obj = new MediaMetaData();
@@ -291,6 +347,345 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     }
 
+
+    private void getWebsite(final String url) {
+
+
+        String tag_string_req = "string_req";
+
+        //loadCache(url);
+
+        StringRequest strReq = new StringRequest(Request.Method.GET,
+                url, new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+
+                initializeActivityData(response);
+
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+
+                try {
+                    Toast.makeText(AIRNewsActivity.this, "Something went wrong. Showing chached data", Toast.LENGTH_SHORT).show();
+                    loadCache(url);
+                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "News feed activity").putCustomAttribute("reason", error.getMessage()));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        });
+
+
+        strReq.setShouldCache(true);
+        // Adding request to request queue
+        //AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+
+        strReq.setTag(TextUtils.isEmpty(tag_string_req) ? TAG : tag_string_req);
+        Volley.newRequestQueue(getApplicationContext()).add(strReq);
+
+
+    }
+
+
+    private void loadCache(String url) {
+
+        Cache cache = AppController.getInstance().getRequestQueue().getCache();
+
+
+        Cache.Entry entry = cache.get(url);
+        if (entry != null) {
+            //Cache data available.
+            try {
+                String response = new String(entry.data, "UTF-8");
+
+                initializeActivityData(response);
+
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // Cache data not exist.
+        }
+
+    }
+
+
+
+    public void initializeActivityData(final String data) {
+
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final StringBuilder builder = new StringBuilder();
+
+                try {
+
+                    Document doc = Jsoup.parse(data);
+
+                    elements = doc.select(".nwslist li audio");
+
+                    Log.d(TAG, "run: " + elements);
+
+                    for (int i = 0; i < elements.size(); i++) {
+                        String link = elements.get(i).attr("src");
+                        Log.d(TAG, "run: " + link);
+                        audioLinkArrayList.add(link);
+                    }
+
+                    setNewsList();
+
+
+                } catch (Exception e) {
+                    builder.append("Error : ").append(e.getMessage()).append("\n");
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        //webView.loadDataWithBaseURL("", elements.html(), "text/html", "UTF-8", "");
+
+
+                        setupViewPager(viewPager);
+
+                        hideLoadingDialog();
+
+                    }
+                });
+
+
+            }
+        }).start();
+
+
+        // hideLoadingDialog();
+    }
+
+    private void setNewsList() {
+
+        //add news title and link manually to list
+        try {
+            News news = new News();
+
+            news.setTitle("Morning News");
+            news.setLink(audioLinkArrayList.get(0));
+            news.setPubDate("15 mins ");
+
+            newsArrayList.add(news);
+
+
+            news = new News();
+
+            news.setTitle("Midday News");
+            news.setLink(audioLinkArrayList.get(1));
+            news.setPubDate("15 mins ");
+
+            newsArrayList.add(news);
+
+
+            news = new News();
+
+            news.setTitle("News at Nine");
+            news.setLink(audioLinkArrayList.get(2));
+            news.setPubDate("15 mins #recommended");
+
+
+            newsArrayList.add(news);
+
+
+            news = new News();
+
+            news.setTitle("Hourly News");
+            news.setLink(audioLinkArrayList.get(3));
+            news.setPubDate("5 mins ");
+
+
+            newsArrayList.add(news);
+
+
+        /*English section end
+        * Hindi section started*/
+
+            news = new News();
+
+            news.setTitle("Samachar Prabhat");
+            news.setLink(audioLinkArrayList.get(4));
+            news.setPubDate("15 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Dopehar Samachar");
+            news.setLink(audioLinkArrayList.get(5));
+            news.setPubDate("15 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Samachar Sandhya");
+            news.setLink(audioLinkArrayList.get(6));
+            news.setPubDate("15 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Prati Ghanta Samachar");
+            news.setLink(audioLinkArrayList.get(7));
+            news.setPubDate("5 mins ");
+
+            newsArrayList.add(news);
+
+        /*Hindi section over
+        * URdu section started*/
+
+            news = new News();
+
+            news.setTitle("Khabarnama");
+            news.setLink(audioLinkArrayList.get(8));
+            news.setPubDate("15 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Khabarein (Day)");
+            news.setLink(audioLinkArrayList.get(9));
+            news.setPubDate("10 mins ");
+            newsArrayList.add(news);
+
+
+            news = new News();
+
+            news.setTitle("Khabrein (Evening)");
+            news.setLink(audioLinkArrayList.get(10));
+            news.setPubDate("15 mins ");
+            newsArrayList.add(news);
+
+        /*urddu section over
+        * FM Gold section started*/
+
+            news = new News();
+
+            news.setTitle("Ajj Savere");
+            news.setLink(audioLinkArrayList.get(11));
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Parikrama");
+            news.setLink(audioLinkArrayList.get(12));
+
+            newsArrayList.add(news);
+
+        /*fmgold  section over
+        * Daily special section started*/
+
+            news = new News();
+
+            news.setTitle("Market Mantra");
+            news.setLink(audioLinkArrayList.get(13));
+            news.setPubDate("30 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Samayki");
+            news.setLink(audioLinkArrayList.get(14));
+            news.setPubDate("10 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Sports Scan");
+            news.setLink(audioLinkArrayList.get(15));
+            news.setPubDate("15 mins #recommended");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Spot Light News");
+            news.setLink(audioLinkArrayList.get(16));
+            news.setPubDate("15 mins #recommended");
+
+            newsArrayList.add(news);
+
+
+        /*Daily special   section over
+        * Weekly special section started*/
+
+            news = new News();
+
+            news.setTitle("Country Wide");
+            news.setLink(audioLinkArrayList.get(17));
+            news.setPubDate("15 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Surkhiyo se pare");
+            news.setLink(audioLinkArrayList.get(18));
+            news.setPubDate("15 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Charcha ka Vishai");
+            news.setLink(audioLinkArrayList.get(19));
+            news.setPubDate("30 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Vaad Samvaad");
+            news.setLink(audioLinkArrayList.get(20));
+            news.setPubDate("15 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Money Talk");
+            news.setLink(audioLinkArrayList.get(21));
+            news.setPubDate("15 mins ");
+
+            newsArrayList.add(news);
+
+            news = new News();
+
+            news.setTitle("Current Affairs");
+            news.setLink(audioLinkArrayList.get(22));
+            news.setPubDate("30 mins #recommended");
+
+            newsArrayList.add(news);
+
+        } catch (Exception e) {
+            Answers.getInstance().logCustom(new CustomEvent("AIR News error").putCustomAttribute("exception", e.getMessage()));
+        }
+
+
+    }
+
+
     @Override
     public void currentSeekBarPosition(int progress) {
 
@@ -335,17 +730,32 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
         AIRNewsActivity.ViewPagerAdapter adapter = new AIRNewsActivity.ViewPagerAdapter(getSupportFragmentManager());
 
-        adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 1), "AIR Offline");
+        adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 1, new ArrayList<News>()), "AIR Offline");
 
-        adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Eng.asp", 0), "AIR English");
-        adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Daily.asp", 0), "DAILY SPECIAL");
 
-        adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Weekly.asp", 0), "Weekly");
+        try {
 
-        adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0), "AIR Hindi");
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Eng.asp", 0, new ArrayList<News>(newsArrayList.subList(0, 4))), "AIR English");
+
+
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Daily.asp", 0, new ArrayList<News>(newsArrayList.subList(13, 17))), "DAILY SPECIAL");
+
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Weekly.asp", 0, new ArrayList<News>(newsArrayList.subList(17, 23))), "Weekly");
+
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0, new ArrayList<News>(newsArrayList.subList(4, 8))), "AIR Hindi");
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0, new ArrayList<News>(newsArrayList.subList(8, 11))), "AIR Urdu");
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0, new ArrayList<News>(newsArrayList.subList(11, 13))), "FM Gold");
 
 
         viewPager.setAdapter(adapter);
+
+        viewPager.setCurrentItem(1);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            viewPager.setAdapter(adapter);
+        }
+
     }
 
     public void onPreviousClick(View view) {
@@ -436,6 +846,38 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
                 .append(String.format("%02d", seconds));
 
         return buf.toString();
+    }
+
+
+    public void showLoadingDialog(String message) {
+        pDialog.setMessage(message);
+        pDialog.show();
+    }
+
+    public void hideLoadingDialog() {
+        try {
+            pDialog.hide();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onSlowPreviousClick(View view) {
+        try {
+            streamingManager.onSeekTo(streamingManager.lastSeekPosition() - 10000);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onSlowNextClick(View view) {
+
+        try {
+            streamingManager.onSeekTo(streamingManager.lastSeekPosition() + 10000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
