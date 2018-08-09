@@ -260,13 +260,13 @@ public class NewsParser {
         return newsArrayList;
     }
 
-    public ArrayList<AIRNews> parseAIRNews() {
+    public ArrayList<News> parseAIRNews() {
 
         XmlToJson xmlToJson = new XmlToJson.Builder(response).build();
 
         Log.d(TAG, "NewsParser: " + xmlToJson.toFormattedString());
         JSONObject jsonObject = xmlToJson.toJson();
-        ArrayList<AIRNews> airNewsArrayList = new ArrayList<>();
+        ArrayList<News> airNewsArrayList = new ArrayList<>();
 
 
         try {
@@ -280,24 +280,30 @@ public class NewsParser {
 
                 JSONObject itemObject = jsonArrayItem.getJSONObject(i);
 
-                AIRNews airNews = new AIRNews();
+                News airNews = new News();
 
                 /*news.setTitle(itemObject.getString("title"));
                 news.setDescription(itemObject.getString("description"));
                 news.setLink(itemObject.getString("link"));
                 news.setPubDate(itemObject.getString("pubDate"));
 */
-                try {
-                    airNews.setNewsTitle(URLDecoder.decode(URLEncoder.encode(itemObject.getString("title"), "iso8859-1"), "UTF-8"));
+
+                airNews.setTitle(itemObject.getString("title"));
+
+                /*try {
+                    airNews.setTitle(URLDecoder.decode(URLEncoder.encode(itemObject.getString("title"), "iso8859-1"), "UTF-8"));
                     //news.setDescription(URLDecoder.decode(URLEncoder.encode(itemObject.getString("description"), "iso8859-1"), "UTF-8"));
                 } catch (Exception e) {
-                    airNews.setNewsTitle(itemObject.getString("title"));
                     //news.setDescription(itemObject.getString("description"));
-                }
-                airNews.setNewsLink(itemObject.getString("link"));
+                }*/
+                airNews.setLink(itemObject.getString("link"));
 
                 if (itemObject.has("pubDate")) {
-                    airNews.setNewsDate(itemObject.getString("pubDate"));
+                    airNews.setPubDate(itemObject.getString("pubDate"));
+                }
+
+                if (itemObject.has("author")) {
+                    airNews.setNewsAuthor(itemObject.getString("author"));
                 }
 
                 airNewsArrayList.add(airNews);

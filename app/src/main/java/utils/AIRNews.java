@@ -7,7 +7,7 @@ package utils;
 public class AIRNews {
 
     private
-    String newsTitle, newsLink, newsDate;
+    String newsTitle, newsLink, newsDate, newsAuthor;
 
     public String getNewsTitle() {
         return newsTitle;
@@ -31,5 +31,13 @@ public class AIRNews {
 
     public void setNewsDate(String newsDate) {
         this.newsDate = newsDate;
+    }
+
+    public String getNewsAuthor() {
+        return newsAuthor;
+    }
+
+    public void setNewsAuthor(String newsAuthor) {
+        this.newsAuthor = newsAuthor;
     }
 }

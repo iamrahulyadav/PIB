@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 public class News implements Serializable {
 
-    private String title, description, link, pubDate, newsID ;
+    private String title, description, link, pubDate, newsID, newsAuthor ;
     private boolean read, pushNotification,bookMark;
     private int newsType=0;
 
@@ -86,6 +86,15 @@ public class News implements Serializable {
 
     public void setNewsType(int newsType) {
         this.newsType = newsType;
+    }
+
+
+    public String getNewsAuthor() {
+        return newsAuthor;
+    }
+
+    public void setNewsAuthor(String newsAuthor) {
+        this.newsAuthor = newsAuthor;
     }
 
     public void rectifyNewsLink(){

@@ -224,7 +224,7 @@ public class DDNewsListFragment extends Fragment {
                 if (newsArrayList.get(i).getClass() != NativeAd.class) {
 
 
-                    NativeAd nativeAd = new NativeAd(getContext(), "1963281763960722_2012202609068637");
+                    NativeAd nativeAd = new NativeAd(getContext(), "1963281763960722_2156599511295612");
                     nativeAd.setAdListener(new com.facebook.ads.AdListener() {
 
                         @Override

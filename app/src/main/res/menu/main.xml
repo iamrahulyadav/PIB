@@ -15,11 +15,7 @@
         app:showAsAction="never"
         />
 
-    <item
-        android:id="@+id/nav_rstvNews"
-        android:title="RSTV News"
-        app:showAsAction="never"
-        />
+
 
     <item
         android:id="@+id/nav_pibOld"

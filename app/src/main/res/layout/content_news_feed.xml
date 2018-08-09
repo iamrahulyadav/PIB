@@ -114,6 +114,7 @@
 
 
                 <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/fab"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -121,9 +122,8 @@
                     android:layout_marginLeft="32dp"
                     android:layout_marginRight="32dp"
                     android:layout_marginTop="8dp"
-                    android:onClick="OnShareButtonClick"
                     app:fabSize="mini"
-                    app:srcCompat="@mipmap/ic_action_share" />
+                    app:srcCompat="@mipmap/ic_reader_mode" />
 
 
             </LinearLayout>
@@ -161,7 +161,7 @@
             </ImageView>
 
 
-            <TextView
+            <!--<TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="8dp"
@@ -170,17 +170,21 @@
                 android:textAlignment="center"
                 android:textColor="?attr/primaryTextColor"
                 android:layout_marginBottom="4dp"
+                android:visibility="gone"
                 android:text="Recommended Articles" />
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/newsFeed_recommended_recyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="ifContentScrolls">
 
 
             </android.support.v7.widget.RecyclerView>
+
+            -->
 
 
         </LinearLayout>

@@ -97,13 +97,23 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     private AdView adView;
 
 
-    WebView webView;
 
     ArrayList<String> audioLinkArrayList = new ArrayList<>();
 
     ArrayList<News> newsArrayList = new ArrayList<>();
 
     Elements elements;
+
+    ArrayList<News> englishNewsArrayList = new ArrayList<>();
+    ArrayList<News> hindiNewsArrayList = new ArrayList<>();
+    ArrayList<News> urduNewsArrayList = new ArrayList<>();
+    ArrayList<News> dailyNewsArrayList = new ArrayList<>();
+
+    ArrayList<News> weeklyNewsArrayList = new ArrayList<>();
+
+
+    AIRNewsActivity.ViewPagerAdapter adapter;
+
 
 
 
@@ -137,7 +147,6 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         timeElapsedTextView = (TextView) findViewById(R.id.airActivity_timeElapsed_textView);
         playImageView = (ImageView) findViewById(R.id.airActivity_play_imageView);
 
-        webView = findViewById(R.id.airActivity_webView);
 
 
         try {
@@ -165,10 +174,66 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
         mediaPlayer = new MediaPlayer();
 
+        adapter = new AIRNewsActivity.ViewPagerAdapter(getSupportFragmentManager());
 
-        getWebsite("http://www.newsonair.nic.in/Default.aspx");
 
-        showLoadingDialog("Loading...");
+
+        //getWebsite("http://www.newsonair.nic.in/Default.aspx");
+
+        getWebsite("http://newsonair.nic.in/NSD_Audio_rss.aspx",1);
+
+
+
+
+
+
+    }
+
+    private void getWeeklyRssData(String url) {
+
+
+
+        String tag_string_req = "string_req";
+
+
+        StringRequest strReq = new StringRequest(Request.Method.GET,
+                url, new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+
+                //initializeActivityData(response);
+
+                //initializeRssData(response);
+
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+
+                try {
+                    Toast.makeText(AIRNewsActivity.this, "Something went wrong. Showing chached data", Toast.LENGTH_SHORT).show();
+                    //loadCache(url);
+                    Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "News feed activity").putCustomAttribute("reason", error.getMessage()));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        });
+
+
+        strReq.setShouldCache(true);
+        // Adding request to request queue
+        //AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+
+        strReq.setTag(TextUtils.isEmpty(tag_string_req) ? TAG : tag_string_req);
+        Volley.newRequestQueue(getApplicationContext()).add(strReq);
 
     }
 
@@ -194,7 +259,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_refresh) {
-            getWebsite("http://www.newsonair.nic.in/Default.aspx");
+            getWebsite("http://newsonair.nic.in/NSD_Audio_rss.aspx",1);
             return true;
         }
 
@@ -278,7 +343,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
                 response = response.substring(response.indexOf("<"));
 
 
-                airNewsArrayList = new NewsParser(response).parseAIRNews();
+                //airNewsArrayList = new NewsParser(response).parseAIRNews();
 
 
             }
@@ -348,12 +413,15 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     }
 
 
-    private void getWebsite(final String url) {
+    private void getWebsite(final String url, final int urlType) {
 
+        // urltype =1 for rss feed and 2 for weekly feeds
+
+
+        showLoadingDialog("Loading...");
 
         String tag_string_req = "string_req";
 
-        //loadCache(url);
 
         StringRequest strReq = new StringRequest(Request.Method.GET,
                 url, new Response.Listener<String>() {
@@ -361,7 +429,9 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
             @Override
             public void onResponse(String response) {
 
-                initializeActivityData(response);
+                //initializeActivityData(response);
+
+                initializeRssData(response, urlType);
 
 
             }
@@ -373,7 +443,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
                 try {
                     Toast.makeText(AIRNewsActivity.this, "Something went wrong. Showing chached data", Toast.LENGTH_SHORT).show();
-                    loadCache(url);
+                    loadCache(url, urlType);
                     Answers.getInstance().logCustom(new CustomEvent("Fetch error").putCustomAttribute("Activity", "News feed activity").putCustomAttribute("reason", error.getMessage()));
 
                 } catch (Exception e) {
@@ -396,7 +466,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     }
 
 
-    private void loadCache(String url) {
+    private void loadCache(String url, int urlType) {
 
         Cache cache = AppController.getInstance().getRequestQueue().getCache();
 
@@ -407,7 +477,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
             try {
                 String response = new String(entry.data, "UTF-8");
 
-                initializeActivityData(response);
+                initializeRssData(response, urlType);
 
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
@@ -417,7 +487,6 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         }
 
     }
-
 
 
     public void initializeActivityData(final String data) {
@@ -439,6 +508,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
                     for (int i = 0; i < elements.size(); i++) {
                         String link = elements.get(i).attr("src");
                         Log.d(TAG, "run: " + link);
+
                         audioLinkArrayList.add(link);
                     }
 
@@ -686,6 +756,102 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     }
 
 
+    private void initializeRssData(final String response , final int urlType) {
+
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final StringBuilder builder = new StringBuilder();
+
+                try {
+
+                    ArrayList<News> arrayList = new NewsParser(response).parseAIRNews();
+
+                    if (urlType==2){
+                        weeklyNewsArrayList = arrayList;
+                    }else {
+
+                        categoriesList(arrayList);
+                    }
+
+                } catch (Exception e) {
+                    builder.append("Error : ").append(e.getMessage()).append("\n");
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        //webView.loadDataWithBaseURL("", elements.html(), "text/html", "UTF-8", "");
+
+
+                        if (urlType == 2){
+                            // for weekly feed response
+                            addWeeklyAirFragment();
+
+                        }else {
+                            setupViewPager(viewPager);
+                        }
+
+                        hideLoadingDialog();
+
+                    }
+                });
+
+
+            }
+        }).start();
+
+
+    }
+
+    private void addWeeklyAirFragment() {
+
+        if (adapter != null){
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Weekly.asp", 0, weeklyNewsArrayList), "Weekly");
+
+
+            adapter.notifyDataSetChanged();
+        }
+
+    }
+
+    private void categoriesList(ArrayList<News> arrayList) {
+
+        englishNewsArrayList = new ArrayList<>();
+
+        for (int i = 0; i < arrayList.size(); i++) {
+
+            News airNews = arrayList.get(i);
+
+            switch (airNews.getNewsAuthor()) {
+
+                case "English":
+                    englishNewsArrayList.add(airNews);
+                    break;
+
+                case "Hindi":
+                    hindiNewsArrayList.add(airNews);
+                    break;
+
+                case "Urdu":
+                    urduNewsArrayList.add(airNews);
+                    break;
+
+                case "Daily":
+                    dailyNewsArrayList.add(airNews);
+                    break;
+
+            }
+
+
+        }
+
+
+    }
+
+
     @Override
     public void currentSeekBarPosition(int progress) {
 
@@ -705,6 +871,8 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         //initializeSeekBarData(mediaMetaData.getMediaUrl());
 
 
+
+
         try {
             Answers.getInstance().logCustom(new CustomEvent("AIR Radio played").putCustomAttribute("News title", mediaMetaData.getMediaTitle()));
         } catch (Exception e) {
@@ -717,6 +885,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     public void playNext(int i, MediaMetaData mediaMetaData) {
         onNextClick(playImageView);
 
+
     }
 
     @Override
@@ -728,30 +897,32 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     private void setupViewPager(ViewPager viewPager) {
 
 
-        AIRNewsActivity.ViewPagerAdapter adapter = new AIRNewsActivity.ViewPagerAdapter(getSupportFragmentManager());
 
         adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 1, new ArrayList<News>()), "AIR Offline");
 
 
         try {
 
-            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Eng.asp", 0, new ArrayList<News>(newsArrayList.subList(0, 4))), "AIR English");
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Eng.asp", 0, englishNewsArrayList), "AIR English");
 
 
-            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Daily.asp", 0, new ArrayList<News>(newsArrayList.subList(13, 17))), "DAILY SPECIAL");
-
-            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Weekly.asp", 0, new ArrayList<News>(newsArrayList.subList(17, 23))), "Weekly");
-
-            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0, new ArrayList<News>(newsArrayList.subList(4, 8))), "AIR Hindi");
-            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0, new ArrayList<News>(newsArrayList.subList(8, 11))), "AIR Urdu");
-            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0, new ArrayList<News>(newsArrayList.subList(11, 13))), "FM Gold");
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Daily.asp", 0, dailyNewsArrayList), "DAILY SPECIAL");
 
 
-        viewPager.setAdapter(adapter);
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0, hindiNewsArrayList), "AIR Hindi");
+            adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0, urduNewsArrayList), "AIR Urdu");
+            //adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 0, englishNewsArrayList), "FM Gold");
 
-        viewPager.setCurrentItem(1);
 
-        }catch (Exception e){
+            viewPager.setAdapter(adapter);
+
+            viewPager.setCurrentItem(1);
+
+
+            getWebsite("http://newsonair.nic.in/weekly_program_rss.aspx",2);
+
+
+        } catch (Exception e) {
             e.printStackTrace();
             viewPager.setAdapter(adapter);
         }
@@ -775,6 +946,9 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
             streamingManager.onPlay(currentMetaData);
             playImageView.setImageDrawable(getResources().getDrawable(R.drawable.mr_media_pause_dark));
         }
+
+        Log.d(TAG, "onPlayClick: "+ mediaPlayer.getDuration()+mediaPlayer.getCurrentPosition());
+
     }
 
     public void onNextClick(View view) {

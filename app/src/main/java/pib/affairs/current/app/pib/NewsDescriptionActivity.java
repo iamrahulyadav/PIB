@@ -205,6 +205,11 @@ public class NewsDescriptionActivity extends AppCompatActivity {
 
 
     private void initializeUI() {
+
+        if (news==null){
+            return;
+        }
+
         if (news.getNewsType() == 1) {
             news.setDescription(news.getDescription().replaceAll("\n", "<br>"));
         }

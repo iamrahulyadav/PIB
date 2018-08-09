@@ -409,7 +409,7 @@ public class AIRRssFragment extends Fragment {
                 if (newsArrayList.get(i).getClass() != NativeAd.class) {
 
 
-                    NativeAd nativeAd = new NativeAd(getContext(), "1963281763960722_2012202609068637");
+                    NativeAd nativeAd = new NativeAd(getContext(), "1963281763960722_2156588121296751");
                     nativeAd.setAdListener(new com.facebook.ads.AdListener() {
 
                         @Override
@@ -459,7 +459,7 @@ public class AIRRssFragment extends Fragment {
         obj.setMediaId(news.getTitle());
         obj.setMediaUrl(news.getLink());
         obj.setMediaTitle(news.getTitle());
-        obj.setMediaArt("http://www.newsonair.com/image/ALL-INDIA-RADIO-LOGO.jpg");
+        obj.setMediaArt("https://firebasestorage.googleapis.com/v0/b/pib-android-app.appspot.com/o/logo1%20png.png?alt=media&token=b276f1d6-f510-44f8-841f-de263c5b4a46");
 
 
         AIRNewsActivity.streamingManager.onPlay(obj);

@@ -425,6 +425,9 @@ public class RssFeedFragment extends Fragment {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
 
+
+
+
         recyclerView.setAdapter(newsAdapter);
 
         newsAdapter.setClickListener(new NewsAdapter.ClickListener() {
@@ -473,13 +476,15 @@ public class RssFeedFragment extends Fragment {
         }
 
 
-       /* if (sourceType==5) {
-            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                    super.onScrollStateChanged(recyclerView, newState);
+/*
+       recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
 
-                    if (!recyclerView.canScrollVertically(1)) {
+                if (!recyclerView.canScrollVertically(1)) {
+
+                    if (sourceType == SOURCETYPE_SUMMARY) {
 
                         if (!isLoading) {
 
@@ -489,11 +494,19 @@ public class RssFeedFragment extends Fragment {
                             fetchMorePibSummary();
 
                         }
-
                     }
+
                 }
-            });
-        }*/
+            }
+        });
+
+
+*/
+
+
+
+
+
 
         return view;
     }
@@ -595,6 +608,11 @@ public class RssFeedFragment extends Fragment {
 
 
     public void onItemClick(int position) {
+
+        if(position<0){
+            return;
+        }
+
         Intent intent = new Intent(getContext(), NewsFeedActivity.class);
 
 
@@ -635,6 +653,9 @@ public class RssFeedFragment extends Fragment {
 
     public void onBookMark(int position) {
 
+        if(position<0){
+            return;
+        }
 
         String tag_string_req = "string_req";
 

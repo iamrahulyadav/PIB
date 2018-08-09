@@ -115,10 +115,10 @@ public class NewsFeedActivity extends AppCompatActivity implements
     private int voiceReaderChunk;
 
 
-    RecyclerView recyclerView;
+  /*  RecyclerView recyclerView;
     NewsAdapter newsAdapter;
     ArrayList<Object> recommendedNewsArrayList = new ArrayList<>();
-
+*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,7 +155,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
                             swipeRefreshLayout.setRefreshing(false);
                             hideLoadingDialog();
                             initializeBottomNativeAds();
-                            initializeRecommendedList();
+                            //initializeRecommendedList();
 
                         } else {
                             getWebsite(news.getLink());
@@ -264,8 +264,6 @@ public class NewsFeedActivity extends AppCompatActivity implements
         initializeWebView();
 
 
-
-
     }
 
     @Override
@@ -321,8 +319,6 @@ public class NewsFeedActivity extends AppCompatActivity implements
                 return true; // Returning True means that application wants to leave the current WebView and handle the url itself, otherwise return false.
             }
         });
-
-
 
 
     }
@@ -751,14 +747,10 @@ public class NewsFeedActivity extends AppCompatActivity implements
                     }
 
 
-                    tableDataString = doc.getElementById("thd1").toString() + "<br><br>"+ doc.getElementById("condiv").toString();
-
+                    tableDataString = doc.getElementById("thd1").toString() + "<br><br>" + doc.getElementById("condiv").toString();
 
 
                     //tableDataString = doc.select(".innner-page-main-about-us-content-right-part").toString();
-
-
-
 
 
                 } catch (Exception e) {
@@ -780,7 +772,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
                         initializeBottomNativeAds();
 
-                        initializeRecommendedList();
+                        //initializeRecommendedList();
 
                     }
                 });
@@ -967,8 +959,9 @@ public class NewsFeedActivity extends AppCompatActivity implements
     }
 
 
-    /*Recommended article system*/
+    /*Recommended article system
     public void initializeRecommendedList() {
+
 
         try {
 
@@ -1005,6 +998,7 @@ public class NewsFeedActivity extends AppCompatActivity implements
         }catch (Exception e){
             e.printStackTrace();
         }
+
 
     }
 
@@ -1102,6 +1096,6 @@ public class NewsFeedActivity extends AppCompatActivity implements
 
 
     }
-
+*/
 
 }

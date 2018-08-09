@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        intializeRecommendedPibNewsList();
+        //intializeRecommendedPibNewsList();
 
     }
 
@@ -543,9 +543,7 @@ public class MainActivity extends AppCompatActivity
             onAirNewsClick();
         } else if (id == R.id.nav_ddNews) {
             onDDNewsClick();
-        } else if (id == R.id.nav_rstvNews) {
-            onRstvNewsClick();
-        } else if (id == R.id.nav_pibOld) {
+        }  else if (id == R.id.nav_pibOld) {
             onOldNewsClick();
         }
 
@@ -603,9 +601,7 @@ public class MainActivity extends AppCompatActivity
                 onDDNewsClick();
                 break;
 
-            case R.id.nav_rstvNews:
-                onRstvNewsClick();
-                break;
+
 
             case R.id.nav_personality_development:
                 onPersonalityDevelopmentClick();
@@ -878,7 +874,7 @@ public class MainActivity extends AppCompatActivity
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    intializeRecommendedOtherNewsList();
+                    //intializeRecommendedOtherNewsList();
                 }
 
                 @Override
