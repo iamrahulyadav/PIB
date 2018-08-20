@@ -65,7 +65,9 @@ dependencies {
     compile 'com.facebook.android:audience-network-sdk:4.28.0'
     compile 'org.jsoup:jsoup:1.10.1'
 
+/*
     compile 'com.github.dibakarece:dmaudiostreamer:v1.0.1'
+*/
 
     testCompile 'junit:junit:4.12'
     compile('com.crashlytics.sdk.android:crashlytics:2.8.0@aar') {

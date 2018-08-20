@@ -42,17 +42,6 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <WebView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:id="@+id/airActivity_webView"
-            android:visibility="gone"
-            >
-
-        </WebView>
-
-
 
         <LinearLayout
             android:id="@+id/airActivity_adContainer"
@@ -66,15 +55,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            app:cardCornerRadius="0dp"
             app:cardBackgroundColor="?attr/colorPrimary"
+            app:cardCornerRadius="0dp"
             app:cardElevation="10dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="12dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="4dp"
                 android:orientation="vertical">
 
 
@@ -82,13 +71,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
-                    android:layout_marginBottom="8dp"
                     android:orientation="horizontal">
+
+                    <ProgressBar
+                        android:id="@+id/airActivity_buffering_progressbar"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:visibility="gone" />
 
                     <TextView
                         android:id="@+id/airActivity_newsTitle_textView"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center"
                         android:layout_marginLeft="4dp"
                         android:layout_weight="1"
                         android:text="Tap on news to play"
@@ -98,28 +93,29 @@
 
                     <ImageView
                         android:id="@+id/airActivity_play_imageView"
-                        android:layout_width="32dp"
+                        android:layout_width="48dp"
                         android:layout_height="32dp"
-                        android:onClick="onPlayClick"
                         android:layout_marginRight="16dp"
-                        android:src="@drawable/mr_media_play_dark" />
+                        android:onClick="onPlayClick"
 
-
+                        android:paddingLeft="8dp"
+                        android:paddingRight="8dp"
+                        android:src="@drawable/ic_action_play" />
 
 
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_marginTop="4dp"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp">
 
                     <TextView
                         android:id="@+id/airActivity_timeElapsed_textView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="0dp"
                         android:layout_marginLeft="4dp"
+                        android:layout_marginRight="0dp"
                         android:text=""
                         android:textColor="?attr/primaryTextAccentColor"
                         android:textSize="12sp" />
@@ -128,8 +124,8 @@
                         android:id="@+id/airActivity_time_seekbar"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@color/colorPrimary"
                         android:layout_weight="1"
+                        android:background="@color/colorPrimary"
                         android:theme="@style/ActivityThemeLight" />
 
                     <TextView
@@ -144,24 +140,21 @@
                 </LinearLayout>
 
 
-
-
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
-                    android:visibility="gone"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
 
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:layout_weight="1"
-                        android:rotation="180"
                         android:layout_gravity="center"
+                        android:layout_weight="1"
                         android:onClick="onPreviousClick"
+                        android:rotation="180"
                         android:src="@mipmap/ic_forward"
 
                         />
@@ -169,30 +162,28 @@
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:layout_weight="1"
-                        android:rotation="180"
                         android:layout_gravity="center"
+                        android:layout_weight="1"
                         android:onClick="onSlowPreviousClick"
+                        android:rotation="180"
                         android:src="@mipmap/ic_slow_forward"
 
                         />
 
 
-
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:layout_weight="1"
                         android:layout_gravity="center"
+                        android:layout_weight="1"
                         android:onClick="onSlowNextClick"
-                        android:src="@mipmap/ic_slow_forward"
-                        />
+                        android:src="@mipmap/ic_slow_forward" />
 
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:layout_weight="1"
                         android:layout_gravity="center"
+                        android:layout_weight="1"
                         android:onClick="onNextClick"
                         android:src="@mipmap/ic_forward" />
 

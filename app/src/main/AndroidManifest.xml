@@ -67,11 +67,11 @@
             android:theme="@style/ActivityThemeLight" />
 
         <service
-            android:name="dm.audiostreamer.AudioStreamingService"
+            android:name="libs.AudioStreamingService"
             android:enabled="true"
             android:exported="false" />
 
-        <receiver android:name="dm.audiostreamer.AudioStreamingReceiver">
+        <receiver android:name="libs.AudioStreamingReceiver">
             <intent-filter>
                 <action android:name="dm.audiostreamer.close" />
                 <action android:name="dm.audiostreamer.pause" />

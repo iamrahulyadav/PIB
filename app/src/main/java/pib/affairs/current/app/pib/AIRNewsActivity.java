@@ -4,11 +4,9 @@ import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -20,14 +18,13 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
-import android.widget.Button;
+
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,7 +35,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
 import com.facebook.ads.Ad;
@@ -46,41 +42,27 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
-import com.google.android.gms.measurement.AppMeasurementInstallReferrerReceiver;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-import org.w3c.dom.Text;
 
-import java.io.Console;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import dm.audiostreamer.AudioStreamingManager;
-import dm.audiostreamer.CurrentSessionCallback;
-import dm.audiostreamer.MediaMetaData;
-import io.fabric.sdk.android.Fabric;
-import io.fabric.sdk.android.services.common.SafeToast;
-import utils.AIRNews;
+import java.util.List;
+
+import libs.AudioStreamingManager;
+import libs.CurrentSessionCallback;
+import libs.MediaMetaData;
 import utils.AdsSubscriptionManager;
 import utils.AppController;
-import utils.LanguageManager;
 import utils.News;
 import utils.NewsParser;
 import utils.NightModeManager;
-import utils.SettingManager;
 
 import static com.android.volley.VolleyLog.TAG;
 
 
 public class AIRNewsActivity extends AppCompatActivity implements CurrentSessionCallback {
-    ArrayList<AIRNews> airNewsArrayList;
+
     public static AudioStreamingManager streamingManager;
 
     private TabLayout tabLayout;
@@ -89,8 +71,9 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     TextView newsTitleTextView, timeElapsedTextView, maxTimeTextView;
     SeekBar timeSeekbar;
+    ProgressBar bufferingProgressBar;
 
-    public MediaPlayer mediaPlayer;
+
 
     public MediaMetaData currentMetaData;
     ImageView playImageView;
@@ -99,12 +82,6 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     public static ProgressDialog pDialog;
     private AdView adView;
 
-
-    ArrayList<String> audioLinkArrayList = new ArrayList<>();
-
-    ArrayList<News> newsArrayList = new ArrayList<>();
-
-    Elements elements;
 
     ArrayList<News> englishNewsArrayList = new ArrayList<>();
     ArrayList<News> hindiNewsArrayList = new ArrayList<>();
@@ -116,6 +93,14 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     AIRNewsActivity.ViewPagerAdapter adapter;
     private boolean isSeekBarTouched;
+
+/*
+    public MediaPlayer mediaPlayer;
+    ArrayList<String> audioLinkArrayList = new ArrayList<>();
+    ArrayList<News> newsArrayList = new ArrayList<>();
+    Elements elements;
+    ArrayList<AIRNews> airNewsArrayList;
+*/
 
 
     @Override
@@ -151,14 +136,23 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
         timeSeekbar = findViewById(R.id.airActivity_time_seekbar);
 
+        bufferingProgressBar = findViewById(R.id.airActivity_buffering_progressbar);
+
+
         try {
 
 
             if (streamingManager.isPlaying()) {
+                currentMetaData = streamingManager.getCurrentAudio();
                 newsTitleTextView.setText(streamingManager.getCurrentAudio().getMediaTitle());
-                playImageView.setImageDrawable(getResources().getDrawable(R.drawable.mr_media_pause_dark));
+                playImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_pause));
+
+                timeSeekbar.setMax(Integer.valueOf(currentMetaData.getMediaDuration()));
+
+                maxTimeTextView.setText(DateUtils.formatElapsedTime(Long.parseLong(currentMetaData.getMediaDuration()) / 1000));
+
             } else {
-                playImageView.setImageDrawable(getResources().getDrawable(R.drawable.mr_media_play_dark));
+                playImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_play));
             }
 
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -174,7 +168,6 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
         //initializeAds();
 
-        mediaPlayer = new MediaPlayer();
 
         adapter = new AIRNewsActivity.ViewPagerAdapter(getSupportFragmentManager());
 
@@ -213,8 +206,6 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
                 isSeekBarTouched = false;
             }
         });
-
-
 
 
     }
@@ -296,19 +287,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     }
 
 
-    private void playNews() {
-        MediaMetaData obj = new MediaMetaData();
-        obj.setMediaId(airNewsArrayList.get(0).getNewsTitle());
-        obj.setMediaUrl(airNewsArrayList.get(0).getNewsLink());
-        obj.setMediaTitle(airNewsArrayList.get(0).getNewsTitle());
-        obj.setMediaArt("http://www.newsonair.com/image/ALL-INDIA-RADIO-LOGO.jpg");
-
-
-        streamingManager.onPlay(obj);
-
-
-    }
-
+    /*
     public void initializeSeekBarData(String url) {
 
         if (mediaPlayer != null) {
@@ -345,6 +324,21 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     }
 
+
+     private void playNews() {
+        MediaMetaData obj = new MediaMetaData();
+        obj.setMediaId(airNewsArrayList.get(0).getNewsTitle());
+        obj.setMediaUrl(airNewsArrayList.get(0).getNewsLink());
+        obj.setMediaTitle(airNewsArrayList.get(0).getNewsTitle());
+        obj.setMediaArt("http://www.newsonair.com/image/ALL-INDIA-RADIO-LOGO.jpg");
+
+
+        streamingManager.onPlay(obj);
+
+
+    }
+
+    */
     private PendingIntent getNotificationPendingIntent() {
         Intent intent = new Intent(AIRNewsActivity.this, AIRNewsActivity.class);
         intent.setAction("openplayer");
@@ -417,10 +411,11 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
         switch (state) {
             case PlaybackStateCompat.STATE_PLAYING:
-
+                onStartPlayingAudio();
                 break;
             case PlaybackStateCompat.STATE_PAUSED:
 
+                onPausedAudio();
 
                 break;
             case PlaybackStateCompat.STATE_NONE:
@@ -430,8 +425,33 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
                 break;
             case PlaybackStateCompat.STATE_BUFFERING:
 
+                onBufferingAudio();
+
                 break;
         }
+
+    }
+
+    private void onPausedAudio() {
+        playImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_play));
+
+    }
+
+    private void onBufferingAudio() {
+        bufferingProgressBar.setVisibility(View.VISIBLE);
+    }
+
+    private void onStartPlayingAudio() {
+
+        //Toast.makeText(this, "Started", Toast.LENGTH_SHORT).show();
+        timeSeekbar.setMax(Integer.valueOf(currentMetaData.getMediaDuration()));
+
+        maxTimeTextView.setText(DateUtils.formatElapsedTime(Long.parseLong(currentMetaData.getMediaDuration()) / 1000));
+
+        bufferingProgressBar.setVisibility(View.GONE);
+
+        playImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_pause));
+
 
     }
 
@@ -517,6 +537,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     }
 
+/*
 
     public void initializeActivityData(final String data) {
 
@@ -612,8 +633,10 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
             newsArrayList.add(news);
 
 
-        /*English section end
-        * Hindi section started*/
+        */
+/*English section end
+        * Hindi section started*//*
+
 
             news = new News();
 
@@ -647,8 +670,10 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
             newsArrayList.add(news);
 
-        /*Hindi section over
-        * URdu section started*/
+        */
+/*Hindi section over
+        * URdu section started*//*
+
 
             news = new News();
 
@@ -673,8 +698,10 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
             news.setPubDate("15 mins ");
             newsArrayList.add(news);
 
-        /*urddu section over
-        * FM Gold section started*/
+        */
+/*urddu section over
+        * FM Gold section started*//*
+
 
             news = new News();
 
@@ -690,8 +717,10 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
             newsArrayList.add(news);
 
-        /*fmgold  section over
-        * Daily special section started*/
+        */
+/*fmgold  section over
+        * Daily special section started*//*
+
 
             news = new News();
 
@@ -726,8 +755,10 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
             newsArrayList.add(news);
 
 
-        /*Daily special   section over
-        * Weekly special section started*/
+        */
+/*Daily special   section over
+        * Weekly special section started*//*
+
 
             news = new News();
 
@@ -783,6 +814,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
 
     }
+*/
 
 
     private void initializeRssData(final String response, final int urlType) {
@@ -893,8 +925,6 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         timeSeekbar.setProgress(progress);
 
 
-
-
     }
 
     @Override
@@ -903,13 +933,13 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         newsTitleTextView.setText(mediaMetaData.getMediaTitle());
 
         currentMetaData = mediaMetaData;
-        playImageView.setImageDrawable(getResources().getDrawable(R.drawable.mr_media_pause_dark));
+        playImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_pause));
 
         //initializeSeekBarData(mediaMetaData.getMediaUrl());
 
 
-        currentMetaData.setMediaDuration("1000");
-        initializeMusic();
+        //currentMetaData.setMediaDuration("1000");
+        //initializeMusic();
 
 
         try {
@@ -941,13 +971,11 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
                     timeSeekbar.setMax(length);
 
-                    maxTimeTextView.setText(DateUtils.formatElapsedTime(Long.parseLong(currentMetaData.getMediaDuration()) / 1000));
+                    //maxTimeTextView.setText(DateUtils.formatElapsedTime(Long.parseLong(currentMetaData.getMediaDuration()) / 1000));
 
 
                 }
             });
-
-
 
 
         } catch (Exception e) {
@@ -1016,13 +1044,12 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     public void onPlayClick(View view) {
         if (streamingManager.isPlaying()) {
             streamingManager.onPause();
-            playImageView.setImageDrawable(getResources().getDrawable(R.drawable.mr_media_play_dark));
+            playImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_play));
         } else {
             streamingManager.onPlay(currentMetaData);
-            playImageView.setImageDrawable(getResources().getDrawable(R.drawable.mr_media_pause_dark));
+            playImageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_action_pause));
         }
 
-        Log.d(TAG, "onPlayClick: " + mediaPlayer.getDuration() + mediaPlayer.getCurrentPosition());
 
     }
 

@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import dm.audiostreamer.MediaMetaData;
+import libs.MediaMetaData;
 import utils.AIRNews;
 import utils.AdsSubscriptionManager;
 import utils.AppController;
@@ -73,6 +73,11 @@ public class AIRRssFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String urlToOpen;
     private int sourceType;
+
+    /*
+    * sourcetype 0 = fetch data from website
+    * 1= bookmarked news
+    * 2 = weekly program*/
 
     public ProgressDialog pDialog;
 
@@ -456,7 +461,8 @@ public class AIRRssFragment extends Fragment {
         News news = (News) newsArrayList.get(position);
 
         MediaMetaData obj = new MediaMetaData();
-        obj.setMediaId(news.getTitle());
+        obj.setMediaId(news.getLink());
+
         obj.setMediaUrl(news.getLink());
         obj.setMediaTitle(news.getTitle());
         obj.setMediaArt("https://firebasestorage.googleapis.com/v0/b/pib-android-app.appspot.com/o/logo1%20png.png?alt=media&token=b276f1d6-f510-44f8-841f-de263c5b4a46");
