@@ -73,6 +73,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginBottom="12dp"
+                android:layout_marginTop="8dp"
                 android:orientation="vertical">
 
 
@@ -80,33 +82,68 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
+                    android:layout_marginBottom="8dp"
                     android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/airActivity_newsTitle_textView"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="16dp"
+                        android:layout_marginLeft="4dp"
                         android:layout_weight="1"
                         android:text="Tap on news to play"
                         android:textColor="?attr/primaryTextAccentColor"
                         android:textSize="16sp" />
 
+
+                    <ImageView
+                        android:id="@+id/airActivity_play_imageView"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:onClick="onPlayClick"
+                        android:layout_marginRight="16dp"
+                        android:src="@drawable/mr_media_play_dark" />
+
+
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="4dp"
+                    android:layout_height="wrap_content">
+
                     <TextView
                         android:id="@+id/airActivity_timeElapsed_textView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="16dp"
+                        android:layout_marginRight="0dp"
+                        android:layout_marginLeft="4dp"
                         android:text=""
                         android:textColor="?attr/primaryTextAccentColor"
-                        android:textSize="16sp" />
+                        android:textSize="12sp" />
+
+                    <SeekBar
+                        android:id="@+id/airActivity_time_seekbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/colorPrimary"
+                        android:layout_weight="1"
+                        android:theme="@style/ActivityThemeLight" />
+
+                    <TextView
+                        android:id="@+id/airActivity_maxTime_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="4dp"
+                        android:text=""
+                        android:textColor="?attr/primaryTextAccentColor"
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:src="?attr/primaryTextAccentColor" />
+
 
 
 
@@ -114,6 +151,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
+                    android:visibility="gone"
                     android:orientation="horizontal">
 
 
@@ -139,13 +177,6 @@
 
                         />
 
-                    <ImageView
-                        android:id="@+id/airActivity_play_imageView"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:layout_weight="1"
-                        android:onClick="onPlayClick"
-                        android:src="@drawable/mr_media_play_dark" />
 
 
                     <ImageView

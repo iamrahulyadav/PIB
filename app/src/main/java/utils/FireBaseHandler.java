@@ -47,9 +47,9 @@ public class FireBaseHandler {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
 
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
                     onNewsListener.onNewsUpload(true);
-                }else{
+                } else {
                     onNewsListener.onNewsUpload(false);
                 }
 
@@ -202,7 +202,7 @@ public class FireBaseHandler {
     }
 
 
-    public void downloadPIBSummaryList( int limitTo ,String lastID, final OnNewsListener onNewsListener){
+    public void downloadPIBSummaryList(int limitTo, String lastID, final OnNewsListener onNewsListener) {
 
         DatabaseReference database = FirebaseDatabase.getInstance().getReference().child("Summary/");
 
@@ -222,7 +222,12 @@ public class FireBaseHandler {
                     newsArrayList.add(news);
                 }
 
+
                 Collections.reverse(newsArrayList);
+
+                if (newsArrayList.size() > 1) {
+                    newsArrayList.remove(0);
+                }
 
                 onNewsListener.onNewsListDownload(newsArrayList, true);
 
@@ -236,13 +241,12 @@ public class FireBaseHandler {
 
 
     }
-
 
 
     public void downloadPIBSummaryById(String summaryId, final OnNewsListener onNewsListener) {
 
 
-        DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("Summary/"+summaryId);
+        DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("Summary/" + summaryId);
 
 
         mDatabaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -269,8 +273,41 @@ public class FireBaseHandler {
 
     }
 
-    public void downloadOtherNewsById(String otherNewsId, final OnNewsListener onNewsListener){
-        DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("otherNews/"+otherNewsId);
+
+    public void downloadPIBSummary(long startTimeInMillis, long endTimeInMillis, final OnNewsListener onNewsListener) {
+
+        DatabaseReference myRef = mFirebaseDatabase.getReference("Summary/");
+        Query myref2 = myRef.orderByChild("timeInMillis").startAt(startTimeInMillis).endAt(endTimeInMillis);
+
+        myref2.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ArrayList<News> newsArrayList = new ArrayList<News>();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    News news = snapshot.getValue(News.class);
+
+                    news.setNewsID(snapshot.getKey());
+                    newsArrayList.add(news);
+                }
+
+
+                onNewsListener.onNewsListDownload(newsArrayList, true);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                onNewsListener.onNewsListDownload(null, false);
+
+            }
+        });
+
+    }
+
+    public void downloadOtherNewsById(String otherNewsId, final OnNewsListener onNewsListener) {
+        DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("otherNews/" + otherNewsId);
 
 
         mDatabaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -282,7 +319,6 @@ public class FireBaseHandler {
                 News news = dataSnapshot.getValue(News.class);
 
                 newsArrayList.add(news);
-
 
 
                 onNewsListener.onNewsListDownload(newsArrayList, true);
@@ -298,7 +334,7 @@ public class FireBaseHandler {
         });
     }
 
-    public void downloadOtherNewsList(int limit, final OnNewsListener onNewsListener){
+    public void downloadOtherNewsList(int limit, final OnNewsListener onNewsListener) {
         DatabaseReference mDatabaseRef = mFirebaseDatabase.getReference().child("otherNews/");
 
         Query myref2 = mDatabaseRef.limitToLast(limit);
@@ -374,7 +410,6 @@ public class FireBaseHandler {
 
 
     public interface OnNewsListener {
-
 
 
         public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful);

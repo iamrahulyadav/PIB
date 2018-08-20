@@ -145,7 +145,7 @@ public class RssFeedFragment extends Fragment {
 
     private void fetchPibSummary() {
         FireBaseHandler fireBaseHandler = new FireBaseHandler();
-        fireBaseHandler.downloadPIBSummaryList(15, new FireBaseHandler.OnNewsListener() {
+        fireBaseHandler.downloadPIBSummaryList(6, new FireBaseHandler.OnNewsListener() {
             @Override
             public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
                 if (isSuccessful) {

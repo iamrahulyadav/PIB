@@ -107,7 +107,6 @@
             android:name=".PibOldNewsFeedActivity"
             android:label="@string/title_activity_pib_old_news_feed"
             android:theme="@style/ActivityThemeLight">
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -116,12 +115,18 @@
 
                 <data
                     android:host="pib.nic.in"
-                    android:scheme="http"
                     android:pathPrefix="/newsite/"
-                    />
+                    android:scheme="http" />
             </intent-filter>
-
         </activity>
+        <activity
+            android:name=".PibSummaryArchiveActivity"
+            android:label="@string/title_activity_pib_summary_archive"
+            android:theme="@style/ActivityThemeLight" />
+        <activity
+            android:name=".KeyInitiativeActivity"
+            android:label="@string/title_activity_key_initiative"
+            android:theme="@style/ActivityThemeLight"></activity>
     </application>
 
 </manifest>

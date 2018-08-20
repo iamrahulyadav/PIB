@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity
         adapter.addFragment(DDNewsListFragment.newInstance(), "DD News");
 
 
-        adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 4), "Key Initiative");
+        //adapter.addFragment(RssFeedFragment.newInstance("http://pib.gov.in/newsite/rssenglish_fea.aspx", 4), "Key Initiative");
 
         //adapter.addFragment(RssFeedFragment.newInstance("http://pib.nic.in/RssMain.aspx?ModId=6", 3), "PIB Hindi");
 
@@ -601,7 +601,13 @@ public class MainActivity extends AppCompatActivity
                 onDDNewsClick();
                 break;
 
+            case R.id.nav_pib_summary_archive:
+                onPibSummaryArcieveClick();
+                break;
 
+            case R.id.nav_key_initiative:
+                onKeyInitiativeClick();
+                break;
 
             case R.id.nav_personality_development:
                 onPersonalityDevelopmentClick();
@@ -631,6 +637,18 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void onKeyInitiativeClick() {
+        Intent intent = new Intent(this, KeyInitiativeActivity.class);
+        startActivity(intent);
+    }
+
+    private void onPibSummaryArcieveClick() {
+
+        Intent intent = new Intent(this, PibSummaryArchiveActivity.class);
+        startActivity(intent);
+
     }
 
     private void onCurrentAffairsClick() {

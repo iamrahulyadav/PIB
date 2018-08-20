@@ -153,6 +153,16 @@ public class DDNewsFeedActivity extends AppCompatActivity {
         webView.loadDataWithBaseURL("", news.getDescription(), "text/html", "UTF-8", "");
         dateTextView.setText(news.getPubDate());
 
+        if (news.getDescription()==null){
+            webView.loadUrl(news.getLink());
+            webView.getSettings().setJavaScriptEnabled(true);
+        }else{
+            if (news.getDescription().isEmpty()){
+                webView.loadUrl(news.getLink());
+                webView.getSettings().setJavaScriptEnabled(true);
+            }
+        }
+
     }
 
     public void onBackPressed() {

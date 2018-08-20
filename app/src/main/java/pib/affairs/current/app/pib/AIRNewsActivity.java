@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -19,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -85,7 +87,8 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     private ViewPager viewPager;
 
 
-    TextView newsTitleTextView, timeElapsedTextView;
+    TextView newsTitleTextView, timeElapsedTextView, maxTimeTextView;
+    SeekBar timeSeekbar;
 
     public MediaPlayer mediaPlayer;
 
@@ -95,7 +98,6 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     public static ProgressDialog pDialog;
     private AdView adView;
-
 
 
     ArrayList<String> audioLinkArrayList = new ArrayList<>();
@@ -113,8 +115,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
 
     AIRNewsActivity.ViewPagerAdapter adapter;
-
-
+    private boolean isSeekBarTouched;
 
 
     @Override
@@ -146,8 +147,9 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         newsTitleTextView = (TextView) findViewById(R.id.airActivity_newsTitle_textView);
         timeElapsedTextView = (TextView) findViewById(R.id.airActivity_timeElapsed_textView);
         playImageView = (ImageView) findViewById(R.id.airActivity_play_imageView);
+        maxTimeTextView = findViewById(R.id.airActivity_maxTime_textView);
 
-
+        timeSeekbar = findViewById(R.id.airActivity_time_seekbar);
 
         try {
 
@@ -177,12 +179,40 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         adapter = new AIRNewsActivity.ViewPagerAdapter(getSupportFragmentManager());
 
 
-
         //getWebsite("http://www.newsonair.nic.in/Default.aspx");
 
-        getWebsite("http://newsonair.nic.in/NSD_Audio_rss.aspx",1);
+        getWebsite("http://newsonair.nic.in/NSD_Audio_rss.aspx", 1);
 
 
+        timeSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+                if (isSeekBarTouched) {
+                    if (streamingManager.isPlaying()) {
+
+                        //float x = 100;
+
+                        //long seetTime = (long) (i / x) * Long.parseLong(currentMetaData.getMediaDuration());
+
+                        streamingManager.onSeekTo(i);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+                isSeekBarTouched = true;
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                isSeekBarTouched = false;
+            }
+        });
 
 
 
@@ -190,7 +220,6 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     }
 
     private void getWeeklyRssData(String url) {
-
 
 
         String tag_string_req = "string_req";
@@ -259,7 +288,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_refresh) {
-            getWebsite("http://newsonair.nic.in/NSD_Audio_rss.aspx",1);
+            getWebsite("http://newsonair.nic.in/NSD_Audio_rss.aspx", 1);
             return true;
         }
 
@@ -756,7 +785,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
     }
 
 
-    private void initializeRssData(final String response , final int urlType) {
+    private void initializeRssData(final String response, final int urlType) {
 
 
         new Thread(new Runnable() {
@@ -768,9 +797,9 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
                     ArrayList<News> arrayList = new NewsParser(response).parseAIRNews();
 
-                    if (urlType==2){
+                    if (urlType == 2) {
                         weeklyNewsArrayList = arrayList;
-                    }else {
+                    } else {
 
                         categoriesList(arrayList);
                     }
@@ -786,11 +815,11 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
                         //webView.loadDataWithBaseURL("", elements.html(), "text/html", "UTF-8", "");
 
 
-                        if (urlType == 2){
+                        if (urlType == 2) {
                             // for weekly feed response
                             addWeeklyAirFragment();
 
-                        }else {
+                        } else {
                             setupViewPager(viewPager);
                         }
 
@@ -808,7 +837,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
     private void addWeeklyAirFragment() {
 
-        if (adapter != null){
+        if (adapter != null) {
             adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Weekly.asp", 0, weeklyNewsArrayList), "Weekly");
 
 
@@ -858,6 +887,14 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         timeElapsedTextView.setText(DateUtils.formatElapsedTime(progress / 1000));
 
 
+        //int seekProgress = (int) ((progress*100)/ Long.parseLong(currentMetaData.getMediaDuration()));
+
+
+        timeSeekbar.setProgress(progress);
+
+
+
+
     }
 
     @Override
@@ -871,6 +908,8 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         //initializeSeekBarData(mediaMetaData.getMediaUrl());
 
 
+        currentMetaData.setMediaDuration("1000");
+        initializeMusic();
 
 
         try {
@@ -878,6 +917,43 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+    }
+
+    private void initializeMusic() {
+
+        String url = currentMetaData.getMediaUrl(); // your URL here
+        MediaPlayer mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        try {
+            mediaPlayer.setDataSource(url);
+
+            mediaPlayer.prepareAsync();
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mediaPlayer) {
+
+                    int length = mediaPlayer.getDuration();
+
+                    Log.d(TAG, "initializeMusic: " + length);
+
+                    currentMetaData.setMediaDuration(String.valueOf(length));
+
+                    timeSeekbar.setMax(length);
+
+                    maxTimeTextView.setText(DateUtils.formatElapsedTime(Long.parseLong(currentMetaData.getMediaDuration()) / 1000));
+
+
+                }
+            });
+
+
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
     }
 
@@ -895,7 +971,6 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
 
 
     private void setupViewPager(ViewPager viewPager) {
-
 
 
         adapter.addFragment(AIRRssFragment.newInstance("http://www.newsonair.nic.in/Hindi.asp", 1, new ArrayList<News>()), "AIR Offline");
@@ -919,7 +994,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
             viewPager.setCurrentItem(1);
 
 
-            getWebsite("http://newsonair.nic.in/weekly_program_rss.aspx",2);
+            getWebsite("http://newsonair.nic.in/weekly_program_rss.aspx", 2);
 
 
         } catch (Exception e) {
@@ -947,7 +1022,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
             playImageView.setImageDrawable(getResources().getDrawable(R.drawable.mr_media_pause_dark));
         }
 
-        Log.d(TAG, "onPlayClick: "+ mediaPlayer.getDuration()+mediaPlayer.getCurrentPosition());
+        Log.d(TAG, "onPlayClick: " + mediaPlayer.getDuration() + mediaPlayer.getCurrentPosition());
 
     }
 

@@ -73,7 +73,10 @@ public class NewsParser {
                     news.setTitle(itemObject.getString("title"));
                     //news.setDescription(itemObject.getString("description"));
                 }
-                news.setLink(itemObject.getString("link"));
+
+                if (itemObject.has("link")) {
+                    news.setLink(itemObject.getString("link"));
+                }
 
                 if (itemObject.has("pubDate")) {
                     news.setPubDate(itemObject.getString("pubDate"));
@@ -174,7 +177,7 @@ public class NewsParser {
                 news.setDescription(itemObject.getString("description"));
                 news.setLink(itemObject.getString("link"));
                 news.setPubDate(itemObject.getString("pubDate"));
-*/
+
                 try {
                     news.setTitle(URLDecoder.decode(URLEncoder.encode(itemObject.getString("title"), "iso8859-1"), "UTF-8"));
                     //news.setDescription(URLDecoder.decode(URLEncoder.encode(itemObject.getString("description"), "iso8859-1"), "UTF-8"));
@@ -182,14 +185,29 @@ public class NewsParser {
                     news.setTitle(itemObject.getString("title"));
                     //news.setDescription(itemObject.getString("description"));
                 }
-                news.setTitle(itemObject.getString("title"));
-                news.setLink(itemObject.getString("link"));
+                */
 
-                news.setDescription(itemObject.getString("description"));
+                try {
+
+                    if (itemObject.has("title")) {
+                        news.setTitle(itemObject.getString("title"));
+                    }
+
+                    if (itemObject.has("link")) {
+                        news.setLink(itemObject.getString("link"));
+                    }
+
+                    if (itemObject.has("description")) {
+                        news.setDescription(itemObject.getString("description"));
+                    }
 
 
-                if (itemObject.has("pubDate")) {
-                    news.setPubDate(itemObject.getString("pubDate"));
+                    if (itemObject.has("pubDate")) {
+                        news.setPubDate(itemObject.getString("pubDate"));
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
                 newsArrayList.add(news);

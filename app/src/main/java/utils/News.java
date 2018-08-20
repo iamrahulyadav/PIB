@@ -10,10 +10,10 @@ import java.io.Serializable;
 
 public class News implements Serializable {
 
-    private String title, description, link, pubDate, newsID, newsAuthor ;
-    private boolean read, pushNotification,bookMark;
-    private int newsType=0;
-
+    private String title, description, link, pubDate, newsID, newsAuthor;
+    private boolean read, pushNotification, bookMark;
+    private int newsType = 0;
+    private long timeInMillis = 0;
 
 
     public String getTitle() {
@@ -97,12 +97,20 @@ public class News implements Serializable {
         this.newsAuthor = newsAuthor;
     }
 
-    public void rectifyNewsLink(){
+    public long getTimeInMillis() {
+        return timeInMillis;
+    }
+
+    public void setTimeInMillis(long timeInMillis) {
+        this.timeInMillis = timeInMillis;
+    }
+
+    public void rectifyNewsLink() {
 
         Uri uri = Uri.parse(link);
         String relID = uri.getQueryParameter("PRID");
 
-        if (relID!=null) {
+        if (relID != null) {
             if (!relID.isEmpty()) {
                 setLink("http://pib.nic.in/Pressreleaseshare.aspx?PRID=" + relID);
             }
