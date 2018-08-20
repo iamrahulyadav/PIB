@@ -19,21 +19,17 @@
         android:icon="@drawable/ic_action_dd_news"
         />
 
-
     <item
         android:id="@+id/nav_oldPib_news"
         android:icon="@drawable/ic_action_old_pib"
         android:title="Search Old News" />
 
-
     <item
         android:id="@+id/nav_pib_summary_archive"
-        android:icon="@drawable/ic_action_old_pib"
-        android:title="Pib Summary Archieve" />
+        android:title="Pib Summary Archive" />
 
     <item
         android:id="@+id/nav_key_initiative"
-        android:icon="@drawable/ic_action_old_pib"
         android:title="Key Initiative" />
 
 
@@ -49,8 +45,6 @@
                 android:title="English" />
         </menu>
     </item>
-
-
 
     <item android:title="Theme">
         <menu>
@@ -101,7 +95,6 @@
 
         </menu>
     </item>
-
 
     <item android:title="Communicate">
         <menu>

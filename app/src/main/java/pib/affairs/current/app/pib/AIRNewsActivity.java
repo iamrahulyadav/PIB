@@ -189,6 +189,7 @@ public class AIRNewsActivity extends AppCompatActivity implements CurrentSession
                         //long seetTime = (long) (i / x) * Long.parseLong(currentMetaData.getMediaDuration());
 
                         streamingManager.onSeekTo(i);
+
                     }
                 }
 

@@ -47,7 +47,7 @@ public class PibSummaryArchiveActivity extends AppCompatActivity {
     private AdView adView;
 
     private ArrayList<Object> newsArrayList = new ArrayList<>();
-    private boolean isLoading = false;
+    private boolean isLoading = true;
 
 
     @Override
@@ -92,6 +92,14 @@ public class PibSummaryArchiveActivity extends AppCompatActivity {
 
 
                 }
+            }
+        });
+
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                fetchPibSummary();
             }
         });
 
@@ -182,6 +190,8 @@ public class PibSummaryArchiveActivity extends AppCompatActivity {
             @Override
             public void onNewsListDownload(ArrayList<News> newsArrayList, boolean isSuccessful) {
                 if (isSuccessful) {
+
+                    PibSummaryArchiveActivity.this.newsArrayList.clear();
 
                     PibSummaryArchiveActivity.this.newsArrayList.addAll(newsArrayList);
 

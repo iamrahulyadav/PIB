@@ -35,9 +35,7 @@ public class KeyInitiativeActivity extends AppCompatActivity {
     private NewsAdapter newsAdapter;
 
 
-    SwipeRefreshLayout swipeRefreshLayout;
-    private Toolbar toolbar;
-    private AdView adView;
+
 
     private ArrayList<Object> newsArrayList = new ArrayList<>();
     private boolean isLoading = false;

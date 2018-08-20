@@ -36,21 +36,25 @@
 
         <ImageView
             android:id="@+id/player_pause"
-            android:layout_width="32dp"
+            android:layout_width="48dp"
             android:layout_height="32dp"
             android:layout_gravity="center"
             android:scaleType="center"
             android:layout_marginLeft="12dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
             android:src="@drawable/ic_action_pause"
             />
 
         <ImageView
             android:id="@+id/player_play"
-            android:layout_width="32dp"
+            android:layout_width="48dp"
             android:layout_height="32dp"
             android:layout_gravity="center"
             android:scaleType="center"
             android:layout_marginLeft="12dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
             android:src="@drawable/ic_action_play"
             android:visibility="gone" />
 
